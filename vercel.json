@@ -1,0 +1,21 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".",
+  "redirects": [
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/panel",
+      "destination": "/meldus/",
+      "permanent": true
+    },
+    {
+      "source": "/panel/",
+      "destination": "/meldus/",
+      "permanent": true
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+# Local Netlify folder
+.netlify
+
+.vercel
+
+# Panel: Supabase anahtarları (asla commit etmeyin)
+panel/config.js
+
+# Ortam değişkenleri (gizli bilgiler)
+.env
+.env.local

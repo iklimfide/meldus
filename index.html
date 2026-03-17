@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>İklim Fide | Marul Fidesi Üretimi</title>
+  <meta name="description" content="Antalya Aksu'da marul fidesi üretimi. Kıvırcık, Yedikule, İceberg marul fidesi. Yıl boyu tedarik, gününde teslim. 28 yıllık tecrübe. WhatsApp sipariş." />
+  <meta name="keywords" content="marul fidesi, marul fidesi Antalya, kıvırcık marul fidesi, yedikule marul fidesi, iceberg marul fidesi, fide üretimi Aksu" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://iklimfide.com/" />
+  <link rel="sitemap" type="application/xml" href="https://iklimfide.com/sitemap.xml" />
+  <link rel="icon" type="image/png" href="resimler/logo.png" />
+  <link rel="preload" as="image" href="resimler/hero.webp" fetchpriority="high" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://iklimfide.com/" />
+  <meta property="og:title" content="İklim Fide | Marul Fidesi Üretimi - Antalya Aksu" />
+  <meta property="og:description" content="Antalya Aksu'da marul fidesi üretimi. Yıl boyu tedarik, gününde teslim. 28 yıllık tecrübe." />
+  <meta property="og:locale" content="tr_TR" />
+
+  <link rel="preload" href="output.css" as="style" />
+  <link rel="stylesheet" href="output.css" />
+
+  <style>
+    .ico{display:inline-block;width:1em;height:1em;vertical-align:-0.125em;fill:currentColor}
+    html { scroll-behavior: smooth; }
+    :root{
+      --marul:#2d5a27;
+      --marul-2:#3e7d36;
+      --ink:#0b0f0c;
+    }
+
+    /* Modern “grain” overlay */
+    .grain:before{
+      content:"";
+      position:absolute; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='.14'/%3E%3C/svg%3E");
+      mix-blend-mode:overlay; opacity:.55; pointer-events:none;
+    }
+
+    /* Sticky header blur */
+    .stickybar{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      background: rgba(255,255,255,.75);
+      border-bottom: 1px solid rgba(0,0,0,.06);
+    }
+
+    /* Modal */
+    #img-modal{
+      display:none; position:fixed; inset:0; z-index:9999;
+      background: rgba(0,0,0,.88);
+      align-items:center; justify-content:center;
+      cursor: zoom-out;
+      padding: 24px;
+    }
+    #img-modal img{
+      max-width: min(1100px, 92vw);
+      max-height: 88vh;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.15);
+      box-shadow: 0 20px 80px rgba(0,0,0,.6);
+    }
+
+    /* Nice focus */
+    :focus-visible{ outline: 3px solid rgba(45,90,39,.35); outline-offset: 3px; }
+
+    /* Small “badge” */
+    .badge{
+      background: rgba(45,90,39,.10);
+      border: 1px solid rgba(45,90,39,.16);
+      color: var(--marul);
+    }
+
+    /* Subtle card hover */
+    .card{
+      transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    }
+    .card:hover{
+      transform: translateY(-4px);
+      box-shadow: 0 18px 50px rgba(0,0,0,.10);
+      border-color: rgba(45,90,39,.25);
+    }
+  </style>
+
+  <script>
+    // Robust image fallback: if file missing, show gradient placeholder
+    function setFallback(img){
+      const ph =
+        "data:image/svg+xml;charset=utf-8," +
+        encodeURIComponent(`
+          <svg xmlns='http://www.w3.org/2000/svg' width='1400' height='900'>
+            <defs>
+              <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+                <stop offset='0' stop-color='#0b0f0c'/>
+                <stop offset='0.55' stop-color='#2d5a27'/>
+                <stop offset='1' stop-color='#b7ffbd'/>
+              </linearGradient>
+              <filter id='s' x='-20%' y='-20%' width='140%' height='140%'>
+                <feDropShadow dx='0' dy='10' stdDeviation='18' flood-color='#000' flood-opacity='.25'/>
+              </filter>
+            </defs>
+            <rect width='100%' height='100%' fill='url(#g)'/>
+            <g opacity='.16'>
+              <circle cx='220' cy='180' r='140' fill='#fff'/>
+              <circle cx='1220' cy='620' r='220' fill='#fff'/>
+            </g>
+            <g filter='url(#s)'>
+              <text x='80' y='430' font-family='Arial' font-size='64' fill='rgba(255,255,255,.92)' font-weight='800'>İKLİM FİDE</text>
+              <text x='80' y='510' font-family='Arial' font-size='28' fill='rgba(255,255,255,.82)'>Marul fidesi üretimi • Antalya Aksu</text>
+            </g>
+          </svg>
+        `);
+      img.onerror = null;
+      img.src = ph;
+    }
+
+    function openModal(imgEl){
+      const modal = document.getElementById('img-modal');
+      const modalImg = document.getElementById('modal-img');
+      modalImg.src = imgEl.dataset.full || imgEl.currentSrc || imgEl.src;
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal(){
+      document.getElementById('img-modal').style.display = 'none';
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'Escape') closeModal();
+    });
+
+    // Mobile menu
+    function toggleMenu(){
+      const el = document.getElementById('mobileMenu');
+      el.classList.toggle('hidden');
+    }
+  </script>
+
+  <!-- JSON-LD LocalBusiness -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "İklim Fide",
+    "description": "Antalya Aksu'da marul fidesi üretimi. Kıvırcık, Yedikule, İceberg marul fidesi. Yıl boyu tedarik.",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Çalkaya Mahallesi Bahar Sokak No:14A",
+      "addressLocality": "Aksu",
+      "addressRegion": "Antalya",
+      "addressCountry": "TR",
+      "postalCode": "07110"
+    },
+    "telephone": "+90-533-735-99-68",
+    "email": "iklimfide@gmail.com",
+    "url": "https://iklimfide.com",
+    "priceRange": "$$",
+    "openingHours": "Mo-Su 08:00-18:00"
+  }
+  </script>
+</head>
+
+<body class="bg-zinc-50 text-zinc-900">
+  <svg xmlns="http://www.w3.org/2000/svg" style="display:none"><symbol id="i-phone" viewBox="0 0 512 512"><path fill="currentColor" d="M164.9 24.6c-7.7-18.6-28-28.5-47.4-23.2l-88 24C12.9 30.2 0 46 0 64C0 311.4 200.6 512 448 512c18 0 33.8-12.9 38.6-32l24-88c5.3-19.4-4.6-39.7-23.2-47.4l-96-40c-16.3-6.8-35.2-2.1-46.3 11.6L304.7 368C234.3 334.7 177.3 277.7 144 207.3L193.3 167c13.7-11.2 18.4-30 11.6-46.3l-40-96z"/></symbol><symbol id="i-wa" viewBox="0 0 24 24"><path fill="currentColor" d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.865 9.865 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></symbol><symbol id="i-bars" viewBox="0 0 448 512"><path fill="currentColor" d="M0 96c0-17.7 14.3-32 32-32h384c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zm0 160c0-17.7 14.3-32 32-32h384c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zm0 160c0-17.7 14.3-32 32-32h384c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32z"/></symbol><symbol id="i-arr" viewBox="0 0 448 512"><path fill="currentColor" d="M438.6 278.6c12.5-12.5 12.5-32.8 0-45.3l-160-160c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L338.8 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l306.7 0L233.4 393.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l160-160z"/></symbol><symbol id="i-env" viewBox="0 0 512 512"><path fill="currentColor" d="M48 64C21.5 64 0 85.5 0 112c0 15.1 7.1 29.3 19.2 38.4L236.8 313.6c11.4 8.5 27 8.5 38.4 0L492.8 150.4c12.1-9.1 19.2-23.3 19.2-38.4c0-26.5-21.5-48-48-48H48zM0 176V384c0 26.5 21.5 48 48 48H464c26.5 0 48-21.5 48-48V176L318.4 339.2c-22.8 17.1-54 17.1-76.8 0L0 176z"/></symbol><symbol id="i-loc" viewBox="0 0 384 512"><path fill="currentColor" d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></symbol><symbol id="i-map" viewBox="0 0 576 512"><path fill="currentColor" d="M408 120c0 54.6-73.1 151.9-105.2 192c-7.7 9.6-22 9.6-29.6 0C241.1 271.9 168 174.6 168 120C168 53.7 221.7 0 288 0s120 53.7 120 120zm8 80.4c3.5-6.9 6.7-13.8 9.6-20.6c.5-1.2 1-2.5 1.5-3.7l116-46.4C558.9 123 576 135 576 152V422.8c0 9.8-6 18.6-15.1 22.3L416 503V200.4zM160 120c0-25.8 12.6-48.5 32-62.8V503L15.1 445.1C6 441.4 0 432.6 0 422.8V152c0-17 17.1-29 33.2-22.4L160 200.4V120zm256 0v80.4L512 135.6V72.2L416 119.2V120z"/></symbol><symbol id="i-seed" viewBox="0 0 512 512"><path fill="currentColor" d="M288 0c-17.7 0-32 14.3-32 32V96c0 70.7 57.3 128 128 128h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H352c-35.3 0-64-28.7-64-64V32c0-17.7-14.3-32-32-32z"/></symbol><symbol id="i-award" viewBox="0 0 576 512"><path fill="currentColor" d="M400 0H176c-26.5 0-48.1 21.8-47.1 48.2c.2 5.3 .4 10.6 .7 15.8H24c-13.3 0-24 10.7-24 24s10.7 24 24 24H330.7c.2 0 .4 0 .6 0c-.5-5.2-.9-10.4-1.3-15.6C328 21.8 306.5 0 280 0H400zM64 256H192c.5 0 1 0 0 0c-.2 5.2-.3 10.4-.3 15.6c0 97 78.8 176.4 176 176.4s176-79.4 176-176.4c0-5.2-.1-10.4-.3-15.6c.5 0 1 0 0 0H512c17.7 0 32-14.3 32-32V96c0-17.7-14.3-32-32-32H480V64c0-17.7-14.3-32-32-32H128c-17.7 0-32 14.3-32 32V64H64c-17.7 0-32 14.3-32 32V224c0 17.7 14.3 32 32 32zM288 384a128 128 0 1 1 0-256 128 128 0 1 1 0 256z"/></symbol><symbol id="i-clock" viewBox="0 0 512 512"><path fill="currentColor" d="M256 0a256 256 0 1 1 0 512A256 256 0 1 1 256 0zM232 120V256c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2V120c0-13.3-10.7-24-24-24s-24 10.7-24 24z"/></symbol><symbol id="i-truck" viewBox="0 0 640 512"><path fill="currentColor" d="M0 96C0 60.7 28.7 32 64 32H368c35.3 0 64 28.7 64 64V224h72c36.9 0 67.3 28 71.5 64H608v32H576V352c0 35.3-28.7 64-64 64H576c0 53-43 96-96 96s-96-43-96-96H256c0 53-43 96-96 96s-96-43-96-96H64c-35.3 0-64-28.7-64-64V96zM416 96H64V352h32c0-35.3 28.7-64 64-64s64 28.7 64 64h128c0-35.3 28.7-64 64-64s64 28.7 64 64h32V224H416V96z"/></symbol><symbol id="i-leaf" viewBox="0 0 512 512"><path fill="currentColor" d="M272 96c-78.6 0-145.1 51.5-167.7 122.5c33.6-17 71.5-26.5 111.7-26.5h88c8.8 0 16 7.2 16 16s-7.2 16-16 16H216.2c9.6 14.4 20.7 28.2 33.1 41.3C163.8 291.2 124.7 313.4 81 327.7c8.9 32.5 28.7 61.5 55.2 84.5L256 493.3 375.7 412.3c26.4-23 46.3-52 55.2-84.5c-43.7-14.3-82.8-36.5-115.8-66.7C279.3 285.5 295.5 289 312 289h88c8.8 0 16 7.2 16 16s-7.2 16-16 16H312c-40.2 0-78.1-9.5-111.7-26.5C222.9 361.5 156.4 413 78 413c-8.5 0-16.6-2.9-23.2-8.1C48.5 398.1 32 381.2 32 360c0-15.7 11.3-29 26.7-31.6C14.2 311.1 0 268.2 0 224C0 153.3 57.3 96 128 96H272z"/></symbol><symbol id="i-exp" viewBox="0 0 512 512"><path fill="currentColor" d="M200 32H56c-13.3 0-24 10.7-24 24V200c0 13.3 10.7 24 24 24s24-10.7 24-24V80h120c13.3 0 24-10.7 24-24s-10.7-24-24-24zm112 0H312c-13.3 0-24 10.7-24 24s10.7 24 24 24h120V200c0 13.3 10.7 24 24 24s24-10.7 24-24V56c0-13.3-10.7-24-24-24H312zM56 432H200c13.3 0 24 10.7 24 24s-10.7 24-24 24H80V312c0-13.3-10.7-24-24-24s-24 10.7-24 24V456c0 13.3 10.7 24 24 24zm256 0H312c-13.3 0-24 10.7-24 24s10.7 24 24 24H432V312c0 13.3 10.7 24 24 24s24-10.7 24-24V456c0-13.3-10.7-24-24-24z"/></symbol><symbol id="i-img" viewBox="0 0 576 512"><path fill="currentColor" d="M160 80H448c26.5 0 48 21.5 48 48V384c0 26.5-21.5 48-48 48H160c-26.5 0-48-21.5-48-48V128c0-26.5 21.5-48 48-48z"/></symbol><symbol id="i-pen" viewBox="0 0 512 512"><path fill="currentColor" d="M0 288c0-35.3 28.7-64 64-64h80.6L372.9 28.9c36.5-36.5 95.7-36.5 132.2 0l22.6 22.6c36.5 36.5 36.5 95.7 0 132.2L320 384H64c-35.3 0-64-28.7-64-64V288z"/></symbol><symbol id="i-q" viewBox="0 0 512 512"><path fill="currentColor" d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM169.8 165.3c7.9-22.3 29.1-37.3 52.8-37.3h58.3c34.9 0 63.1 28.3 63.1 63.1c0 22.6-12.1 43.5-31.7 54.8L280 264.4c-.2 13-10.9 23.6-24 23.6c-13.3 0-24-10.7-24-24V250.5c0-8.6 4.6-16.5 12.1-20.8l44.3-25.4c4.7-2.7 7.6-7.7 7.6-13.1V163.1c0-8.5-6.9-15.1-15.4-15.1H222.6c-3.4 0-6.9 1.1-9.8 3.1l-27.5 18.4c-13.2 8.8-15.9 26.8-5.9 38.7l0 0c10.2 11.9 26.4 14.1 39.2 5.2l27.5-18.4c3.4-2.3 7.2-3.5 11.1-3.5zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"/></symbol></svg>
+
+  <!-- Image modal -->
+  <div id="img-modal" onclick="closeModal()" aria-hidden="true">
+    <img id="modal-img" alt="Büyük görsel" />
+  </div>
+
+  <!-- Sticky header: Top contact strip + Nav -->
+  <div class="sticky top-0 z-50">
+  <!-- Top contact strip -->
+  <div class="bg-[color:var(--marul)] text-white">
+    <div class="mx-auto max-w-6xl px-4 py-2 text-[13px]">
+      <div class="flex items-center justify-center">
+        <a class="inline-flex items-center gap-2 opacity-95 hover:opacity-100 hover:underline" href="tel:+905337359968">
+          <svg class="ico" aria-hidden="true"><use href="#i-phone"/></svg> +90 533 735 99 68
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sticky nav -->
+  <header class="stickybar">
+    <div class="mx-auto max-w-6xl px-4 py-3">
+      <div class="flex items-center justify-between">
+        <a href="#anasayfa" class="group inline-flex items-center gap-3">
+          <picture><source srcset="resimler/logo.webp" type="image/webp"/><img src="resimler/logo.png" alt="İklim Fide marul fidesi logosu" class="h-7 w-auto opacity-75" width="100" height="100"/></picture>
+          <span class="text-2xl font-black tracking-tight text-[color:var(--marul)]">İKLİM FİDE</span>
+          <span class="hidden sm:inline-flex rounded-full px-3 py-1 text-xs font-semibold badge">Marul Fidesinde Uzman</span>
+        </a>
+
+        <nav class="hidden md:flex items-center gap-7 text-sm font-semibold">
+          <a class="hover:text-[color:var(--marul)]" href="#hakkimizda">Hakkımızda</a>
+          <a class="hover:text-[color:var(--marul)]" href="#urunler">Marul Fidesi</a>
+          <a class="hover:text-[color:var(--marul)]" href="#galeri">Galeri</a>
+          <a class="hover:text-[color:var(--marul)]" href="#blog">Blog</a>
+          <a class="hover:text-[color:var(--marul)]" href="#sss">SSS</a>
+          <a class="text-[color:var(--marul)] font-black" href="#iletisim">İletişim</a>
+          <a class="inline-flex items-center gap-2 rounded-full bg-[color:var(--marul)] px-4 py-2 text-white hover:bg-[color:var(--marul-2)]"
+             href="https://wa.me/905337359968" target="_blank" rel="noopener">
+            <svg class="ico" aria-hidden="true"><use href="#i-wa"/></svg> Sipariş
+          </a>
+        </nav>
+
+        <button class="md:hidden inline-flex items-center justify-center rounded-xl border border-black/10 bg-white px-3 py-2"
+                onclick="toggleMenu()" aria-label="Menüyü aç/kapat">
+          <svg class="ico" aria-hidden="true"><use href="#i-bars"/></svg>
+        </button>
+      </div>
+
+      <!-- Mobile menu -->
+      <div id="mobileMenu" class="hidden md:hidden pt-3">
+        <div class="grid gap-2 rounded-2xl border border-black/10 bg-white p-3">
+          <a class="rounded-xl px-3 py-2 hover:bg-zinc-50" href="#hakkimizda" onclick="toggleMenu()">Hakkımızda</a>
+          <a class="rounded-xl px-3 py-2 hover:bg-zinc-50" href="#urunler" onclick="toggleMenu()">Marul Fidesi</a>
+          <a class="rounded-xl px-3 py-2 hover:bg-zinc-50" href="#galeri" onclick="toggleMenu()">Galeri</a>
+          <a class="rounded-xl px-3 py-2 hover:bg-zinc-50" href="#blog" onclick="toggleMenu()">Blog</a>
+          <a class="rounded-xl px-3 py-2 hover:bg-zinc-50" href="#sss" onclick="toggleMenu()">SSS</a>
+          <a class="rounded-xl px-3 py-2 font-bold text-[color:var(--marul)] hover:bg-zinc-50" href="#iletisim" onclick="toggleMenu()">İletişim</a>
+          <a class="mt-2 inline-flex items-center justify-center gap-2 rounded-xl bg-[color:var(--marul)] px-4 py-3 text-white hover:bg-[color:var(--marul-2)]"
+             href="https://wa.me/905337359968" target="_blank" rel="noopener">
+            <svg class="ico" aria-hidden="true"><use href="#i-wa"/></svg> WhatsApp ile Sipariş
+          </a>
+        </div>
+      </div>
+    </div>
+  </header>
+  </div>
+
+  <!-- HERO -->
+  <section id="anasayfa" class="relative overflow-hidden">
+    <div class="absolute inset-0">
+      <img src="resimler/hero.webp" onerror="setFallback(this)" class="h-full w-full object-cover" alt="İklim Fide marul fidesi üretim tesisi Antalya Aksu" fetchpriority="high" decoding="async" width="1200" height="800" />
+      <div class="absolute inset-0 bg-gradient-to-tr from-black via-black/40 to-transparent"></div>
+      <div class="absolute inset-0 grain"></div>
+    </div>
+
+    <div class="relative mx-auto max-w-6xl px-4 pt-8 pb-16 md:py-24">
+      <div class="grid gap-10 md:grid-cols-12 md:items-center">
+        <div class="md:col-span-7 text-white">
+          <div class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold">
+            <span class="h-2 w-2 rounded-full bg-emerald-300"></span>
+            Tüm Türkiye gönderim
+          </div>
+
+          <h1 class="mt-5 text-4xl font-black leading-tight tracking-tight md:text-6xl">
+            Marul Fidesi Üreticisinden alınır. 
+            </h1>
+
+          <p class="mt-5 max-w-xl text-lg text-white/85">
+            İklim Fide (Arif Güvenç Tarım, Ltd. Şti.) olarak, özellikle <strong>marul fidesinde</strong>
+            yıl boyunca kesintisiz tedarik ve gününde teslim odağıyla üretim yapıyoruz.
+          </p>
+
+          <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+            <a href="https://wa.me/905337359968" target="_blank" rel="noopener"
+               class="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-400 px-6 py-4 text-sm font-black text-black hover:bg-emerald-300">
+              <span class="text-lg"><svg class="ico" aria-hidden="true"><use href="#i-wa"/></svg></span> Hemen Sipariş Ver
+            </a>
+            <a href="#urunler"
+               class="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-6 py-4 text-sm font-bold text-white hover:bg-white/15">
+              Ürünleri İncele <svg class="ico" aria-hidden="true"><use href="#i-arr"/></svg>
+            </a>
+          </div>
+
+          <div class="mt-10 mx-auto grid grid-cols-3 gap-3 max-w-xl">
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-center">
+              <div class="text-2xl font-black">750 Milyon</div>
+              <div class="text-xs uppercase tracking-widest text-white/75 mt-1">Fide Üretimi</div>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-center">
+              <div class="text-2xl font-black">28</div>
+              <div class="text-xs uppercase tracking-widest text-white/75 mt-1">Yıllık Tecrübe</div>
+            </div>
+            <div class="rounded-2xl border border-white/10 bg-white/5 p-4 text-center">
+              <div class="text-2xl font-black">12.500 m²</div>
+              <div class="text-xs uppercase tracking-widest text-white/75 mt-1">Üretim Serası</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right “info card” -->
+        <div class="md:col-span-5">
+          <div class="card rounded-3xl border border-white/10 bg-white/10 p-6 text-white shadow-2xl backdrop-blur">
+            <div class="flex items-center justify-between">
+              <div class="text-sm font-semibold text-white/80">Hızlı İletişim</div>
+              <span class="rounded-full bg-white/10 px-3 py-1 text-xs font-bold">Antalya • Aksu</span>
+            </div>
+
+            <div class="mt-5 space-y-4">
+              <a href="tel:+905337359968" class="flex items-start gap-3 rounded-2xl bg-black/20 p-4 hover:bg-black/25">
+                <span class="text-emerald-200 mt-1"><svg class="ico" aria-hidden="true"><use href="#i-phone"/></svg></span>
+                <div>
+                  <div class="text-xs uppercase tracking-widest text-white/70">Telefon</div>
+                  <div class="text-lg font-black">+90 533 735 99 68</div>
+                </div>
+              </a>
+
+              <a href="mailto:iklimfide@gmail.com" class="flex items-start gap-3 rounded-2xl bg-black/20 p-4 hover:bg-black/25">
+                <span class="text-emerald-200 mt-1"><svg class="ico" aria-hidden="true"><use href="#i-env"/></svg></span>
+                <div>
+                  <div class="text-xs uppercase tracking-widest text-white/70">E-Posta</div>
+                  <div class="text-lg font-black">iklimfide@gmail.com</div>
+                </div>
+              </a>
+
+              <div class="flex items-start gap-3 rounded-2xl bg-black/20 p-4">
+                <span class="text-emerald-200 mt-1"><svg class="ico" aria-hidden="true"><use href="#i-loc"/></svg></span>
+                <div>
+                  <div class="text-xs uppercase tracking-widest text-white/70">Adres</div>
+                  <div class="font-semibold leading-snug">
+                    Çalkaya Mahallesi Bahar Sokak No:14A<br/>07110 Aksu / Antalya
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-6">
+              <a href="https://maps.app.goo.gl/TCYqJUhBqL3Jhr9Y6" target="_blank" rel="noopener"
+                 class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-white px-5 py-4 text-sm font-black text-black hover:bg-zinc-100">
+                Haritada Gör / Yol Tarifi <svg class="ico" aria-hidden="true"><use href="#i-map"/></svg>
+              </a>
+            </div>
+
+            <p class="mt-4 text-xs text-white/70 leading-relaxed">
+              Not: Siparişiniz olmasa da, yıl boyunca müşterilerimizin marul fidesi ihtiyaçlarını karşılamaya devam ediyoruz.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="hakkimizda" class="py-16">
+    <div class="mx-auto max-w-6xl px-4">
+      <div class="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
+        <div>
+          <div class="inline-flex items-center gap-2 rounded-full px-4 py-2 badge text-sm font-bold">
+            <svg class="ico" aria-hidden="true"><use href="#i-seed"/></svg> Kuruluş: 2007
+          </div>
+          <h2 class="mt-4 text-3xl font-black tracking-tight md:text-4xl">Hakkımızda</h2>
+          <p class="mt-2 max-w-2xl text-zinc-600">
+            Üretim odağımız: doğru fide, doğru zamanda, sürdürülebilir tedarik.
+          </p>
+        </div>
+
+        <div class="flex gap-3">
+          <div class="rounded-2xl border border-black/10 bg-white px-5 py-4">
+            <div class="text-xs uppercase tracking-widest text-zinc-500">Kapasite</div>
+            <div class="text-xl font-black">45.000.000 / yıl</div>
+          </div>
+          <div class="rounded-2xl border border-black/10 bg-white px-5 py-4">
+            <div class="text-xs uppercase tracking-widest text-zinc-500">Tesis</div>
+            <div class="text-xl font-black">9.000 m²</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-10 grid gap-8 md:grid-cols-12">
+        <div class="md:col-span-7">
+          <div class="card rounded-3xl border border-black/10 bg-white p-8">
+            <h3 class="text-xl font-black text-[color:var(--marul)]">İklim Fide - Arif Güvenç Tarım, Ltd. Şti.</h3>
+
+            <div class="mt-4 space-y-4 text-zinc-700 leading-relaxed">
+              <p>
+                İklim Fide 2007 yılında fide sektöründe farklı firmalarda uzun yıllar üretim mühendisi, şefi ve üretim müdürü
+                olarak hizmet vermiş, fide konusunda büyük deneyime sahip <strong>Nazlı GÜVENÇ</strong> ve tohum sektöründe
+                yıllarını vermiş <strong>Arif GÜVENÇ</strong> tarafından kurulmuştur.
+              </p>
+              <p>
+                2008 yılı haziran ayında başka firmaya ait bir fide tesisini kiralayarak başlayan fidecilik serüvenimiz,
+                2009 yılında 9.000 m² alan üzerinde 4.000 m² sera olmak üzere kendi fide tesisimizde devam etmektedir.
+                Bugün yıllık 45 Milyon adet fide/yıl kapasitemizle ağırlıklı Akdeniz sahil şeridi ve Ege Bölgesi'nde olmak üzere
+                tüm Türkiye'deki müşterilerimizin fidelerini tedarik etmekteyiz.
+              </p>
+
+              <p>
+                Bugün geldiğimiz noktada bütün sebze fidelerinde uzmanlaşarak kaliteli ve gününde fide yetiştirmekle beraber
+                özellikle <strong>marul fidesi konusunda uzmanlaşmış olup</strong> siparişiniz olmasa da bütün yıl boyunca
+                müşterilerimizin marul fidesi ihtiyaçlarını karşılamaktayız.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="md:col-span-5">
+          <div class="card rounded-3xl border border-black/10 bg-white p-8">
+            <h4 class="text-sm font-black uppercase tracking-widest text-zinc-500">Neden İklim Fide?</h4>
+
+            <div class="mt-5 space-y-4">
+              <div class="flex gap-3">
+                <div class="mt-1 h-10 w-10 shrink-0 rounded-2xl bg-[color:var(--marul)]/10 text-[color:var(--marul)] flex items-center justify-center">
+                  <svg class="ico" aria-hidden="true"><use href="#i-award"/></svg>
+                </div>
+                <div>
+                  <div class="font-black">Uzmanlık</div>
+                  <div class="text-sm text-zinc-600">Marul fidesinde yıl boyu tedarik odağı.</div>
+                </div>
+              </div>
+
+              <div class="flex gap-3">
+                <div class="mt-1 h-10 w-10 shrink-0 rounded-2xl bg-[color:var(--marul)]/10 text-[color:var(--marul)] flex items-center justify-center">
+                  <svg class="ico" aria-hidden="true"><use href="#i-clock"/></svg>
+                </div>
+                <div>
+                  <div class="font-black">Gününde Üretim</div>
+                  <div class="text-sm text-zinc-600">Planlı üretim, zamanında teslim prensibi.</div>
+                </div>
+              </div>
+
+              <div class="flex gap-3">
+                <div class="mt-1 h-10 w-10 shrink-0 rounded-2xl bg-[color:var(--marul)]/10 text-[color:var(--marul)] flex items-center justify-center">
+                  <svg class="ico" aria-hidden="true"><use href="#i-truck"/></svg>
+                </div>
+                <div>
+                  <div class="font-black">Tedarik Ağı</div>
+                  <div class="text-sm text-zinc-600">Akdeniz–Ege odaklı, tüm Türkiye gönderim.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-7">
+              <a href="https://wa.me/905337359968" target="_blank" rel="noopener"
+                 class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[color:var(--marul)] px-5 py-4 text-sm font-black text-white hover:bg-[color:var(--marul-2)]">
+                <svg class="ico" aria-hidden="true"><use href="#i-wa"/></svg> WhatsApp’tan Yazın
+              </a>
+            </div>
+
+            <p class="mt-4 text-xs text-zinc-500">
+              Şirket/kurucu bilgileri ve üretim metrikleri, sağladığınız içerikten alınmıştır.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUCTS -->
+  <section id="urunler" class="py-16 bg-white">
+    <div class="mx-auto max-w-6xl px-4">
+      <div class="flex items-end justify-between gap-6">
+        <div>
+          <div class="inline-flex items-center gap-2 rounded-full px-4 py-2 badge text-sm font-bold">
+            <svg class="ico" aria-hidden="true"><use href="#i-leaf"/></svg> Ürünlerimiz
+          </div>
+          <h2 class="mt-4 text-3xl font-black tracking-tight md:text-4xl">Marul Fidesi Çeşitleri</h2>
+          <p class="mt-2 text-zinc-600">Detaylı görseller için üzerine tıklayıp büyütebilirsiniz. <a href="marul-fidesi.html" class="text-[color:var(--marul)] font-bold hover:underline">Marul fidesi hakkında →</a></p>
+        </div>
+
+        <a href="#iletisim" class="hidden md:inline-flex items-center gap-2 rounded-2xl border border-black/10 bg-zinc-50 px-5 py-3 text-sm font-bold hover:bg-zinc-100">
+          Fiyat/Sipariş Sor <svg class="ico" aria-hidden="true"><use href="#i-arr"/></svg>
+        </a>
+      </div>
+
+      <div class="mt-10 grid gap-6 md:grid-cols-3">
+        <!-- Product card -->
+        <article class="card overflow-hidden rounded-3xl border border-black/10 bg-white">
+          <button class="w-full text-left" onclick="openModal(document.getElementById('p1'))" aria-label="Kanaryole Kıvırcık Marul fidesi görselini büyüt">
+            <img id="p1" src="resimler/kivircik-400.webp" srcset="resimler/kivircik-400.webp 400w, resimler/kivircik-800.webp 800w" sizes="(min-width:768px) 33vw, 100vw" data-full="resimler/kivircik.webp" onerror="setFallback(this)" loading="lazy"
+                 class="h-64 w-full object-cover" alt="Kanaryole Kıvırcık Marul Fidesi" width="400" height="256" />
+          </button>
+          <div class="p-6">
+            <div class="text-xs font-bold uppercase tracking-widest text-zinc-500">Marul Fidesi</div>
+            <h3 class="mt-2 text-lg font-black text-[color:var(--marul)]">Kanaryole Kıvırcık Marul Fidesi</h3>
+            <p class="mt-2 text-sm text-zinc-600">
+              Yoğun yaprak dokusu ve hızlı adaptasyon odağıyla tedarik.
+            </p>
+            <div class="mt-5 flex flex-wrap gap-3">
+              <a class="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[color:var(--marul)] px-4 py-3 text-sm font-black text-white hover:bg-[color:var(--marul-2)]"
+                 href="https://wa.me/905337359968" target="_blank" rel="noopener">
+                <svg class="ico" aria-hidden="true"><use href="#i-wa"/></svg> Sipariş
+              </a>
+              <a class="inline-flex items-center justify-center gap-2 rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-bold hover:bg-zinc-50"
+                 href="urunler/kivircik-marul-fidesi/">
+                <svg class="ico" aria-hidden="true"><use href="#i-arr"/></svg> Detay
+              </a>
+              <button class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-4 py-3 hover:bg-zinc-50"
+                      onclick="openModal(document.getElementById('p1'))" aria-label="Görseli büyüt">
+                <svg class="ico" aria-hidden="true"><use href="#i-exp"/></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article class="card overflow-hidden rounded-3xl border border-black/10 bg-white">
+          <button class="w-full text-left" onclick="openModal(document.getElementById('p2'))" aria-label="Presidential ve Cospirina Yedikule Düz Marul görselini büyüt">
+            <img id="p2" src="resimler/yedikule-400.webp" srcset="resimler/yedikule-400.webp 400w, resimler/yedikule-800.webp 800w" sizes="(min-width:768px) 33vw, 100vw" data-full="resimler/yedikule.webp" onerror="setFallback(this)" loading="lazy"
+                 class="h-64 w-full object-cover" alt="Presidential ve Cospirina Yedikule Düz Marul Fidesi" width="400" height="256" />
+          </button>
+          <div class="p-6">
+            <div class="text-xs font-bold uppercase tracking-widest text-zinc-500">Marul Fidesi</div>
+            <h3 class="mt-2 text-lg font-black text-[color:var(--marul)]">Yedikule Düz Marul Fidesi</h3>
+            <p class="mt-2 text-sm text-zinc-600">
+              Düz yaprak formu ve saha performansı için dengeli üretim.
+            </p>
+            <div class="mt-5 flex flex-wrap gap-3">
+              <a class="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[color:var(--marul)] px-4 py-3 text-sm font-black text-white hover:bg-[color:var(--marul-2)]"
+                 href="https://wa.me/905337359968" target="_blank" rel="noopener">
+                <svg class="ico" aria-hidden="true"><use href="#i-wa"/></svg> Sipariş
+              </a>
+              <a class="inline-flex items-center justify-center gap-2 rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-bold hover:bg-zinc-50"
+                 href="urunler/yedikule-marul-fidesi/">
+                <svg class="ico" aria-hidden="true"><use href="#i-arr"/></svg> Detay
+              </a>
+              <button class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-4 py-3 hover:bg-zinc-50"
+                      onclick="openModal(document.getElementById('p2'))" aria-label="Görseli büyüt">
+                <svg class="ico" aria-hidden="true"><use href="#i-exp"/></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <article class="card overflow-hidden rounded-3xl border border-black/10 bg-white">
+          <button class="w-full text-left" onclick="openModal(document.getElementById('p3'))" aria-label="Vernelya Iceberg Marul görselini büyüt">
+            <img id="p3" src="resimler/iceberg-400.webp" srcset="resimler/iceberg-400.webp 400w, resimler/iceberg-800.webp 800w" sizes="(min-width:768px) 33vw, 100vw" data-full="resimler/iceberg.webp" onerror="setFallback(this)" loading="lazy"
+                 class="h-64 w-full object-cover" alt="Vernalia İceberg Marul Fidesi" width="400" height="256" />
+          </button>
+          <div class="p-6">
+            <div class="text-xs font-bold uppercase tracking-widest text-zinc-500">Marul Fidesi</div>
+            <h3 class="mt-2 text-lg font-black text-[color:var(--marul)]">Vernelia İceberg Marul Fidesi</h3>
+            <p class="mt-2 text-sm text-zinc-600">
+              Sıkı baş formu için uygun fideler; sevkiyat planına göre hazırlanır.
+            </p>
+            <div class="mt-5 flex gap-3">
+              <a class="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[color:var(--marul)] px-4 py-3 text-sm font-black text-white hover:bg-[color:var(--marul-2)]"
+                 href="https://wa.me/905337359968" target="_blank" rel="noopener">
+                <svg class="ico" aria-hidden="true"><use href="#i-wa"/></svg> Sipariş
+              </a>
+              <button class="inline-flex items-center justify-center rounded-2xl border border-black/10 bg-white px-4 py-3 hover:bg-zinc-50"
+                      onclick="openModal(document.getElementById('p3'))" aria-label="Görseli büyüt">
+                <svg class="ico" aria-hidden="true"><use href="#i-exp"/></svg>
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section id="galeri" class="py-16">
+    <div class="mx-auto max-w-6xl px-4">
+      <div class="flex items-end justify-between gap-6">
+        <div>
+          <div class="inline-flex items-center gap-2 rounded-full px-4 py-2 badge text-sm font-bold">
+            <svg class="ico" aria-hidden="true"><use href="#i-img"/></svg> Galeri
+          </div>
+          <h2 class="mt-4 text-3xl font-black tracking-tight md:text-4xl">Üretimden Kareler</h2>
+          <p class="mt-2 text-zinc-600">Görselleri büyütmek için tıklayın.</p>
+        </div>
+      </div>
+
+      <div class="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
+        <button class="card overflow-hidden rounded-3xl border border-black/10 bg-white" onclick="openModal(document.getElementById('g1'))">
+          <img id="g1" src="resimler/galeri1.webp" onerror="setFallback(this)" loading="lazy" class="h-40 w-full object-cover md:h-44" alt="İklim Fide marul fidesi üretim serası" width="400" height="176"/>
+        </button>
+        <button class="card overflow-hidden rounded-3xl border border-black/10 bg-white" onclick="openModal(document.getElementById('g2'))">
+          <img id="g2" src="resimler/galeri2.webp" onerror="setFallback(this)" loading="lazy" class="h-40 w-full object-cover md:h-44" alt="Marul fidesi yetiştirme tesisi Aksu" width="400" height="176"/>
+        </button>
+        <button class="card overflow-hidden rounded-3xl border border-black/10 bg-white" onclick="openModal(document.getElementById('g3'))">
+          <img id="g3" src="resimler/galeri3.webp" onerror="setFallback(this)" loading="lazy" class="h-40 w-full object-cover md:h-44" alt="Marul fidesi üretiminden görüntü" width="400" height="176"/>
+        </button>
+        <button class="card overflow-hidden rounded-3xl border border-black/10 bg-white" onclick="openModal(document.getElementById('g4'))">
+          <img id="g4" src="resimler/galeri4.webp" onerror="setFallback(this)" loading="lazy" class="h-40 w-full object-cover md:h-44" alt="İklim Fide marul fidesi Antalya" width="400" height="176"/>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- BLOG (simple, one-page preview) -->
+  <section id="blog" class="py-16 bg-white">
+    <div class="mx-auto max-w-6xl px-4">
+      <div class="flex items-end justify-between gap-6">
+        <div>
+          <div class="inline-flex items-center gap-2 rounded-full px-4 py-2 badge text-sm font-bold">
+            <svg class="ico" aria-hidden="true"><use href="#i-pen"/></svg> Blog
+          </div>
+          <h2 class="mt-4 text-3xl font-black tracking-tight md:text-4xl">Kısa Bilgiler</h2>
+         
+        </div>
+      </div>
+
+      <div class="mt-10 grid gap-6 md:grid-cols-3">
+        <article class="card rounded-3xl border border-black/10 bg-white p-7">
+          <div class="text-xs font-bold uppercase tracking-widest text-zinc-500">Üretim</div>
+          <h3 class="mt-2 text-lg font-black">Fideyi “gününde” yetiştirmek neden kritik?</h3>
+          <p class="mt-2 text-sm text-zinc-600">
+            Planlı üretim, doğru sevkiyat ve sahada daha dengeli başlangıç performansı sağlar.
+          </p>
+        </article>
+        <article class="card rounded-3xl border border-black/10 bg-white p-7">
+          <div class="text-xs font-bold uppercase tracking-widest text-zinc-500">Marul</div>
+          <h3 class="mt-2 text-lg font-black">Marul fidesinde yıl boyu tedarik</h3>
+          <p class="mt-2 text-sm text-zinc-600">
+            Siparişiniz olmasa bile düzenli stok yaklaşımıyla ihtiyaç anında hızlı tedarik hedeflenir.
+          </p>
+        </article>
+        <article class="card rounded-3xl border border-black/10 bg-white p-7">
+          <div class="text-xs font-bold uppercase tracking-widest text-zinc-500">Sevkiyat</div>
+          <h3 class="mt-2 text-lg font-black">Türkiye Geneli Lojistik</h3>
+          <p class="mt-2 text-sm text-zinc-600">
+            Türkiye geneline gönderim yapılır.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section id="sss" class="py-16">
+    <div class="mx-auto max-w-6xl px-4">
+      <div>
+        <div class="inline-flex items-center gap-2 rounded-full px-4 py-2 badge text-sm font-bold">
+          <svg class="ico" aria-hidden="true"><use href="#i-q"/></svg> SSS
+        </div>
+        <h2 class="mt-4 text-3xl font-black tracking-tight md:text-4xl">Sık Sorulan Sorular</h2>
+        <p class="mt-2 text-zinc-600">İletişime geçmeden önce hızlıca bakabileceğiniz kısa cevaplar.</p>
+      </div>
+
+      <div class="mt-10 grid gap-4 md:grid-cols-2">
+        <details class="card rounded-3xl border border-black/10 bg-white p-6">
+          <summary class="cursor-pointer list-none font-black">
+            Yıl boyu marul fidesi temin edebilir miyim?
+          </summary>
+          <p class="mt-3 text-sm text-zinc-600 leading-relaxed">
+            Evet. İçerikte de belirtildiği gibi, marul fidesinde uzmanlaşarak sipariş olmasa bile yıl boyunca ihtiyaçları karşılamayı hedefliyoruz.
+          </p>
+        </details>
+
+        <details class="card rounded-3xl border border-black/10 bg-white p-6">
+          <summary class="cursor-pointer list-none font-black">
+            Hangi bölgelere gönderim yapıyorsunuz?
+          </summary>
+          <p class="mt-3 text-sm text-zinc-600 leading-relaxed">
+            Tüm Türkiye'ne geneline tedarik sağlanmaktadır.
+          </p>
+        </details>
+
+        <details class="card rounded-3xl border border-black/10 bg-white p-6">
+          <summary class="cursor-pointer list-none font-black">
+            Kapasiteniz nedir?
+          </summary>
+          <p class="mt-3 text-sm text-zinc-600 leading-relaxed">
+            Yıllık üretim kapasitesimiz 45.000.000 adet fidedir.
+          </p>
+        </details>
+
+        <details class="card rounded-3xl border border-black/10 bg-white p-6">
+          <summary class="cursor-pointer list-none font-black">
+            En hızlı nasıl sipariş verebilirim?
+          </summary>
+          <p class="mt-3 text-sm text-zinc-600 leading-relaxed">
+            WhatsApp hattı üzerinden yazabilirsiniz: <a class="font-bold text-[color:var(--marul)] hover:underline" href="https://wa.me/905337359968" target="_blank" rel="noopener">+90 533 735 99 68</a>.
+          </p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="iletisim" class="py-16 bg-white">
+    <div class="mx-auto max-w-6xl px-4">
+      <div>
+        <div class="inline-flex items-center gap-2 rounded-full px-4 py-2 badge text-sm font-bold">
+          <svg class="ico" aria-hidden="true"><use href="#i-loc"/></svg> İletişim
+        </div>
+        <h2 class="mt-4 text-3xl font-black tracking-tight md:text-4xl">Bize Ulaşın</h2>
+        <p class="mt-2 text-zinc-600">Sipariş, fiyat, sevkiyat planı ve stok için hızlıca yazın.</p>
+      </div>
+
+      <div class="mt-10 grid gap-8 md:grid-cols-12 md:items-stretch">
+        <div class="md:col-span-12 md:max-w-xl md:mx-auto space-y-4">
+          <div class="card rounded-3xl border border-black/10 bg-zinc-50 p-6">
+            <div class="flex items-start gap-4">
+              <div class="h-11 w-11 rounded-2xl bg-[color:var(--marul)]/10 text-[color:var(--marul)] flex items-center justify-center">
+                <svg class="ico" aria-hidden="true"><use href="#i-loc"/></svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold uppercase tracking-widest text-zinc-500">Adres</div>
+                <div class="mt-1 font-black leading-snug">Çalkaya Mahallesi Bahar Sokak No:14A<br/>07110 Aksu / Antalya</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card rounded-3xl border border-black/10 bg-zinc-50 p-6">
+            <div class="flex items-start gap-4">
+              <div class="h-11 w-11 rounded-2xl bg-[color:var(--marul)]/10 text-[color:var(--marul)] flex items-center justify-center">
+                <svg class="ico" aria-hidden="true"><use href="#i-phone"/></svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold uppercase tracking-widest text-zinc-500">Telefon</div>
+                <a class="mt-1 inline-block text-xl font-black text-[color:var(--marul)] hover:underline" href="tel:+905337359968">
+                  +90 533 735 99 68
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="card rounded-3xl border border-black/10 bg-zinc-50 p-6">
+            <div class="flex items-start gap-4">
+              <div class="h-11 w-11 rounded-2xl bg-[color:var(--marul)]/10 text-[color:var(--marul)] flex items-center justify-center">
+                <svg class="ico" aria-hidden="true"><use href="#i-env"/></svg>
+              </div>
+              <div>
+                <div class="text-xs font-bold uppercase tracking-widest text-zinc-500">E-Posta</div>
+                <a class="mt-1 inline-block font-bold hover:underline" href="mailto:iklimfide@gmail.com">
+                  iklimfide@gmail.com
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <a href="https://wa.me/905337359968" target="_blank" rel="noopener"
+             class="card inline-flex w-full items-center justify-center gap-3 rounded-3xl bg-[#25D366] px-6 py-5 text-sm font-black text-white hover:brightness-95">
+            <span class="text-2xl"><svg class="ico" aria-hidden="true"><use href="#i-wa"/></svg></span> WhatsApp Hattı
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="relative overflow-hidden bg-[color:var(--ink)] text-white">
+    <div class="mx-auto max-w-6xl px-4 py-12">
+      <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+        <div>
+          <div class="text-lg font-black tracking-tight">İKLİM FİDE</div>
+          <div class="mt-1 text-sm text-white/70">© 2026 İklim Fide • Tüm Hakları Saklıdır.</div>
+        </div>
+        <div class="flex flex-wrap gap-3 text-sm">
+          <a class="rounded-full bg-white/10 px-4 py-2 hover:bg-white/15 hover:underline" href="#anasayfa">Yukarı</a>
+          <a class="rounded-full bg-white/10 px-4 py-2 hover:bg-white/15 hover:underline" href="urunler/kivircik-marul-fidesi/">Ürünler</a>
+          <a class="rounded-full bg-white/10 px-4 py-2 hover:bg-white/15 hover:underline" href="#iletisim">İletişim</a>
+        </div>
+      </div>
+    </div>
+    <div class="absolute inset-0 grain opacity-70" style="pointer-events:none"></div>
+  </footer>
+
+  <!-- Floating WhatsApp -->
+  <a href="https://wa.me/905337359968" target="_blank" rel="noopener"
+     class="fixed bottom-6 right-6 z-[1000] grid h-16 w-16 place-items-center rounded-full bg-[#25D366] text-white shadow-2xl transition hover:scale-110 active:scale-95"
+     aria-label="WhatsApp ile iletişim">
+    <span class="text-4xl"><svg class="ico" aria-hidden="true"><use href="#i-wa"/></svg></span>
+  </a>
+
+</body>
+</html>

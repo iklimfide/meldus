@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "build": "node scripts/write-panel-config.js"
+  },
+  "dependencies": {
+    "sharp": "^0.34.5"
+  }
+}

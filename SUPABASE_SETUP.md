@@ -1,0 +1,145 @@
+# İklim Fide Panel – Supabase Kurulum Rehberi
+
+Bu dosya açıklama içindir. **SQL çalıştırmak için `supabase_schema.sql` dosyasını kullanın.**
+
+Supabase Dashboard → **SQL Editor** → New query → `supabase_schema.sql` dosyasının **içeriğini yapıştırın** (bu .md dosyasını değil) → Run.
+
+---
+
+## 1. Tablolar
+
+`supabase_schema.sql` içinde tanımlı; tek seferde çalıştırılabilir.
+
+### 1.1 `fide_stok`
+
+```sql
+create table if not exists public.fide_stok (
+  id uuid primary key default gen_random_uuid(),
+  cesit text not null,
+  ekim_tarihi date,
+  teslim_tarihi date,
+  ekilen_miktar int default 0,
+  cikan_fide int default 0,
+  extra_fide int default 0,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+-- Güncellenme zamanı trigger (isteğe bağlı)
+create or replace function public.set_updated_at()
+returns trigger as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$ language plpgsql;
+
+create trigger fide_stok_updated_at
+  before update on public.fide_stok
+  for each row execute function public.set_updated_at();
+```
+
+### 1.2 `satislar`
+
+```sql
+create table if not exists public.satislar (
+  id uuid primary key default gen_random_uuid(),
+  fide_id uuid not null references public.fide_stok(id) on delete restrict,
+  musteri_adi text not null,
+  miktar int not null check (miktar > 0),
+  satis_tarihi timestamptz default now(),
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_satislar_fide_id on public.satislar(fide_id);
+create index if not exists idx_satislar_satis_tarihi on public.satislar(satis_tarihi desc);
+```
+
+### 1.3 `cop_kayitlari`
+
+```sql
+create table if not exists public.cop_kayitlari (
+  id uuid primary key default gen_random_uuid(),
+  fide_id uuid not null references public.fide_stok(id) on delete restrict,
+  miktar int not null check (miktar > 0),
+  tarih timestamptz default now(),
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_cop_kayitlari_fide_id on public.cop_kayitlari(fide_id);
+create index if not exists idx_cop_kayitlari_tarih on public.cop_kayitlari(tarih desc);
+```
+
+---
+
+## 2. RLS (Row Level Security) – Zorunlu
+
+Tablolara erişim için RLS açıp politikaları ekleyin. **Anon key** ile giriş yapıyorsanız, aşağıdaki politikalar “anon” rolüne okuma/yazma verir. Sadece yetkili kullanıcılara açmak isterseniz `auth.role() = 'authenticated'` veya kendi rolünüzü kullanın.
+
+### 2.1 `fide_stok`
+
+```sql
+alter table public.fide_stok enable row level security;
+
+-- Okuma: herkese (anon/authenticated)
+create policy "fide_stok_select"
+  on public.fide_stok for select
+  using (true);
+
+-- Ekleme
+create policy "fide_stok_insert"
+  on public.fide_stok for insert
+  with check (true);
+
+-- Güncelleme (inline düzenleme + extra_fide düşme)
+create policy "fide_stok_update"
+  on public.fide_stok for update
+  using (true)
+  with check (true);
+
+-- Silme (isterseniz kapatabilirsiniz)
+create policy "fide_stok_delete"
+  on public.fide_stok for delete
+  using (true);
+```
+
+### 2.2 `satislar`
+
+```sql
+alter table public.satislar enable row level security;
+
+create policy "satislar_select"
+  on public.satislar for select
+  using (true);
+
+create policy "satislar_insert"
+  on public.satislar for insert
+  with check (true);
+```
+
+### 2.3 `cop_kayitlari`
+
+```sql
+alter table public.cop_kayitlari enable row level security;
+
+create policy "cop_kayitlari_select"
+  on public.cop_kayitlari for select
+  using (true);
+
+create policy "cop_kayitlari_insert"
+  on public.cop_kayitlari for insert
+  with check (true);
+```
+
+---
+
+## 3. Panel tarafında config
+
+- `panel/config.example.js` dosyasını `panel/config.js` olarak kopyalayın.
+- Supabase Dashboard → Project Settings → API içinden **Project URL** ve **anon public** key’i alıp `config.js` içinde `SUPABASE_URL` ve `SUPABASE_ANON_KEY` olarak yazın.
+- `config.js` dosyasını Git’e eklemeyin (proje `.gitignore` içinde tanımlı).
+- API anahtarlarını koda açık yazmayın.
+- Hata alırsanız Supabase Dashboard → Table Editor → ilgili tablo → “RLS disabled” olup olmadığını kontrol edin; politikaların `true` ile tanımlı olduğundan emin olun.
+- “Permission denied for table …” görürseniz ilgili tablo için `SELECT`/`INSERT`/`UPDATE` politikası eksik veya yanlış demektir; yukarıdaki SQL’i tekrar uygulayın.
+
+Bu yapı panelin güvenli ve tutarlı çalışması için yeterlidir.
