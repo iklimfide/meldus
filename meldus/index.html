@@ -75,7 +75,13 @@
       padding: 0.5rem 1.5rem;
       background: #f9fafb;
       border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
     }
+    .panel-nav-wrap .panel-filters-center { flex: 1; display: flex; justify-content: center; align-items: center; min-width: 0; }
     .panel-nav-list { display: flex; flex-wrap: wrap; gap: 0.25rem; }
     .panel-nav-list .panel-nav {
       padding: 0.5rem 1rem;
@@ -106,7 +112,7 @@
     .panel-filters .filter-btn {
       padding: 0.25rem 0.75rem;
       border-radius: 0.25rem;
-      font-size: 1rem;
+      font-size: 20px;
       font-weight: 700;
       text-transform: uppercase;
       border: 1px solid #d1d5db;
@@ -116,7 +122,7 @@
     }
     .panel-filters .filter-btn:hover { background: #15803d; color: #fff; border-color: #15803d; }
     .panel-filters .filter-btn.active { background: #15803d; color: #fff; border-color: #15803d; }
-    .panel-toolbar-right { display: flex; align-items: center; gap: 0.5rem; }
+    .panel-toolbar-right { display: flex; align-items: center; gap: 0.5rem; margin-left: auto; }
     .search-wrap { position: relative; max-width: 28rem; width: 100%; }
     .search-wrap .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 1.25rem; color: #9ca3af; }
     .search-wrap input {
@@ -145,16 +151,21 @@
     .btn-toplu-sil {
       padding: 0.5rem 1rem;
       border-radius: 0.5rem;
-      font-size: 1rem;
+      font-size: 1.125rem;
       font-weight: 600;
       background: var(--panel-red);
       color: #fff;
       border: none;
       cursor: pointer;
+      white-space: nowrap;
     }
     .btn-toplu-sil:hover:not(:disabled) { background: #b91c1c; }
     .btn-toplu-sil:disabled { opacity: 0.5; cursor: not-allowed; }
-    .th-sec { width: 2.5rem; text-align: center; }
+    .th-sec { width: 2.5rem; min-width: 2.5rem; max-width: 2.5rem; text-align: center; }
+    #mainTable th:last-of-type,
+    #mainTable td:last-of-type { width: 2.5rem; min-width: 2.5rem; max-width: 2.5rem; text-align: center; white-space: nowrap; }
+    #mainTable th:nth-last-child(2),
+    #mainTable td:nth-last-child(2) { min-width: 22rem; white-space: nowrap; }
     .td-sec { text-align: center; vertical-align: middle; }
     .stok-secilen-info { background: #fef2f2; color: #991b1b; font-size: 0.9rem; }
 
@@ -170,7 +181,7 @@
       font-size: 1.125rem;
       table-layout: auto;
     }
-    .panel-table thead { background: #f3f4f6; border-bottom: 2px solid #e5e7eb; }
+    .panel-table thead { background: #e0f2fe; border-bottom: 2px solid #e5e7eb; }
     .panel-table th {
       padding: 1rem;
       font-size: 15px;
@@ -184,8 +195,8 @@
       border-right: 1px solid #e5e7eb;
       transition: background 0.2s;
     }
-    .panel-table th:hover { background: #e5e7eb; }
-    .panel-table th:last-of-type { background: #e5e7eb; border-right: none; min-width: 22rem; white-space: nowrap; }
+    .panel-table th:hover { background: #bae6fd; }
+    .panel-table th:last-of-type { background: #e0f2fe; border-right: none; min-width: 22rem; white-space: nowrap; }
     .panel-table td:last-of-type { min-width: 22rem; }
     .panel-table .th-gizle { width: 4.5rem; min-width: 4.5rem; }
     .panel-table .td-gizle { vertical-align: middle; }
@@ -223,6 +234,7 @@
       border-color: transparent;
       background: #fff !important;
     }
+    .panel-table input.cell-edit { width: 100%; max-width: 100%; box-sizing: border-box; padding: 0.25rem 0.35rem; border: 1px solid #d1d5db; border-radius: 4px; }
     .panel-table input.cell.cell-num { max-width: 5.5rem; width: 5.5rem; box-sizing: border-box; }
     .panel-table td:first-child input.cell { font-weight: 700; color: #1f2937; text-transform: uppercase; }
     .cell-extra { background: #dcfce7; }
@@ -250,7 +262,12 @@
     .panel-table .btn-kime-satildi,
     .panel-table .btn-aktar,
     .panel-table .btn-onceki-aktar,
-    .panel-table .btn-cope-at {
+    .panel-table .btn-cope-at,
+    .panel-table .btn-degistir,
+    .panel-table .btn-sil,
+    .panel-table .btn-gizle,
+    .panel-table .btn-degistir-kaydet,
+    .panel-table .btn-degistir-iptal {
       padding: 0.4rem 0.6rem;
       border-radius: 9999px;
       font-size: 1rem;
@@ -270,6 +287,16 @@
     .btn-onceki-aktar:hover { background: #0f766e; }
     .btn-kime-satildi { background: #ea580c; color: #fff; }
     .btn-kime-satildi:hover { background: #c2410c; }
+    .btn-degistir { background: #7c3aed; color: #fff; }
+    .btn-degistir:hover { background: #6d28d9; }
+    .btn-sil { background: #dc2626; color: #fff; }
+    .btn-sil:hover { background: #b91c1c; }
+    .btn-gizle { background: #6b7280; color: #fff; }
+    .btn-gizle:hover { background: #4b5563; }
+    .btn-degistir-kaydet { background: #15803d; color: #fff; }
+    .btn-degistir-kaydet:hover { background: #166534; }
+    .btn-degistir-iptal { background: #6b7280; color: #fff; }
+    .btn-degistir-iptal:hover { background: #4b5563; }
     .empty-state { padding: 2rem; text-align: center; color: #6b7280; }
 
     .modal-backdrop {
@@ -299,19 +326,27 @@
     .modal-box.modal-list-box { border-top: 4px solid #6b7280; max-width: 640px; }
     .modal-box.modal-kime-satildi-box { max-width: 95vw; width: 95%; min-width: 320px; }
     .modal-kime-satildi-box .modal-list-body { max-height: 70vh; overflow: auto; }
-    .modal-kime-satildi-box .modal-list-body table { min-width: 100%; table-layout: fixed; }
+    .modal-kime-satildi-box .modal-list-body table { min-width: 100%; table-layout: auto; }
     .modal-kime-satildi-box .modal-list-body th:nth-child(1),
-    .modal-kime-satildi-box .modal-list-body td:nth-child(1) { text-align: left; min-width: 8rem; }
+    .modal-kime-satildi-box .modal-list-body td:nth-child(1) { text-align: left; min-width: 7rem; }
     .modal-kime-satildi-box .modal-list-body th:nth-child(3),
     .modal-kime-satildi-box .modal-list-body td:nth-child(3),
     .modal-kime-satildi-box .modal-list-body th:nth-child(4),
     .modal-kime-satildi-box .modal-list-body td:nth-child(4) { white-space: nowrap; }
-    .modal-kime-satildi-box .btn-satis-iptal { padding: 0.35rem 0.6rem; font-size: 0.9rem; background: #dc2626; color: #fff; border: none; border-radius: 0.375rem; cursor: pointer; }
+    .modal-kime-satildi-box .modal-list-body th:nth-child(6),
+    .modal-kime-satildi-box .modal-list-body td:nth-child(6) { max-width: 12rem; overflow: hidden; text-overflow: ellipsis; }
+    .modal-kime-satildi-box .modal-list-body th:nth-child(7),
+    .modal-kime-satildi-box .modal-list-body td:nth-child(7) { min-width: 20rem; white-space: nowrap; }
+    .modal-kime-satildi-box .btn-satis-iptal { padding: 0.35rem 0.6rem; font-size: 0.9rem; background: #dc2626; color: #fff; border: none; border-radius: 0.375rem; cursor: pointer; margin-right: 0.25rem; }
     .modal-kime-satildi-box .btn-satis-iptal:hover { background: #b91c1c; }
+    .modal-kime-satildi-box .btn-satis-degistir { padding: 0.35rem 0.6rem; font-size: 0.9rem; background: #ea580c; color: #fff; border: none; border-radius: 0.375rem; cursor: pointer; margin-right: 0.25rem; }
+    .modal-kime-satildi-box .btn-satis-degistir:hover { background: #c2410c; }
+    .modal-kime-satildi-box .btn-satis-aktar { padding: 0.35rem 0.6rem; font-size: 0.9rem; background: #0d9488; color: #fff; border: none; border-radius: 0.375rem; cursor: pointer; }
+    .modal-kime-satildi-box .btn-satis-aktar:hover { background: #0f766e; }
     .modal-kime-satildi-box .btn-teslim-edildi { padding: 0.35rem 0.6rem; font-size: 0.9rem; background: #15803d; color: #fff; border: none; border-radius: 0.375rem; cursor: pointer; margin-left: 0.25rem; }
     .modal-kime-satildi-box .btn-teslim-edildi:hover { background: #166534; }
-    .modal-box h3 { margin: 0 0 0.5rem; font-size: 1.75rem; font-weight: 900; font-style: italic; }
-    .modal-box label { display: block; font-size: 14px; font-weight: 700; color: #9ca3af; text-transform: uppercase; margin-bottom: 0.25rem; }
+    .modal-box h3 { margin: 0 0 0.5rem; font-size: 1.75rem; font-weight: 900; font-style: italic; text-align: center; }
+    .modal-box label { display: block; font-size: 14px; font-weight: 700; color: #9ca3af; text-transform: uppercase; margin-bottom: 0.25rem; text-align: center; }
     .modal-box input {
       width: 100%;
       padding: 0.5rem 0.75rem;
@@ -320,6 +355,29 @@
       margin-bottom: 1rem;
       font-size: 1.125rem;
       background: #f9fafb;
+    }
+    #modal-satis-aktar select#satis-aktar-hedef-ekim {
+      width: 100%;
+      min-height: 3.25rem;
+      padding: 0.75rem 1rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #0f766e;
+      border: 2px solid #0d9488;
+      border-radius: 0.75rem;
+      background: #f0fdfa;
+      cursor: pointer;
+      margin-bottom: 1rem;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%230d9488' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 1.5rem;
+      padding-right: 2.75rem;
+    }
+    #modal-satis-aktar select#satis-aktar-hedef-ekim option {
+      padding: 0.5rem 0.75rem;
+      font-size: 1.125rem;
     }
     .modal-box .actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
     .modal-box .actions button {
@@ -336,6 +394,23 @@
     .modal-list-body th, .modal-list-body td { text-align: center; padding: 0.5rem 0.75rem; border-bottom: 1px solid #e5e7eb; }
     .modal-list-body th { background: #f3f4f6; font-weight: 600; }
     .modal-list-body .empty-msg { color: #6b7280; padding: 1rem; text-align: center; }
+    #modal-teslim .modal-box { max-width: 95vw; width: 95%; min-width: 320px; }
+    #modal-teslim .modal-list-body { max-height: 70vh; overflow: auto; }
+    #modal-teslim .btn-teslim-et { padding: 0.35rem 0.6rem; font-size: 0.9rem; background: #15803d; color: #fff; border: none; border-radius: 0.375rem; cursor: pointer; }
+    #modal-teslim .btn-teslim-et:hover { background: #166534; }
+    #modal-teslim .panel-table th:nth-child(6),
+    #modal-teslim .panel-table td:nth-child(6) { max-width: 12rem; overflow: hidden; text-overflow: ellipsis; }
+    #modal-teslim .panel-table th:last-child,
+    #modal-teslim .panel-table td:last-child { min-width: 8rem; white-space: nowrap; }
+    #modal-teslim-edilenler .modal-box { max-width: 95vw; width: 95%; min-width: 320px; }
+    #modal-teslim-edilenler .modal-list-body { max-height: 70vh; overflow: auto; }
+    #modal-teslim-edilenler .btn-teslim-geri-al { padding: 0.35rem 0.6rem; font-size: 0.9rem; background: #ca8a04; color: #000; border: none; border-radius: 0.375rem; cursor: pointer; }
+    #modal-teslim-edilenler .btn-teslim-geri-al:hover { background: #a16207; color: #fff; }
+    #modal-teslim-adet { z-index: 1001; }
+    .modal-list-body .filter-row td { padding: 0.25rem; background: #f9fafb; vertical-align: middle; }
+    .modal-list-body .filter-row input,
+    .modal-list-body .filter-row select { width: 100%; max-width: 100%; padding: 0.35rem 0.5rem; font-size: 0.875rem; border: 1px solid #e5e7eb; border-radius: 4px; box-sizing: border-box; }
+    .modal-list-body tfoot td { font-weight: 700; background: #f3f4f6; }
     .modal-box.modal-uyari-box { border-top: 6px solid #1f2937; text-align: center; }
     .modal-uyari-box.err { border-top-color: #dc2626; }
     .modal-uyari-box .uyari-mesaj { margin: 0 0 1.25rem; font-size: 1.125rem; line-height: 1.5; color: #111827; }
@@ -358,11 +433,16 @@
     .toast.err { background: #dc2626; }
     @keyframes panel-fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-    .btn-teslim-fixed {
+    .btn-teslim-wrap {
       position: fixed;
       top: 2rem;
       right: 2.5rem;
       z-index: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-teslim-fixed {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
@@ -378,6 +458,22 @@
       transition: transform 0.2s, box-shadow 0.2s;
     }
     .btn-teslim-fixed:hover { background: #ca8a04; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
+    .btn-teslim-edilenler-fixed {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 9999px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      background: #15803d;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-teslim-edilenler-fixed:hover { background: #166534; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
 
     @media (max-width: 1024px) {
       .panel-card { margin: 0.5rem; }
@@ -392,9 +488,14 @@
   </style>
 </head>
 <body>
-  <button type="button" id="btn-teslim-fixed" class="btn-teslim-fixed" aria-label="Teslim edilecekler">
-    <span aria-hidden="true">🚚</span> Teslim edilecekler
-  </button>
+  <div class="btn-teslim-wrap">
+    <button type="button" id="btn-teslim-fixed" class="btn-teslim-fixed" aria-label="Teslim edilecekler">
+      <span aria-hidden="true">🚚</span> Teslim edilecekler
+    </button>
+    <button type="button" id="btn-teslim-edilenler-fixed" class="btn-teslim-edilenler-fixed" aria-label="Teslim edilenler">
+      <span aria-hidden="true">✓</span> Teslim edilenler
+    </button>
+  </div>
 
   <div class="panel-card">
     <header class="panel-header">
@@ -402,9 +503,6 @@
         <span class="panel-brand-name">İklim Fide</span>
         <p class="sub">Operasyonel Takip & Stok Yönetimi</p>
       </div>
-      <button type="button" class="btn-teslim panel-nav" data-view="teslim">
-        <span>🚚</span> Teslim Edilecekler
-      </button>
     </header>
 
     <div class="panel-nav-wrap">
@@ -413,19 +511,21 @@
         <button type="button" class="panel-nav" data-view="satislar">Kime Satıldı</button>
         <button type="button" class="panel-nav" data-view="cop">Çöp Kaydı</button>
       </nav>
+      <div class="panel-filters-center">
+        <div class="panel-filters">
+          <span class="panel-filters-label">Hızlı Filtre:</span>
+          <button type="button" class="filter-btn active" data-cesit="">HEPSİ</button>
+          <button type="button" class="filter-btn" data-cesit="KANARYOLE">KANARYOLE</button>
+          <button type="button" class="filter-btn" data-cesit="PRESİDENTİAL">PRESİDENTİAL</button>
+          <button type="button" class="filter-btn" data-cesit="COSPİRİNA">COSPİRİNA</button>
+          <button type="button" class="filter-btn" data-cesit="VERNELİA">VERNELİA</button>
+        </div>
+      </div>
     </div>
 
     <main class="panel-main">
       <section id="view-stok" data-view="stok" class="active">
         <div class="panel-toolbar">
-          <div class="panel-filters">
-            <span class="panel-filters-label">Hızlı Filtre:</span>
-            <button type="button" class="filter-btn active" data-cesit="">HEPSİ</button>
-            <button type="button" class="filter-btn" data-cesit="KANARYOLE">KANARYOLE</button>
-            <button type="button" class="filter-btn" data-cesit="PRESİDENTİAL">PRESİDENTİAL</button>
-            <button type="button" class="filter-btn" data-cesit="COSPİRİNA">COSPİRİNA</button>
-            <button type="button" class="filter-btn" data-cesit="VERNELİA">VERNELİA</button>
-          </div>
           <div class="panel-toolbar-right">
             <label class="gizlileri-goster-wrap">
               <input type="checkbox" id="show-hidden-rows" />
@@ -443,18 +543,17 @@
           <table class="panel-table" id="mainTable">
             <thead>
               <tr>
-                <th class="th-sec"><input type="checkbox" id="stok-select-all" title="Tümünü seç" aria-label="Tümünü seç" /></th>
-                <th class="th-gizle">Gizle</th>
                 <th class="sortable" data-sort="cesit">Çeşit ↕</th>
                 <th class="sortable" data-sort="ekim_tarihi">Ekim Tarihi ↕</th>
                 <th class="sortable" data-sort="teslim_tarihi">Teslim Tarihi ↕</th>
                 <th class="sortable" data-sort="ekilen_miktar">Ekilen fide (viyol) ↕</th>
                 <th class="sortable" data-sort="extra_fide">Extra Fide ↕</th>
                 <th>İşlemler</th>
+                <th class="th-sec"><input type="checkbox" id="stok-select-all" title="Tümünü seç" aria-label="Tümünü seç" /></th>
               </tr>
             </thead>
             <tbody id="stok-tbody"></tbody>
-            <tfoot id="stok-secilen-info" class="stok-secilen-info" style="display: none;"><tr><td colspan="8"><span id="stok-secilen-count">0</span> satır seçili</td></tr></tfoot>
+            <tfoot id="stok-secilen-info" class="stok-secilen-info" style="display: none;"><tr><td colspan="7"><span id="stok-secilen-count">0</span> satır seçili</td></tr></tfoot>
           </table>
         </div>
       </section>
@@ -514,14 +613,16 @@
   <div id="modal-sat" class="modal-backdrop" aria-hidden="true">
     <div class="modal-box modal-sat-box">
       <h3 style="color: #1e3a8a;">SATIŞ YAP</h3>
-      <label>Alıcı Kişi / Firma</label>
+      <label>Müşteri ismi</label>
       <input type="text" id="sat-musteri" placeholder="İsim Giriniz" />
-      <label>Miktar</label>
-      <input type="text" id="sat-miktar" inputmode="numeric" placeholder="örn. 10.000" maxlength="7" />
       <label>Teslim tarihi</label>
       <input type="date" id="sat-teslim-tarihi" />
+      <label>Kaç adet</label>
+      <input type="text" id="sat-miktar" inputmode="numeric" placeholder="örn. 10.000" maxlength="7" />
+      <label>Notlar</label>
+      <input type="text" id="sat-notlar" placeholder="Notlar (isteğe bağlı)" />
       <div class="actions">
-        <button type="button" data-modal-close="sat" style="background: #f3f4f6; color: #6b7280;">İPTAL</button>
+        <button type="button" data-modal-close="sat" style="background: #15803d; color: #fff;">İPTAL</button>
         <button type="button" id="btn-sat-onay" style="background: #2563eb; color: #fff; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">ONAYLA</button>
       </div>
     </div>
@@ -533,29 +634,92 @@
       <label>Çöpe Atılan Miktar</label>
       <input type="text" id="cop-miktar" inputmode="numeric" placeholder="örn. 10.000" maxlength="7" />
       <div class="actions">
-        <button type="button" data-modal-close="cop" style="background: #f3f4f6; color: #6b7280;">İPTAL</button>
+        <button type="button" data-modal-close="cop" style="background: #15803d; color: #fff;">İPTAL</button>
         <button type="button" id="btn-cop-onay" style="background: #dc2626; color: #fff; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">KAYDET</button>
       </div>
     </div>
   </div>
 
   <div id="modal-teslim" class="modal-backdrop" aria-hidden="true">
-    <div class="modal-box modal-list-box" style="max-width: 560px;">
+    <div class="modal-box modal-list-box">
       <h3 style="color: #ca8a04;">Teslim Edilecekler</h3>
       <div class="modal-list-body">
         <table class="panel-table" style="font-size: 1rem;">
           <thead>
             <tr>
-              <th style="text-align: center;">Çeşit</th>
-              <th style="text-align: center;">Teslim Tarihi</th>
-              <th style="text-align: center;">Extra Fide</th>
+              <th>Tarih</th>
+              <th>Müşteri</th>
+              <th>Ekim Tarihi</th>
+              <th>Teslim Tarihi</th>
+              <th>Adet</th>
+              <th>Not</th>
+              <th>İşlemler</th>
+            </tr>
+            <tr class="filter-row">
+              <td><select id="teslim-filter-tarih" aria-label="Tarih filtre"><option value="">Tümü</option></select></td>
+              <td><select id="teslim-filter-musteri" aria-label="Müşteri filtre"><option value="">Tümü</option></select></td>
+              <td><select id="teslim-filter-ekim" aria-label="Ekim filtre"><option value="">Tümü</option></select></td>
+              <td><select id="teslim-filter-teslim" aria-label="Teslim filtre"><option value="">Tümü</option></select></td>
+              <td><select id="teslim-filter-adet" aria-label="Adet filtre"><option value="">Tümü</option></select></td>
+              <td></td>
+              <td></td>
             </tr>
           </thead>
           <tbody id="modal-teslim-tbody"></tbody>
+          <tfoot id="modal-teslim-foot">
+            <tr><td colspan="5" class="px-4 py-2">Toplam</td><td id="modal-teslim-toplam" class="px-4 py-2">0</td><td></td></tr>
+          </tfoot>
         </table>
       </div>
       <div class="actions">
-        <button type="button" data-modal-close="teslim" style="background: #f3f4f6; color: #374151;">Kapat</button>
+        <button type="button" data-modal-close="teslim" style="background: #15803d; color: #fff;">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-teslim-adet" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-box modal-yeni-box">
+      <h3 style="color: #15803d;">Kaç adet teslim edildi?</h3>
+      <label>Teslim edilen adet</label>
+      <input type="text" id="teslim-adet-miktar" inputmode="numeric" placeholder="örn. 10.000" maxlength="7" />
+      <div class="actions">
+        <button type="button" data-modal-close="teslim-adet" style="background: #15803d; color: #fff;">İptal</button>
+        <button type="button" id="btn-teslim-adet-onay" style="background: #15803d; color: #fff;">Onayla</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-teslim-edilenler" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-box modal-list-box">
+      <h3 style="color: #15803d;">Teslim Edilenler</h3>
+      <div class="modal-list-body">
+        <table class="panel-table" style="font-size: 1rem;">
+          <thead>
+            <tr>
+              <th>Tarih</th>
+              <th>Müşteri</th>
+              <th>Ekim Tarihi</th>
+              <th>Teslim Tarihi</th>
+              <th>Adet</th>
+              <th>İşlemler</th>
+            </tr>
+            <tr class="filter-row">
+              <td><select id="teslim-edilenler-filter-tarih" aria-label="Tarih filtre"><option value="">Tümü</option></select></td>
+              <td><select id="teslim-edilenler-filter-musteri" aria-label="Müşteri filtre"><option value="">Tümü</option></select></td>
+              <td><select id="teslim-edilenler-filter-ekim" aria-label="Ekim filtre"><option value="">Tümü</option></select></td>
+              <td><select id="teslim-edilenler-filter-teslim" aria-label="Teslim filtre"><option value="">Tümü</option></select></td>
+              <td><select id="teslim-edilenler-filter-adet" aria-label="Adet filtre"><option value="">Tümü</option></select></td>
+              <td></td>
+            </tr>
+          </thead>
+          <tbody id="modal-teslim-edilenler-tbody"></tbody>
+          <tfoot id="modal-teslim-edilenler-foot">
+            <tr><td colspan="4" class="px-4 py-2">Toplam</td><td id="modal-teslim-edilenler-toplam" class="px-4 py-2">0</td><td></td></tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="actions">
+        <button type="button" data-modal-close="teslim-edilenler" style="background: #15803d; color: #fff;">Kapat</button>
       </div>
     </div>
   </div>
@@ -566,7 +730,7 @@
       <label>Aktarılacak miktar</label>
       <input type="text" id="onceki-aktar-miktar" inputmode="numeric" placeholder="örn. 10.000" maxlength="7" />
       <div class="actions">
-        <button type="button" data-modal-close="onceki-aktar" style="background: #f3f4f6; color: #6b7280;">İPTAL</button>
+        <button type="button" data-modal-close="onceki-aktar" style="background: #15803d; color: #fff;">İPTAL</button>
         <button type="button" id="btn-onceki-aktar-onay" style="background: #0d9488; color: #fff; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">ONAYLA</button>
       </div>
     </div>
@@ -576,14 +740,36 @@
     <div class="modal-box modal-yeni-box">
       <h3 style="color: #15803d;">Yeni kayıt</h3>
       <label>Çeşit</label>
-      <input type="text" id="yeni-cesit" placeholder="örn. KANARYOLE" />
+      <input type="text" id="yeni-cesit" list="yeni-cesit-list" autocomplete="off" />
+      <datalist id="yeni-cesit-list"></datalist>
       <label>Ekim tarihi</label>
       <input type="date" id="yeni-ekim_tarihi" />
       <label>Ekilen fide (viyol)</label>
-      <input type="text" id="yeni-ekilen_miktar" inputmode="numeric" placeholder="örn. 10.000" maxlength="7" />
+      <input type="text" id="yeni-ekilen_miktar" inputmode="numeric" maxlength="7" />
       <div class="actions">
-        <button type="button" data-modal-close="yeni-kayit" style="background: #f3f4f6; color: #6b7280;">İptal</button>
+        <button type="button" data-modal-close="yeni-kayit" style="background: #15803d; color: #fff;">İptal</button>
         <button type="button" id="btn-yeni-kayit-onay" style="background: #15803d; color: #fff;">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-degistir" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-box modal-yeni-box">
+      <h3 style="color: #7c3aed;">Kayıt değiştir</h3>
+      <label>Çeşit</label>
+      <input type="text" id="degistir-cesit" list="degistir-cesit-list" autocomplete="off" />
+      <datalist id="degistir-cesit-list"></datalist>
+      <label>Ekim tarihi</label>
+      <input type="date" id="degistir-ekim_tarihi" />
+      <label>Teslim tarihi</label>
+      <input type="date" id="degistir-teslim_tarihi" />
+      <label>Ekilen fide (viyol)</label>
+      <input type="text" id="degistir-ekilen_miktar" inputmode="numeric" maxlength="7" />
+      <label>Extra Fide</label>
+      <input type="text" id="degistir-extra_fide" inputmode="numeric" maxlength="7" />
+      <div class="actions">
+        <button type="button" data-modal-close="degistir" style="background: #15803d; color: #fff;">İptal</button>
+        <button type="button" id="btn-degistir-onay" style="background: #7c3aed; color: #fff;">Kaydet</button>
       </div>
     </div>
   </div>
@@ -591,9 +777,42 @@
   <div id="modal-kime-satildi" class="modal-backdrop" aria-hidden="true">
     <div class="modal-box modal-list-box modal-kime-satildi-box">
       <h3 id="modal-kime-satildi-title" style="color: #ea580c;"></h3>
+      <p id="modal-kime-satildi-ekim" style="margin: 0 0 0.5rem; font-size: 0.95rem; color: #6b7280;"></p>
       <div id="modal-kime-satildi-body" class="modal-list-body"></div>
       <div class="actions">
-        <button type="button" data-modal-close="kime-satildi" style="background: #f3f4f6; color: #374151;">Kapat</button>
+        <button type="button" data-modal-close="kime-satildi" style="background: #15803d; color: #fff;">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-satis-aktar" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-box modal-yeni-box">
+      <h3 style="color: #0d9488;">Satışı aktar</h3>
+      <label>Hedef ekim tarihi</label>
+      <select id="satis-aktar-hedef-ekim">
+        <option value="">Seçin...</option>
+      </select>
+      <div class="actions">
+        <button type="button" data-modal-close="satis-aktar" style="background: #15803d; color: #fff;">İptal</button>
+        <button type="button" id="btn-satis-aktar-onay" style="background: #0d9488; color: #fff;">Aktar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-satis-degistir" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-box modal-yeni-box">
+      <h3 style="color: #ea580c;">Satış değiştir</h3>
+      <label>Müşteri ismi</label>
+      <input type="text" id="satis-degistir-musteri" />
+      <label>Teslim tarihi</label>
+      <input type="date" id="satis-degistir-teslim" />
+      <label>Kaç adet</label>
+      <input type="text" id="satis-degistir-miktar" inputmode="numeric" maxlength="7" />
+      <label>Notlar</label>
+      <input type="text" id="satis-degistir-notlar" placeholder="İsteğe bağlı" />
+      <div class="actions">
+        <button type="button" data-modal-close="satis-degistir" style="background: #15803d; color: #fff;">İptal</button>
+        <button type="button" id="btn-satis-degistir-onay" style="background: #ea580c; color: #fff;">Kaydet</button>
       </div>
     </div>
   </div>
@@ -603,7 +822,40 @@
       <h3 id="modal-cop-kaydi-title" style="color: #475569;">Çöp kaydı</h3>
       <div id="modal-cop-kaydi-body" class="modal-list-body"></div>
       <div class="actions">
-        <button type="button" data-modal-close="cop-kaydi" style="background: #f3f4f6; color: #374151;">Kapat</button>
+        <button type="button" data-modal-close="cop-kaydi" style="background: #15803d; color: #fff;">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-sonrakine-aktar-onay" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-box modal-uyari-box">
+      <h3 style="margin-bottom: 0.5rem;">Sonrakine aktar</h3>
+      <p class="uyari-mesaj">Extra fideler bir sonraki ekim tarihine aktarılacak. Emin misiniz?</p>
+      <div class="actions">
+        <button type="button" data-modal-close="sonrakine-aktar-onay" style="background: #15803d; color: #fff;">İptal</button>
+        <button type="button" id="btn-sonrakine-aktar-onay" style="background: #475569; color: #fff;">Onayla</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-onceki-aktar-onay" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-box modal-uyari-box">
+      <h3 style="margin-bottom: 0.5rem;">Öncekine aktar</h3>
+      <p class="uyari-mesaj">Extra fideler bir önceki ekim tarihine aktarılacak. Emin misiniz?</p>
+      <div class="actions">
+        <button type="button" data-modal-close="onceki-aktar-onay" style="background: #15803d; color: #fff;">İptal</button>
+        <button type="button" id="btn-onceki-aktar-onay-confirm" style="background: #0d9488; color: #fff;">Onayla</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-sil-onay" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-box modal-uyari-box">
+      <h3 style="margin-bottom: 0.5rem;">Kayıt sil</h3>
+      <p class="uyari-mesaj">Bu kaydı silmek istediğinize emin misiniz?</p>
+      <div class="actions">
+        <button type="button" data-modal-close="sil-onay" style="background: #15803d; color: #fff;">İptal</button>
+        <button type="button" id="btn-sil-onay" style="background: #dc2626; color: #fff;">Sil</button>
       </div>
     </div>
   </div>
@@ -613,7 +865,7 @@
       <h3 id="modal-uyari-title" class="sr-only">Bildirim</h3>
       <p id="modal-uyari-mesaj" class="uyari-mesaj"></p>
       <div class="actions">
-        <button type="button" data-modal-close="uyari">Tamam</button>
+        <button type="button" data-modal-close="uyari" style="background: #15803d; color: #fff;">Tamam</button>
       </div>
     </div>
   </div>
