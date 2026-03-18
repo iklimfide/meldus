@@ -68,7 +68,7 @@ create policy "fide_stok_update" on public.fide_stok for update using (true) wit
 drop policy if exists "fide_stok_delete" on public.fide_stok;
 create policy "fide_stok_delete" on public.fide_stok for delete using (true);
 
--- 5. RLS: satislar
+-- 5. RLS: satislar (Meldus: okuma, ekleme, güncelleme, silme)
 alter table public.satislar enable row level security;
 
 drop policy if exists "satislar_select" on public.satislar;
@@ -77,7 +77,13 @@ create policy "satislar_select" on public.satislar for select using (true);
 drop policy if exists "satislar_insert" on public.satislar;
 create policy "satislar_insert" on public.satislar for insert with check (true);
 
--- 6. RLS: cop_kayitlari
+drop policy if exists "satislar_update" on public.satislar;
+create policy "satislar_update" on public.satislar for update using (true) with check (true);
+
+drop policy if exists "satislar_delete" on public.satislar;
+create policy "satislar_delete" on public.satislar for delete using (true);
+
+-- 6. RLS: cop_kayitlari (Meldus: okuma, ekleme, güncelleme, silme)
 alter table public.cop_kayitlari enable row level security;
 
 drop policy if exists "cop_kayitlari_select" on public.cop_kayitlari;
@@ -85,6 +91,12 @@ create policy "cop_kayitlari_select" on public.cop_kayitlari for select using (t
 
 drop policy if exists "cop_kayitlari_insert" on public.cop_kayitlari;
 create policy "cop_kayitlari_insert" on public.cop_kayitlari for insert with check (true);
+
+drop policy if exists "cop_kayitlari_update" on public.cop_kayitlari;
+create policy "cop_kayitlari_update" on public.cop_kayitlari for update using (true) with check (true);
+
+drop policy if exists "cop_kayitlari_delete" on public.cop_kayitlari;
+create policy "cop_kayitlari_delete" on public.cop_kayitlari for delete using (true);
 
 -- 7. (İsteğe bağlı) Eski kurulumda cikan_fide yoksa ekle
 alter table public.fide_stok add column if not exists cikan_fide int default 0;
