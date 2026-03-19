@@ -5,6 +5,7 @@ export default function middleware(request) {
   // İzin verilen sayfalar - yönlendirme yapma
   if (path === '/' || path === '/index.html') return;
   if (path === '/marul-fidesi.html') return;
+  if (path === '/musteri-cekleri.html') return;
   if (path.startsWith('/urunler/kivircik-marul-fidesi')) return;
   if (path.startsWith('/urunler/yedikule-marul-fidesi')) return;
   if (path === '/meldus' || path.startsWith('/meldus/')) return;
