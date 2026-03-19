@@ -257,6 +257,18 @@
     .panel-table tbody tr:nth-child(odd) { background: #fff; }
     .panel-table tbody tr:nth-child(even) { background: #f3f4f6; }
     .panel-table tbody tr:hover { background: rgba(34, 197, 94, 0.12); border-left-color: #15803d; }
+    /* Stok tablosu: çeşide göre satır zemini */
+    #view-stok #stok-tbody tr.stok-row-cesit-kanaryole { background: #ffffff !important; }
+    #view-stok #stok-tbody tr.stok-row-cesit-kanaryole:nth-child(even) { background: #ffffff !important; }
+    #view-stok #stok-tbody tr.stok-row-cesit-kanaryole:hover { background: #f1f5f9 !important; border-left-color: #94a3b8; }
+    #view-stok #stok-tbody tr.stok-row-cesit-presidential { background: #fef9c3 !important; }
+    #view-stok #stok-tbody tr.stok-row-cesit-presidential:hover { background: #fde68a !important; border-left-color: #ca8a04; }
+    #view-stok #stok-tbody tr.stok-row-cesit-cospirina { background: #ffedd5 !important; }
+    #view-stok #stok-tbody tr.stok-row-cesit-cospirina:nth-child(even) { background: #fed7aa !important; }
+    #view-stok #stok-tbody tr.stok-row-cesit-cospirina:hover { background: #fdba74 !important; border-left-color: #ea580c; }
+    #view-stok #stok-tbody tr.stok-row-cesit-vernelia { background: #dbeafe !important; }
+    #view-stok #stok-tbody tr.stok-row-cesit-vernelia:nth-child(even) { background: #bfdbfe !important; }
+    #view-stok #stok-tbody tr.stok-row-cesit-vernelia:hover { background: #93c5fd !important; border-left-color: #2563eb; }
     .panel-table input.cell {
       width: 100%;
       min-width: 3rem;
@@ -304,6 +316,7 @@
     .panel-table .btn-degistir,
     .panel-table .btn-sil,
     .panel-table .btn-gizle,
+    .panel-table .btn-hareketler,
     .panel-table .btn-degistir-kaydet,
     .panel-table .btn-degistir-iptal {
       padding: 0.4rem 0.6rem;
@@ -329,6 +342,8 @@
     .btn-degistir:hover { background: #6d28d9; }
     .btn-sil { background: #dc2626; color: #fff; }
     .btn-sil:hover { background: #b91c1c; }
+    .btn-hareketler { background: #0ea5e9; color: #fff; }
+    .btn-hareketler:hover { background: #0284c7; }
     .btn-gizle { background: #6b7280; color: #fff; }
     .btn-gizle:hover { background: #4b5563; }
     .btn-degistir-kaydet { background: #15803d; color: #fff; }
@@ -362,6 +377,13 @@
     .modal-box.modal-onceki-aktar-box { border-top: 8px solid #0d9488; }
     .modal-box.modal-yeni-box { border-top: 8px solid #15803d; }
     .modal-box.modal-list-box { border-top: 4px solid #6b7280; max-width: 640px; }
+    .modal-box.modal-cop-kaydi-box {
+      max-width: min(96vw, 1200px);
+      width: 96%;
+      min-width: 320px;
+    }
+    .modal-cop-kaydi-box .modal-list-body { max-height: 72vh; overflow: auto; }
+    .modal-cop-kaydi-box .modal-list-body .panel-table { width: 100%; min-width: 720px; }
     .modal-box.modal-kime-satildi-box { max-width: 95vw; width: 95%; min-width: 320px; }
     .modal-kime-satildi-box .modal-list-body { max-height: 70vh; overflow: auto; }
     .modal-kime-satildi-box .modal-list-body table { min-width: 100%; table-layout: auto; }
@@ -641,12 +663,15 @@
           <table class="panel-table">
             <thead>
               <tr>
-                <th class="sortable" data-sort="cesit">Çeşit</th>
-                <th class="sortable" data-sort="miktar">Miktar</th>
                 <th class="sortable" data-sort="tarih">Tarih</th>
+                <th class="sortable" data-sort="cesit">Çeşit</th>
+                <th class="sortable" data-sort="ekim">Ekim tarihi</th>
+                <th class="sortable" data-sort="miktar">Atılan miktar</th>
+                <th>İşlemler</th>
               </tr>
             </thead>
             <tbody id="cop-tbody"></tbody>
+            <tfoot id="cop-tfoot"></tfoot>
           </table>
         </div>
       </section>
@@ -881,11 +906,44 @@
   </div>
 
   <div id="modal-cop-kaydi" class="modal-backdrop" aria-hidden="true">
-    <div class="modal-box modal-list-box">
+    <div class="modal-box modal-list-box modal-cop-kaydi-box">
       <h3 id="modal-cop-kaydi-title" style="color: #475569;">Çöp kaydı</h3>
       <div id="modal-cop-kaydi-body" class="modal-list-body"></div>
       <div class="actions">
         <button type="button" data-modal-close="cop-kaydi" style="background: #15803d; color: #fff;">Kapat</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-cop-kaydi-degistir" class="modal-backdrop" aria-hidden="true" style="z-index: 1002;">
+    <div class="modal-box modal-cop-box" style="max-width: 420px;">
+      <h3 style="color: #475569; margin-top: 0;">Çöp kaydını düzenle</h3>
+      <label>Atılan miktar</label>
+      <input type="text" id="cop-kaydi-degistir-miktar" inputmode="numeric" maxlength="7" placeholder="örn. 10.000" />
+      <div class="actions" style="margin-top: 1rem;">
+        <button type="button" data-modal-close="cop-kaydi-degistir" style="background: #6b7280; color: #fff;">İptal</button>
+        <button type="button" id="btn-cop-kaydi-degistir-onay" style="background: #7c3aed; color: #fff;">Kaydet</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-cop-kaydi-sil" class="modal-backdrop" aria-hidden="true" style="z-index: 1002;">
+    <div class="modal-box modal-uyari-box">
+      <h3 style="margin-bottom: 0.5rem;">Çöp kaydını sil</h3>
+      <p class="uyari-mesaj">Bu kayıt silinecek. Atılan miktar ilgili stok satırının extra fidesine geri eklenir.</p>
+      <div class="actions">
+        <button type="button" data-modal-close="cop-kaydi-sil" style="background: #15803d; color: #fff;">İptal</button>
+        <button type="button" id="btn-cop-kaydi-sil-onay" style="background: #dc2626; color: #fff;">Sil</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-stok-hareketler" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-box modal-list-box" style="max-width: min(96vw, 720px);">
+      <h3 id="modal-stok-hareketler-title" style="color: #475569; margin-top: 0;">Hareketler</h3>
+      <div id="modal-stok-hareketler-body" class="modal-list-body" style="max-height: 65vh; overflow: auto;"></div>
+      <div class="actions" style="margin-top: 1rem;">
+        <button type="button" data-modal-close="stok-hareketler" style="background: #15803d; color: #fff;">Kapat</button>
       </div>
     </div>
   </div>

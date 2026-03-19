@@ -70,6 +70,34 @@ create index if not exists idx_cop_kayitlari_fide_id on public.cop_kayitlari(fid
 create index if not exists idx_cop_kayitlari_tarih on public.cop_kayitlari(tarih desc);
 ```
 
+### 1.4 `extra_aktar_hareketleri` (sonrakine / öncekine aktarım kaydı)
+
+Meldus “Hareketler” modalında sonrakine/öncekine aktarım toplamlarını göstermek için. **Mevcut projede bu tablo yoksa** aşağıdaki SQL’i Supabase SQL Editor’da bir kez çalıştırın.
+
+```sql
+create table if not exists public.extra_aktar_hareketleri (
+  id uuid primary key default gen_random_uuid(),
+  kaynak_fide_id uuid not null references public.fide_stok(id) on delete restrict,
+  hedef_fide_id uuid not null references public.fide_stok(id) on delete restrict,
+  miktar int not null check (miktar > 0),
+  tip text not null check (tip in ('sonrakine', 'oncekine')),
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_extra_aktar_kaynak on public.extra_aktar_hareketleri(kaynak_fide_id);
+create index if not exists idx_extra_aktar_hedef on public.extra_aktar_hareketleri(hedef_fide_id);
+
+alter table public.extra_aktar_hareketleri enable row level security;
+
+create policy "extra_aktar_hareketleri_select"
+  on public.extra_aktar_hareketleri for select using (true);
+
+create policy "extra_aktar_hareketleri_insert"
+  on public.extra_aktar_hareketleri for insert with check (true);
+```
+
+**Not:** Bu tabloyu eklemeden önce yapılmış sonrakine/öncekine aktarımlar kayıtlı olmadığı için geçmişte görünmez; tablo sonrası yapılanlar listelenir.
+
 ---
 
 ## 2. RLS (Row Level Security) – Zorunlu

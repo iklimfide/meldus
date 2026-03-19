@@ -19,7 +19,7 @@
   var quickFilterCesit = '';
   var tableSearchQuery = '';
   var cesitAutocompletePrevLen = 0;
-  var stokSortKey = '';
+  var stokSortKey = 'ekim_tarihi';
   var stokSortDir = 'asc';
 
   function formatDate(iso) {
@@ -38,6 +38,34 @@
     return parts.join('.');
   }
 
+  /** tr-TR büyük harf + İngilizce yazım varyantları (KANARYOLE, PRESİDENTİAL, …) */
+  function stokCesitKey(cesit) {
+    var raw = (cesit || '').trim();
+    if (!raw) return '';
+    var tr = raw.toLocaleUpperCase('tr-TR');
+    if (tr === 'KANARYOLE') return 'kanaryole';
+    if (tr === 'PRESİDENTİAL') return 'presidential';
+    if (tr === 'COSPİRİNA') return 'cospirina';
+    if (tr === 'VERNELİA') return 'vernelia';
+    var en = raw.toUpperCase().replace(/İ/g, 'I');
+    if (en === 'PRESIDENTIAL') return 'presidential';
+    if (en === 'COSPIRINA') return 'cospirina';
+    if (en === 'VERNELIA') return 'vernelia';
+    return '';
+  }
+
+  function stokRowCesitClass(cesit) {
+    var k = stokCesitKey(cesit);
+    return k ? ('stok-row-cesit-' + k) : '';
+  }
+
+  var CESIT_EXPORT_ROW_BG = {
+    kanaryole: '#ffffff',
+    presidential: '#fef9c3',
+    cospirina: '#ffedd5',
+    vernelia: '#dbeafe'
+  };
+
   function loadStok() {
     if (!supabase) return;
     supabase.from('fide_stok').select('*').order('ekim_tarihi', { ascending: false }).then(function (res) {
@@ -46,22 +74,33 @@
     });
   }
 
-  function loadCop() {
-    var tbody = document.getElementById('cop-tbody');
-    if (!tbody) return;
+  function loadCopInto(hostEl, wrapTable) {
+    if (!hostEl) return;
+    var copTfoot = document.getElementById('cop-tfoot');
+    function clearCopTfoot() {
+      if (copTfoot && !wrapTable) copTfoot.innerHTML = '';
+    }
     if (!supabase) {
-      tbody.innerHTML = '<tr><td colspan="3" class="px-4 py-2">Bağlantı yok.</td></tr>';
+      if (wrapTable) hostEl.innerHTML = '<p class="px-4 py-2">Bağlantı yok.</p>';
+      else hostEl.innerHTML = '<tr><td colspan="5" class="px-4 py-2">Bağlantı yok.</td></tr>';
+      clearCopTfoot();
       return;
     }
-    tbody.innerHTML = '<tr><td colspan="3" class="px-4 py-2">Yükleniyor...</td></tr>';
+    if (wrapTable) hostEl.innerHTML = '<p class="px-4 py-2">Yükleniyor...</p>';
+    else hostEl.innerHTML = '<tr><td colspan="5" class="px-4 py-2">Yükleniyor...</td></tr>';
+    clearCopTfoot();
     supabase.from('cop_kayitlari').select('*').order('id', { ascending: false }).then(function (res) {
       if (res.error) {
-        tbody.innerHTML = '<tr><td colspan="3" class="px-4 py-2">Liste yüklenemedi.</td></tr>';
+        if (wrapTable) hostEl.innerHTML = '<p class="px-4 py-2">Liste yüklenemedi.</p>';
+        else hostEl.innerHTML = '<tr><td colspan="5" class="px-4 py-2">Liste yüklenemedi.</td></tr>';
+        clearCopTfoot();
         return;
       }
       var rows = res.data || [];
       if (rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="px-4 py-2">Henüz çöp kaydı yok.</td></tr>';
+        if (wrapTable) hostEl.innerHTML = '<p class="px-4 py-2">Henüz çöp kaydı yok.</p>';
+        else hostEl.innerHTML = '<tr><td colspan="5" class="px-4 py-2">Henüz çöp kaydı yok.</td></tr>';
+        clearCopTfoot();
         return;
       }
       var fideIds = [];
@@ -70,25 +109,202 @@
         var fid = r.fide_id;
         if (fid != null && !seen[fid]) { seen[fid] = true; fideIds.push(fid); }
       });
-      function fillCopTbody(stokMap) {
-        tbody.innerHTML = rows.map(function (r) {
-          var cesit = (stokMap[r.fide_id] || '—').replace(/</g, '&lt;');
+      function fillCopRows(stokMap) {
+        var toplam = rows.reduce(function (s, r) {
+          var n = r.miktar != null ? Number(r.miktar) : 0;
+          return s + (isNaN(n) ? 0 : n);
+        }, 0);
+        var inner = rows.map(function (r) {
+          var info = stokMap[r.fide_id];
+          var cesit = (info && info.cesit ? info.cesit : '—').replace(/</g, '&lt;');
+          var ekimStr = info && info.ekim_tarihi ? formatDate(String(info.ekim_tarihi)) : '—';
           var t = r.created_at || r.tarih || r.inserted_at;
           var tarihStr = t ? formatDate(String(t)) : '—';
-          return '<tr><td class="px-4 py-2">' + cesit + '</td><td class="px-4 py-2">' + formatNum(r.miktar) + '</td><td class="px-4 py-2">' + tarihStr + '</td></tr>';
+          var copId = String(r.id || '').replace(/"/g, '');
+          var fid = String(r.fide_id || '').replace(/"/g, '');
+          var mNum = r.miktar != null ? Number(r.miktar) : 0;
+          if (isNaN(mNum)) mNum = 0;
+          var act = '<button type="button" class="btn-degistir row-act btn-cop-kaydi-degistir" data-cop-id="' + copId + '" data-fide-id="' + fid + '" data-miktar="' + mNum + '">Değiştir</button> <button type="button" class="btn-sil btn-cop-kaydi-sil" data-cop-id="' + copId + '" data-fide-id="' + fid + '" data-miktar="' + mNum + '">Sil</button>';
+          return '<tr><td class="px-4 py-2">' + tarihStr + '</td><td class="px-4 py-2">' + cesit + '</td><td class="px-4 py-2">' + ekimStr + '</td><td class="px-4 py-2">' + formatNum(r.miktar) + '</td><td class="px-4 py-2">' + act + '</td></tr>';
         }).join('');
+        var footRow = '<tr><td colspan="3" class="px-4 py-2" style="text-align:right;font-weight:700;">Toplam</td><td class="px-4 py-2" style="font-weight:700;">' + formatNum(toplam) + '</td><td class="px-4 py-2"></td></tr>';
+        if (wrapTable) {
+          hostEl.innerHTML = '<table class="panel-table"><thead><tr><th>Tarih</th><th>Çeşit</th><th>Ekim tarihi</th><th>Atılan miktar</th><th>İşlemler</th></tr></thead><tbody>' + inner + '</tbody><tfoot>' + footRow + '</tfoot></table>';
+        } else {
+          hostEl.innerHTML = inner;
+          if (copTfoot) copTfoot.innerHTML = footRow;
+        }
       }
       if (fideIds.length === 0) {
-        fillCopTbody({});
+        fillCopRows({});
         return;
       }
-      supabase.from('fide_stok').select('id, cesit').in('id', fideIds).then(function (r2) {
+      supabase.from('fide_stok').select('id, cesit, ekim_tarihi').in('id', fideIds).then(function (r2) {
         var stokMap = {};
-        (r2.data || []).forEach(function (f) { stokMap[f.id] = f.cesit || '—'; });
-        fillCopTbody(stokMap);
+        (r2.data || []).forEach(function (f) {
+          stokMap[f.id] = { cesit: f.cesit || '—', ekim_tarihi: f.ekim_tarihi };
+        });
+        fillCopRows(stokMap);
       });
     });
   }
+
+  function loadCop() {
+    var tbody = document.getElementById('cop-tbody');
+    loadCopInto(tbody, false);
+  }
+
+  function openModalCopKaydi() {
+    var modal = document.getElementById('modal-cop-kaydi');
+    var body = document.getElementById('modal-cop-kaydi-body');
+    if (!modal || !body) return;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    loadCopInto(body, true);
+  }
+
+  function closeModalCopKaydi() {
+    var modal = document.getElementById('modal-cop-kaydi');
+    if (modal) {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  function refreshCopKaydiModalIfOpen() {
+    var m = document.getElementById('modal-cop-kaydi');
+    var b = document.getElementById('modal-cop-kaydi-body');
+    if (m && b && m.classList.contains('open')) loadCopInto(b, true);
+  }
+
+  var modalStokHareketler = document.getElementById('modal-stok-hareketler');
+  var modalStokHareketlerBody = document.getElementById('modal-stok-hareketler-body');
+  var modalStokHareketlerTitle = document.getElementById('modal-stok-hareketler-title');
+
+  function openModalStokHareketler(fideId) {
+    if (!modalStokHareketler || !modalStokHareketlerBody) return;
+    var r = stok.find(function (x) { return String(x.id) === String(fideId); });
+    var baslik = (r && r.cesit) ? (r.cesit + ' – ' + formatDate(r.ekim_tarihi)) : 'Hareketler';
+    if (modalStokHareketlerTitle) modalStokHareketlerTitle.textContent = baslik;
+    modalStokHareketlerBody.innerHTML = '<p class="px-4 py-2">Yükleniyor...</p>';
+    modalStokHareketler.classList.add('open');
+    modalStokHareketler.setAttribute('aria-hidden', 'false');
+    if (!supabase) {
+      modalStokHareketlerBody.innerHTML = '<p class="px-4 py-2">Bağlantı yok.</p>';
+      return;
+    }
+    Promise.all([
+      supabase.from('satislar').select('id, miktar, musteri_adi, satis_tarihi').eq('fide_id', fideId).order('satis_tarihi', { ascending: false }),
+      supabase.from('cop_kayitlari').select('id, miktar, created_at, tarih').eq('fide_id', fideId).order('id', { ascending: false }),
+      supabase.from('extra_aktar_hareketleri').select('id, miktar, tip, hedef_fide_id, created_at').eq('kaynak_fide_id', fideId).order('created_at', { ascending: false })
+    ]).then(function (results) {
+      var satisRes = results[0];
+      var copRes = results[1];
+      var aktarRes = results[2];
+      var satisList = (satisRes.data && satisRes.data.slice()) || [];
+      var copList = (copRes.data && copRes.data.slice()) || [];
+      var aktarList = (!aktarRes.error && aktarRes.data && aktarRes.data.slice()) || [];
+      var toplamSatis = satisList.reduce(function (s, x) {
+        var n = x.miktar != null ? Number(x.miktar) : 0;
+        return s + (isNaN(n) ? 0 : n);
+      }, 0);
+      var toplamCop = copList.reduce(function (s, x) {
+        var n = x.miktar != null ? Number(x.miktar) : 0;
+        return s + (isNaN(n) ? 0 : n);
+      }, 0);
+      var sonrakineRows = aktarList.filter(function (x) { return x.tip === 'sonrakine'; });
+      var oncekineRows = aktarList.filter(function (x) { return x.tip === 'oncekine'; });
+      var toplamSonrakine = sonrakineRows.reduce(function (s, x) {
+        var n = x.miktar != null ? Number(x.miktar) : 0;
+        return s + (isNaN(n) ? 0 : n);
+      }, 0);
+      var toplamOncekine = oncekineRows.reduce(function (s, x) {
+        var n = x.miktar != null ? Number(x.miktar) : 0;
+        return s + (isNaN(n) ? 0 : n);
+      }, 0);
+      var hedefSeen = {};
+      aktarList.forEach(function (x) {
+        if (x.hedef_fide_id) hedefSeen[String(x.hedef_fide_id)] = true;
+      });
+      var hedefIds = Object.keys(hedefSeen);
+
+      function hedefEtiket(map, hid) {
+        var row = map[hid];
+        if (!row) return '—';
+        var c = (row.cesit || '—').replace(/</g, '&lt;');
+        return formatDate(row.ekim_tarihi) + ' · ' + c;
+      }
+
+      function buildHtml(hedefMap) {
+        var parts = [];
+        parts.push('<p class="px-4 py-2" style="font-weight:700; margin-bottom:0.5rem;">Satılan: ' + formatNum(toplamSatis) + '</p>');
+        if (satisList.length > 0) {
+          parts.push('<table class="panel-table" style="margin-bottom:1rem;"><thead><tr><th>Tarih</th><th>Müşteri</th><th>Miktar</th></tr></thead><tbody>');
+          satisList.forEach(function (x) {
+            var tarih = formatDate(x.satis_tarihi);
+            var musteri = (x.musteri_adi || '—').replace(/</g, '&lt;');
+            parts.push('<tr><td class="px-4 py-2">' + tarih + '</td><td class="px-4 py-2">' + musteri + '</td><td class="px-4 py-2">' + formatNum(x.miktar) + '</td></tr>');
+          });
+          parts.push('</tbody></table>');
+        }
+        parts.push('<p class="px-4 py-2" style="font-weight:700; margin-bottom:0.5rem;">Çöpe atılan: ' + formatNum(toplamCop) + '</p>');
+        if (copList.length > 0) {
+          parts.push('<table class="panel-table" style="margin-bottom:1rem;"><thead><tr><th>Tarih</th><th>Miktar</th></tr></thead><tbody>');
+          copList.forEach(function (x) {
+            var t = x.created_at || x.tarih;
+            var tarih = t ? formatDate(String(t)) : '—';
+            parts.push('<tr><td class="px-4 py-2">' + tarih + '</td><td class="px-4 py-2">' + formatNum(x.miktar) + '</td></tr>');
+          });
+          parts.push('</tbody></table>');
+        }
+        parts.push('<p class="px-4 py-2" style="font-weight:700; margin-bottom:0.5rem;">Sonrakine aktarılan: ' + formatNum(toplamSonrakine) + '</p>');
+        if (sonrakineRows.length > 0) {
+          parts.push('<table class="panel-table" style="margin-bottom:1rem;"><thead><tr><th>Tarih</th><th>Hedef (ekim · çeşit)</th><th>Miktar</th></tr></thead><tbody>');
+          sonrakineRows.forEach(function (x) {
+            var t = x.created_at ? formatDate(String(x.created_at)) : '—';
+            parts.push('<tr><td class="px-4 py-2">' + t + '</td><td class="px-4 py-2">' + hedefEtiket(hedefMap, String(x.hedef_fide_id)) + '</td><td class="px-4 py-2">' + formatNum(x.miktar) + '</td></tr>');
+          });
+          parts.push('</tbody></table>');
+        }
+        parts.push('<p class="px-4 py-2" style="font-weight:700; margin-bottom:0.5rem;">Öncekine aktarılan: ' + formatNum(toplamOncekine) + '</p>');
+        if (oncekineRows.length > 0) {
+          parts.push('<table class="panel-table" style="margin-bottom:1rem;"><thead><tr><th>Tarih</th><th>Hedef (ekim · çeşit)</th><th>Miktar</th></tr></thead><tbody>');
+          oncekineRows.forEach(function (x) {
+            var t2 = x.created_at ? formatDate(String(x.created_at)) : '—';
+            parts.push('<tr><td class="px-4 py-2">' + t2 + '</td><td class="px-4 py-2">' + hedefEtiket(hedefMap, String(x.hedef_fide_id)) + '</td><td class="px-4 py-2">' + formatNum(x.miktar) + '</td></tr>');
+          });
+          parts.push('</tbody></table>');
+        }
+        if (aktarRes.error) {
+          parts.push('<p class="px-4 py-2" style="color:#b45309; font-size:0.9rem;">Aktarım kayıtları okunamadı. Supabase’de <code>extra_aktar_hareketleri</code> tablosunu oluşturduğunuzdan emin olun (SUPABASE_SETUP.md 1.4).</p>');
+        }
+        modalStokHareketlerBody.innerHTML = parts.join('');
+      }
+
+      if (hedefIds.length === 0) {
+        buildHtml({});
+        return;
+      }
+      supabase.from('fide_stok').select('id, cesit, ekim_tarihi').in('id', hedefIds).then(function (rH) {
+        var hedefMap = {};
+        (rH.data || []).forEach(function (row) { hedefMap[String(row.id)] = row; });
+        buildHtml(hedefMap);
+      }).catch(function () { buildHtml({}); });
+    }).catch(function () {
+      modalStokHareketlerBody.innerHTML = '<p class="px-4 py-2">Yüklenemedi.</p>';
+    });
+  }
+
+  function closeModalStokHareketler() {
+    if (modalStokHareketler) {
+      modalStokHareketler.classList.remove('open');
+      modalStokHareketler.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  document.querySelectorAll('[data-modal-close="stok-hareketler"]').forEach(function (btn) {
+    btn.addEventListener('click', closeModalStokHareketler);
+  });
 
   function renderStok() {
     var tbody = document.getElementById('stok-tbody');
@@ -155,13 +371,18 @@
       var extraFide = r.extra_fide != null ? Number(r.extra_fide) : 0;
       var hidden = hiddenRowIds[id] || (isNaN(extraFide) ? false : extraFide === 0);
       var sel = selectedStokIds[id];
-      return '<tr data-id="' + id + '"' + (hidden ? ' class="row-hidden"' : '') + '>' +
+      var cesitCls = stokRowCesitClass(r.cesit);
+      var trClasses = [];
+      if (hidden) trClasses.push('row-hidden');
+      if (cesitCls) trClasses.push(cesitCls);
+      var trClassAttr = trClasses.length ? ' class="' + trClasses.join(' ') + '"' : '';
+      return '<tr data-id="' + id + '"' + trClassAttr + '>' +
         '<td class="px-4 py-2">' + (r.cesit || '—').replace(/</g, '&lt;') + '</td>' +
         '<td class="px-4 py-2">' + formatDate(r.ekim_tarihi) + '</td>' +
         '<td class="px-4 py-2">' + formatDate(r.teslim_tarihi) + '</td>' +
         '<td class="px-4 py-2">' + formatNum(r.ekilen_miktar) + '</td>' +
         '<td class="px-4 py-2">' + formatNum(r.extra_fide) + '</td>' +
-        '<td class="px-4 py-2"><button type="button" class="btn-sat row-act" data-id="' + id + '">Sat</button> <button type="button" class="btn-kime-satildi row-act" data-id="' + id + '">Kime satıldı</button> <button type="button" class="btn-aktar row-act" data-id="' + id + '">Sonrakine aktar</button> <button type="button" class="btn-onceki-aktar row-act" data-id="' + id + '">Öncekine aktar</button> <button type="button" class="btn-cope-at row-act" data-id="' + id + '">Çöpe at</button> <button type="button" class="btn-degistir row-act" data-id="' + id + '">Değiştir</button> <button type="button" class="btn-gizle row-act" data-id="' + id + '">' + (hidden ? 'Göster' : 'Gizle') + '</button> <button type="button" class="btn-sil" data-id="' + id + '">Sil</button></td>' +
+        '<td class="px-4 py-2"><button type="button" class="btn-sat row-act" data-id="' + id + '">Sat</button> <button type="button" class="btn-kime-satildi row-act" data-id="' + id + '">Kime satıldı</button> <button type="button" class="btn-aktar row-act" data-id="' + id + '">Sonrakine aktar</button> <button type="button" class="btn-onceki-aktar row-act" data-id="' + id + '">Öncekine aktar</button> <button type="button" class="btn-cope-at row-act" data-id="' + id + '">Çöpe at</button> <button type="button" class="btn-degistir row-act" data-id="' + id + '">Değiştir</button> <button type="button" class="btn-gizle row-act" data-id="' + id + '">' + (hidden ? 'Göster' : 'Gizle') + '</button> <button type="button" class="btn-sil" data-id="' + id + '">Sil</button> <button type="button" class="btn-hareketler row-act" data-id="' + id + '">Hareketler</button></td>' +
         '<td class="px-4 py-2"><input type="checkbox" class="row-select" data-id="' + id + '"' + (sel ? ' checked' : '') + ' aria-label="Seç" /></td></tr>';
     }).join('');
 
@@ -464,7 +685,9 @@
     y += rowH;
     ctx.font = '15px Arial, Helvetica, sans-serif';
     list.forEach(function (r, i) {
-      ctx.fillStyle = i % 2 === 0 ? rowA : rowB;
+      var ck = stokCesitKey(r.cesit);
+      var rowBg = ck && CESIT_EXPORT_ROW_BG[ck] ? CESIT_EXPORT_ROW_BG[ck] : (i % 2 === 0 ? rowA : rowB);
+      ctx.fillStyle = rowBg;
       ctx.fillRect(pad, y, tableW, rowH);
       ctx.strokeStyle = line;
       ctx.strokeRect(pad, y, tableW, rowH);
@@ -1460,7 +1683,13 @@
             if (a.error) { closeModalSonrakineAktarOnay(); return; }
             supabase.from('fide_stok').update({ extra_fide: nextExtra + miktar }).eq('id', nextStok.id).then(function (b) {
               closeModalSonrakineAktarOnay();
-              if (!b.error) loadStok();
+              if (b.error) return;
+              supabase.from('extra_aktar_hareketleri').insert({
+                kaynak_fide_id: id,
+                hedef_fide_id: nextStok.id,
+                miktar: miktar,
+                tip: 'sonrakine'
+              }).then(function () { loadStok(); }).catch(function () { loadStok(); });
             });
           });
         });
@@ -1508,9 +1737,15 @@
             if (a.error) { closeModalOncekineAktarOnay(); return; }
             supabase.from('fide_stok').update({ extra_fide: prevExtra + miktar }).eq('id', prevStok.id).then(function (b) {
               closeModalOncekineAktarOnay();
-              if (!b.error) loadStok();
-    });
-  });
+              if (b.error) return;
+              supabase.from('extra_aktar_hareketleri').insert({
+                kaynak_fide_id: id,
+                hedef_fide_id: prevStok.id,
+                miktar: miktar,
+                tip: 'oncekine'
+              }).then(function () { loadStok(); }).catch(function () { loadStok(); });
+            });
+          });
         });
       });
     });
@@ -1540,6 +1775,9 @@
 
   document.querySelectorAll('[data-modal-close="cop"]').forEach(function (btn) {
     btn.addEventListener('click', closeModalCop);
+  });
+  document.querySelectorAll('[data-modal-close="cop-kaydi"]').forEach(function (btn) {
+    btn.addEventListener('click', closeModalCopKaydi);
   });
   var silOnayPendingId = null;
   var modalSilOnay = document.getElementById('modal-sil-onay');
@@ -1587,6 +1825,151 @@
   document.querySelectorAll('[data-modal-close="uyari"]').forEach(function (btn) {
     btn.addEventListener('click', closeModalUyari);
   });
+
+  var copKaydiDegistirId = null;
+  var copKaydiDegistirFideId = null;
+  var copKaydiDegistirOldMiktar = 0;
+  var modalCopKaydiDegistir = document.getElementById('modal-cop-kaydi-degistir');
+  var copKaydiDegistirMiktarEl = document.getElementById('cop-kaydi-degistir-miktar');
+
+  function openModalCopKaydiDegistir(copId, fideId, oldMiktar) {
+    copKaydiDegistirId = copId;
+    copKaydiDegistirFideId = fideId;
+    copKaydiDegistirOldMiktar = oldMiktar;
+    if (copKaydiDegistirMiktarEl) copKaydiDegistirMiktarEl.value = oldMiktar > 0 ? String(oldMiktar) : '';
+    if (modalCopKaydiDegistir) {
+      modalCopKaydiDegistir.classList.add('open');
+      modalCopKaydiDegistir.setAttribute('aria-hidden', 'false');
+      if (copKaydiDegistirMiktarEl) copKaydiDegistirMiktarEl.focus();
+    }
+  }
+
+  function closeModalCopKaydiDegistir() {
+    copKaydiDegistirId = null;
+    copKaydiDegistirFideId = null;
+    copKaydiDegistirOldMiktar = 0;
+    if (modalCopKaydiDegistir) {
+      modalCopKaydiDegistir.classList.remove('open');
+      modalCopKaydiDegistir.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  var copKaydiSilCopId = null;
+  var copKaydiSilFideId = null;
+  var copKaydiSilMiktar = 0;
+  var modalCopKaydiSil = document.getElementById('modal-cop-kaydi-sil');
+
+  function openModalCopKaydiSil(copId, fideId, miktar) {
+    copKaydiSilCopId = copId;
+    copKaydiSilFideId = fideId;
+    copKaydiSilMiktar = miktar;
+    if (modalCopKaydiSil) {
+      modalCopKaydiSil.classList.add('open');
+      modalCopKaydiSil.setAttribute('aria-hidden', 'false');
+    }
+  }
+
+  function closeModalCopKaydiSil() {
+    copKaydiSilCopId = null;
+    copKaydiSilFideId = null;
+    copKaydiSilMiktar = 0;
+    if (modalCopKaydiSil) {
+      modalCopKaydiSil.classList.remove('open');
+      modalCopKaydiSil.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  document.querySelectorAll('[data-modal-close="cop-kaydi-degistir"]').forEach(function (btn) {
+    btn.addEventListener('click', closeModalCopKaydiDegistir);
+  });
+  document.querySelectorAll('[data-modal-close="cop-kaydi-sil"]').forEach(function (btn) {
+    btn.addEventListener('click', closeModalCopKaydiSil);
+  });
+
+  document.addEventListener('click', function (e) {
+    var bDeg = e.target.closest('.btn-cop-kaydi-degistir');
+    if (bDeg) {
+      var cid = bDeg.getAttribute('data-cop-id');
+      var fid = bDeg.getAttribute('data-fide-id');
+      var mm = Number(bDeg.getAttribute('data-miktar'));
+      if (cid && fid) openModalCopKaydiDegistir(cid, fid, isNaN(mm) ? 0 : mm);
+      return;
+    }
+    var bSil = e.target.closest('.btn-cop-kaydi-sil');
+    if (bSil) {
+      var cid2 = bSil.getAttribute('data-cop-id');
+      var fid2 = bSil.getAttribute('data-fide-id');
+      var mm2 = Number(bSil.getAttribute('data-miktar'));
+      if (cid2 && fid2) openModalCopKaydiSil(cid2, fid2, isNaN(mm2) ? 0 : mm2);
+    }
+  });
+
+  var btnCopKaydiDegistirOnay = document.getElementById('btn-cop-kaydi-degistir-onay');
+  if (btnCopKaydiDegistirOnay) {
+    btnCopKaydiDegistirOnay.addEventListener('click', function () {
+      if (!copKaydiDegistirId || !copKaydiDegistirFideId || !supabase) return;
+      var newM = parseMiktar(copKaydiDegistirMiktarEl && copKaydiDegistirMiktarEl.value);
+      if (newM === null || newM < 1) {
+        alert('Miktar 1 veya daha fazla olmalıdır.');
+        return;
+      }
+      var oldM = copKaydiDegistirOldMiktar;
+      var delta = newM - oldM;
+      supabase.from('fide_stok').select('extra_fide').eq('id', copKaydiDegistirFideId).maybeSingle().then(function (r) {
+        var extra = (r.data && r.data.extra_fide != null ? Number(r.data.extra_fide) : 0);
+        if (isNaN(extra)) extra = 0;
+        var newExtra = extra - delta;
+        if (newExtra < 0) {
+          alert('Stokta yeterli extra fide yok (mevcut: ' + extra + ', gerekli ek düşüş: ' + delta + ').');
+          return;
+        }
+        supabase.from('cop_kayitlari').update({ miktar: newM }).eq('id', copKaydiDegistirId).then(function (up) {
+          if (up.error) {
+            openModalUyari('Güncellenemedi.');
+            return;
+          }
+          supabase.from('fide_stok').update({ extra_fide: newExtra }).eq('id', copKaydiDegistirFideId).then(function (u2) {
+            if (u2.error) {
+              openModalUyari('Stok güncellenemedi.');
+              return;
+            }
+            closeModalCopKaydiDegistir();
+            loadStok();
+            loadCop();
+            refreshCopKaydiModalIfOpen();
+          });
+        });
+      });
+    });
+  }
+
+  var btnCopKaydiSilOnay = document.getElementById('btn-cop-kaydi-sil-onay');
+  if (btnCopKaydiSilOnay) {
+    btnCopKaydiSilOnay.addEventListener('click', function () {
+      var cid = copKaydiSilCopId;
+      var fid = copKaydiSilFideId;
+      var m = copKaydiSilMiktar;
+      closeModalCopKaydiSil();
+      if (!cid || !fid || !supabase) return;
+      supabase.from('cop_kayitlari').delete().eq('id', cid).then(function (del) {
+        if (del.error) {
+          openModalUyari('Silinemedi: kayıt bağımlılığı olabilir.');
+          return;
+        }
+        supabase.from('fide_stok').select('extra_fide').eq('id', fid).maybeSingle().then(function (r) {
+          var extra = (r.data && r.data.extra_fide != null ? Number(r.data.extra_fide) : 0);
+          if (isNaN(extra)) extra = 0;
+          supabase.from('fide_stok').update({ extra_fide: extra + m }).eq('id', fid).then(function (u) {
+            if (u.error) openModalUyari('Stok güncellenemedi.');
+            loadStok();
+            loadCop();
+            refreshCopKaydiModalIfOpen();
+          });
+        });
+      });
+    });
+  }
+
   var btnCopOnay = document.getElementById('btn-cop-onay');
   if (btnCopOnay) {
     btnCopOnay.addEventListener('click', function () {
@@ -1609,6 +1992,7 @@
             if (!u.error) {
               loadStok();
               loadCop();
+              refreshCopKaydiModalIfOpen();
             }
     });
   });
@@ -1708,6 +2092,12 @@
         if (id && supabase) openModalSilOnay(id);
         return;
       }
+      var btnHareketler = e.target.closest('.btn-hareketler');
+      if (btnHareketler) {
+        id = btnHareketler.getAttribute('data-id');
+        if (id) openModalStokHareketler(id);
+        return;
+      }
     });
   }
 
@@ -1718,7 +2108,6 @@
     document.querySelectorAll('main.panel-main section[data-view]').forEach(function (sec) {
       sec.classList.toggle('active', sec.getAttribute('data-view') === v);
     });
-    if (v === 'cop') loadCop();
   }
 
   document.querySelectorAll('.panel-nav[data-view]').forEach(function (navBtn) {
@@ -1731,7 +2120,7 @@
 
   var btnToolbarCop = document.getElementById('btn-toolbar-cop');
   if (btnToolbarCop) {
-    btnToolbarCop.addEventListener('click', function () { switchMainView('cop'); });
+    btnToolbarCop.addEventListener('click', function () { openModalCopKaydi(); });
   }
 
   loadStok();
