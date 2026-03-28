@@ -62,6 +62,16 @@
     return s.slice(8, 10) + '.' + s.slice(5, 7) + '.' + s.slice(0, 4);
   }
 
+  /** Teslim edilenler listesi: en son teslim üstte (tam ISO zaman damgası). */
+  function tsTeslimEdildiSort(s) {
+    if (!s) return 0;
+    var t1 = s.teslim_edildi_tarihi != null ? Date.parse(String(s.teslim_edildi_tarihi).trim()) : NaN;
+    if (!isNaN(t1)) return t1;
+    var t2 = s.satis_tarihi != null ? Date.parse(String(s.satis_tarihi).trim()) : NaN;
+    if (!isNaN(t2)) return t2;
+    return 0;
+  }
+
   function formatNum(n) {
     if (n == null || n === '' || isNaN(Number(n))) return '—';
     var s = String(Math.floor(Number(n)));
@@ -1118,6 +1128,7 @@
     var filtered = teslimEdilenlerDisplayRows.filter(function (r) {
       return (fTarih === '' || r.tarih === fTarih) && (fCesit === '' || r.cesitStr === fCesit) && (fMusteri === '' || r.musteri === fMusteri) && (fEkim === '' || r.ekimStr === fEkim) && (fTeslim === '' || r.teslim === fTeslim) && (fAdet === '' || r.miktarNum === fAdet);
     });
+    filtered.sort(function (a, b) { return (b.tarihTs || 0) - (a.tarihTs || 0); });
     var esc = function (s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
     var rows = filtered.map(function (r) {
       var sid = (r.satisId || '');
@@ -1187,7 +1198,6 @@
     supabase.from('satislar').select('*').order('teslim_tarihi', { ascending: true }).then(function (res) {
       var list = (res.data && res.data.slice()) || [];
       list = list.filter(function (s) {
-        if (s.teslim_edildi_tarihi) return false;
         var m = s.miktar != null ? Number(s.miktar) : 0;
         if (isNaN(m)) m = 0;
         var del = s.teslim_edilen_miktar != null ? Number(s.teslim_edilen_miktar) : 0;
@@ -1259,13 +1269,23 @@
       if (modalTeslimEdilenlerTbody) modalTeslimEdilenlerTbody.innerHTML = '<tr><td colspan="7" class="px-4 py-2">Bağlantı yok.</td></tr>';
       return;
     }
-    supabase.from('satislar').select('*').order('teslim_edildi_tarihi', { ascending: false }).then(function (res) {
+    supabase.from('satislar').select('*').then(function (res) {
+      if (res.error) {
+        teslimEdilenlerDisplayRows = [];
+        if (modalTeslimEdilenlerTbody) {
+          modalTeslimEdilenlerTbody.innerHTML = '<tr><td colspan="7" class="px-4 py-2">Veri alınamadı: ' +
+            String(res.error.message || res.error).replace(/</g, '&lt;') + '</td></tr>';
+        }
+        if (toplamElEdilenler) toplamElEdilenler.textContent = '0';
+        return;
+      }
       var list = (res.data && res.data.slice()) || [];
       list = list.filter(function (s) {
         if (s.teslim_edildi_tarihi) return true;
         var del = s.teslim_edilen_miktar != null ? Number(s.teslim_edilen_miktar) : 0;
         return !isNaN(del) && del > 0;
       });
+      list.sort(function (a, b) { return tsTeslimEdildiSort(b) - tsTeslimEdildiSort(a); });
       if (list.length === 0) {
         teslimEdilenlerDisplayRows = [];
         modalTeslimEdilenlerTbody.innerHTML = '<tr><td colspan="7" class="px-4 py-2">Henüz teslim edilen kayıt yok.</td></tr>';
@@ -1281,7 +1301,7 @@
       function fillTeslimEdilenlerDisplay(list, stokMap) {
         var miktarRaw = function (s) { var n = s.miktar != null ? Number(s.miktar) : 0; return isNaN(n) ? 0 : n; };
         teslimEdilenlerDisplayRows = list.map(function (s) {
-          var tarih = formatDate(s.satis_tarihi);
+          var tarih = formatDate(s.teslim_edildi_tarihi || s.satis_tarihi);
           var musteri = (s.musteri_adi || '—').replace(/</g, '&lt;');
           var stokRow = stokMap ? stokMap[s.fide_id] : null;
           var ekimStr = stokRow && stokRow.ekim_tarihi ? formatDate(stokRow.ekim_tarihi) : '—';
@@ -1289,7 +1309,7 @@
           var displayMiktar = s.teslim_edilen_miktar != null ? Number(s.teslim_edilen_miktar) : miktarRaw(s);
           if (isNaN(displayMiktar)) displayMiktar = miktarRaw(s);
           var cesitStr = stokRow && stokRow.cesit ? stokRow.cesit : '—';
-          return { tarih: tarih, cesitStr: cesitStr, musteri: musteri, ekimStr: ekimStr, teslim: teslim, miktarNum: formatNum(displayMiktar), miktarRaw: displayMiktar, satisId: s.id || '' };
+          return { tarih: tarih, tarihTs: tsTeslimEdildiSort(s), cesitStr: cesitStr, musteri: musteri, ekimStr: ekimStr, teslim: teslim, miktarNum: formatNum(displayMiktar), miktarRaw: displayMiktar, satisId: s.id || '' };
         });
         fillTeslimEdilenlerFilterSelects();
         renderTeslimEdilenlerTable();
@@ -1438,14 +1458,11 @@
         closeModalTeslimAdet();
         teslimThis = Math.floor(Number(teslimThis));
         var newDelivered = already + teslimThis;
-        var payload = {};
-        if (saleMiktar > 0 && newDelivered >= saleMiktar) {
-          payload.teslim_edildi_tarihi = new Date().toISOString();
-          payload.teslim_edilen_miktar = saleMiktar;
-        } else {
-          payload.teslim_edilen_miktar = newDelivered;
-          payload.teslim_edildi_tarihi = null;
-        }
+        var nowIso = new Date().toISOString();
+        var payload = {
+          teslim_edildi_tarihi: nowIso,
+          teslim_edilen_miktar: saleMiktar > 0 && newDelivered >= saleMiktar ? saleMiktar : newDelivered
+        };
         return supabase.from('satislar').update(payload).eq('id', satisId).then(function (r) {
           if (r.error) { alert('Güncellenemedi: ' + (r.error.message || '')); return; }
           loadStok();
