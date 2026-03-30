@@ -25,6 +25,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://iklimfide.com/blog/marul-fidesi-nasil-yetistirilir.html</loc>
+    <lastmod>2026-03-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://iklimfide.com/blog/marul-fidesi-ne-zaman-dikilir-ekim-rehberi.html</loc>
     <lastmod>2026-03-24</lastmod>
     <changefreq>monthly</changefreq>
@@ -38,7 +44,7 @@
   </url>
   <url>
     <loc>https://iklimfide.com/blog/</loc>
-    <lastmod>2026-03-24</lastmod>
+    <lastmod>2026-03-28</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
   </url>
