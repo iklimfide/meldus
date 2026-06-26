@@ -126,3 +126,29 @@ alter table public.fide_stok add column if not exists cikan_fide int default 0;
 
 -- 8. (İsteğe bağlı) satislar tablosuna teslim_tarihi ekle
 alter table public.satislar add column if not exists teslim_tarihi date;
+
+-- 9. Heartbeat: free plan uykusunu önlemek için (iş verisine dokunmaz)
+create table if not exists public._heartbeat (
+  id int primary key default 1 check (id = 1),
+  last_ping timestamptz not null default now()
+);
+
+insert into public._heartbeat (id, last_ping)
+values (1, now())
+on conflict (id) do nothing;
+
+alter table public._heartbeat enable row level security;
+
+create or replace function public.ping_heartbeat()
+returns timestamptz
+language sql
+security definer
+set search_path = public
+as $$
+  update public._heartbeat
+  set last_ping = now()
+  where id = 1
+  returning last_ping;
+$$;
+
+grant execute on function public.ping_heartbeat() to anon, authenticated;

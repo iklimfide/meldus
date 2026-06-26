@@ -1,0 +1,19 @@
+name: Keep Supabase Alive
+
+on:
+  schedule:
+    # Pazartesi ve Perşembe 09:00 UTC (7 günlük inaktivite eşiğinin altında kalır)
+    - cron: '0 9 * * 1,4'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase heartbeat
+        run: |
+          curl -sf "${{ secrets.SUPABASE_URL }}/rest/v1/rpc/ping_heartbeat" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d "{}"
