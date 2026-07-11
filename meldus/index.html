@@ -15,6 +15,8 @@
       --panel-orange: #ea580c;
       --panel-red: #dc2626;
       --panel-yellow: #eab308;
+      --panel-grid: #64748b;
+      --panel-grid-left: #1e293b;
     }
     *, *::before, *::after { box-sizing: border-box; }
     body {
@@ -26,6 +28,55 @@
       background: #f3f4f6;
       min-height: 100vh;
       padding-bottom: 5rem;
+    }
+
+    .panel-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 600;
+      width: 100%;
+      background: linear-gradient(180deg, #166534 0%, #15803d 100%);
+      color: #fff;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+    .panel-topbar-inner {
+      max-width: 1920px;
+      margin: 0 auto;
+      padding: 0.85rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .panel-topbar-brand {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.15rem;
+      min-width: 0;
+    }
+    .panel-topbar .panel-brand-name {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      line-height: 1.15;
+    }
+    .panel-topbar-sub {
+      margin: 0;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      opacity: 0.92;
+      font-weight: 600;
+    }
+    .panel-topbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      margin-left: auto;
     }
 
     .panel-card {
@@ -40,19 +91,6 @@
       overflow: hidden;
     }
 
-    .panel-header {
-      background: #15803d;
-      color: #fff;
-      padding: 1.25rem 1.5rem;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1rem;
-    }
-    .panel-header-brand { display: flex; flex-direction: column; align-items: flex-start; gap: 0.2rem; }
-    .panel-header .panel-brand-name { font-size: 1.75rem; font-weight: 800; letter-spacing: 0.02em; }
-    .panel-header .sub { margin: 0; font-size: 14px; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.9; font-weight: 600; }
     .btn-teslim {
       display: inline-flex;
       align-items: center;
@@ -200,12 +238,68 @@
       white-space: nowrap;
     }
     #btn-stok-jpg-indir:hover { background: #0f766e; }
-    .th-sec { width: 2.5rem; min-width: 2.5rem; max-width: 2.5rem; text-align: center; }
+    .th-sec {
+      width: 2.5rem;
+      min-width: 2.5rem;
+      max-width: 2.5rem;
+      text-align: center;
+      vertical-align: middle;
+      padding-left: 0;
+      padding-right: 0;
+    }
     #mainTable th:last-of-type,
-    #mainTable td:last-of-type { width: 2.5rem; min-width: 2.5rem; max-width: 2.5rem; text-align: center; white-space: nowrap; }
+    #mainTable td:last-of-type {
+      width: 2.5rem;
+      min-width: 2.5rem;
+      max-width: 2.5rem;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: middle;
+      padding-left: 0;
+      padding-right: 0;
+    }
+    #mainTable th.th-sec input,
+    #mainTable td.td-sec input[type="checkbox"],
+    #mainTable th:last-of-type input[type="checkbox"],
+    #mainTable td:last-of-type input[type="checkbox"] {
+      display: block;
+      margin: 0 auto;
+      width: 1.1rem;
+      height: 1.1rem;
+      cursor: pointer;
+    }
     #mainTable th:nth-last-child(2),
     #mainTable td:nth-last-child(2) { min-width: 22rem; white-space: nowrap; }
-    .td-sec { text-align: center; vertical-align: middle; }
+    #mainTable th.col-fide-qty,
+    #mainTable td.col-fide-qty,
+    #mainTable th.col-cesit,
+    #mainTable td.col-cesit {
+      width: 15rem;
+      min-width: 15rem;
+      max-width: 15rem;
+      white-space: nowrap;
+      padding-left: 0.35rem;
+      padding-right: 0.35rem;
+      text-align: center;
+    }
+    #mainTable tbody td.col-fide-qty,
+    #mainTable tfoot td.col-fide-qty {
+      font-size: 1.25rem;
+    }
+    #mainTable th.col-fide-qty {
+      line-height: 1.2;
+      white-space: normal;
+    }
+    #mainTable th.col-cesit,
+    #mainTable td.col-cesit {
+      font-size: 1rem;
+    }
+    .td-sec {
+      text-align: center;
+      vertical-align: middle;
+      padding-left: 0;
+      padding-right: 0;
+    }
     .stok-secilen-info { background: #fef2f2; color: #991b1b; font-size: 0.9rem; }
 
     .panel-main { padding: 0; }
@@ -219,11 +313,13 @@
       border-collapse: collapse;
       font-size: 1.125rem;
       table-layout: auto;
+      border: 2px solid var(--panel-grid);
+      border-left: 3px solid var(--panel-grid-left);
     }
-    .panel-table thead { background: #e0f2fe; border-bottom: 2px solid #e5e7eb; }
+    .panel-table thead { background: #e0f2fe; border-bottom: 2px solid var(--panel-grid); }
     .panel-table th {
       padding: 1rem;
-      font-size: 15px;
+      font-size: 1rem;
       font-weight: 700;
       color: #4b5563;
       text-transform: uppercase;
@@ -231,11 +327,17 @@
       text-align: center;
       cursor: pointer;
       user-select: none;
-      border-right: 1px solid #e5e7eb;
+      border-right: 2px solid var(--panel-grid);
+      border-bottom: 2px solid var(--panel-grid);
       transition: background 0.2s;
     }
     .panel-table th:hover { background: #bae6fd; }
-    .panel-table th:last-of-type { background: #e0f2fe; border-right: none; min-width: 22rem; white-space: nowrap; }
+    .panel-table th:first-child,
+    .panel-table td:first-child,
+    .panel-table tfoot td:first-child {
+      border-left: 3px solid var(--panel-grid-left);
+    }
+    .panel-table th:last-of-type { background: #e0f2fe; min-width: 22rem; white-space: nowrap; }
     .panel-table td:last-of-type { min-width: 22rem; }
     .panel-table .th-gizle { width: 4.5rem; min-width: 4.5rem; }
     .panel-table .td-gizle { vertical-align: middle; }
@@ -249,27 +351,32 @@
     .panel-table td {
       padding: 0.5rem;
       text-align: center;
-      border-bottom: 1px solid #e5e7eb;
+      border-right: 2px solid var(--panel-grid);
+      border-bottom: 2px solid var(--panel-grid);
+    }
+    .panel-table tfoot td {
+      border-right: 2px solid var(--panel-grid);
+      border-top: 2px solid var(--panel-grid);
+      border-bottom: 2px solid var(--panel-grid);
     }
     .panel-table tbody tr {
-      transition: background 0.2s, border-color 0.2s;
-      border-left: 4px solid transparent;
+      transition: background 0.2s, box-shadow 0.2s;
     }
     .panel-table tbody tr:nth-child(odd) { background: #fff; }
     .panel-table tbody tr:nth-child(even) { background: #f3f4f6; }
-    .panel-table tbody tr:hover { background: rgba(34, 197, 94, 0.12); border-left-color: #15803d; }
+    .panel-table tbody tr:hover { background: rgba(34, 197, 94, 0.12); box-shadow: inset 4px 0 0 0 #15803d; }
     /* Stok tablosu: çeşide göre satır zemini */
     #view-stok #stok-tbody tr.stok-row-cesit-kanaryole { background: #ffffff !important; }
     #view-stok #stok-tbody tr.stok-row-cesit-kanaryole:nth-child(even) { background: #ffffff !important; }
-    #view-stok #stok-tbody tr.stok-row-cesit-kanaryole:hover { background: #f1f5f9 !important; border-left-color: #94a3b8; }
+    #view-stok #stok-tbody tr.stok-row-cesit-kanaryole:hover { background: #f1f5f9 !important; box-shadow: inset 4px 0 0 0 #94a3b8; }
     #view-stok #stok-tbody tr.stok-row-cesit-presidential { background: #fef9c3 !important; }
-    #view-stok #stok-tbody tr.stok-row-cesit-presidential:hover { background: #fde68a !important; border-left-color: #ca8a04; }
+    #view-stok #stok-tbody tr.stok-row-cesit-presidential:hover { background: #fde68a !important; box-shadow: inset 4px 0 0 0 #ca8a04; }
     #view-stok #stok-tbody tr.stok-row-cesit-cospirina { background: #ffedd5 !important; }
     #view-stok #stok-tbody tr.stok-row-cesit-cospirina:nth-child(even) { background: #fed7aa !important; }
-    #view-stok #stok-tbody tr.stok-row-cesit-cospirina:hover { background: #fdba74 !important; border-left-color: #ea580c; }
+    #view-stok #stok-tbody tr.stok-row-cesit-cospirina:hover { background: #fdba74 !important; box-shadow: inset 4px 0 0 0 #ea580c; }
     #view-stok #stok-tbody tr.stok-row-cesit-vernelia { background: #dbeafe !important; }
     #view-stok #stok-tbody tr.stok-row-cesit-vernelia:nth-child(even) { background: #bfdbfe !important; }
-    #view-stok #stok-tbody tr.stok-row-cesit-vernelia:hover { background: #93c5fd !important; border-left-color: #2563eb; }
+    #view-stok #stok-tbody tr.stok-row-cesit-vernelia:hover { background: #93c5fd !important; box-shadow: inset 4px 0 0 0 #2563eb; }
     .panel-table input.cell {
       width: 100%;
       min-width: 3rem;
@@ -417,6 +524,29 @@
       font-size: 1.125rem;
       background: #f9fafb;
     }
+    .modal-miktar-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: stretch;
+      margin-bottom: 1rem;
+    }
+    .modal-miktar-row input {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    .btn-modal-hepsini {
+      flex-shrink: 0;
+      padding: 0.5rem 0.85rem;
+      border: none;
+      border-radius: 0.5rem;
+      background: #f97316;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-modal-hepsini:hover { background: #ea580c; }
     #modal-satis-aktar select#satis-aktar-hedef-ekim {
       width: 100%;
       min-height: 3.25rem;
@@ -451,8 +581,17 @@
       border: none;
     }
     .modal-list-body { max-height: 50vh; overflow-y: auto; margin-bottom: 1rem; }
-    .modal-list-body table { width: 100%; font-size: 1.125rem; border-collapse: collapse; }
-    .modal-list-body th, .modal-list-body td { text-align: center; padding: 0.5rem 0.75rem; border-bottom: 1px solid #e5e7eb; }
+    .modal-list-body table { width: 100%; font-size: 1.125rem; border-collapse: collapse; border: 2px solid var(--panel-grid); border-left: 3px solid var(--panel-grid-left); }
+    .modal-list-body th, .modal-list-body td {
+      text-align: center;
+      padding: 0.5rem 0.75rem;
+      border-right: 2px solid var(--panel-grid);
+      border-bottom: 2px solid var(--panel-grid);
+    }
+    .modal-list-body th:first-child,
+    .modal-list-body td:first-child {
+      border-left: 3px solid var(--panel-grid-left);
+    }
     .modal-list-body th { background: #f3f4f6; font-weight: 600; }
     .modal-list-body .empty-msg { color: #6b7280; padding: 1rem; text-align: center; }
     #modal-teslim .modal-box { max-width: 95vw; width: 95%; min-width: 320px; }
@@ -509,10 +648,6 @@
     @keyframes panel-fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
     .btn-teslim-wrap {
-      position: fixed;
-      top: 2rem;
-      right: 2.5rem;
-      z-index: 500;
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
@@ -521,34 +656,33 @@
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.75rem 1.5rem;
+      padding: 0.55rem 1.1rem;
       border-radius: 9999px;
-      font-size: 1.15rem;
+      font-size: 0.95rem;
       font-weight: 700;
       background: var(--panel-yellow);
       color: #000;
       border: none;
       cursor: pointer;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      transition: background 0.2s, transform 0.2s;
     }
-    .btn-teslim-fixed:hover { background: #ca8a04; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
+    .btn-teslim-fixed:hover { background: #ca8a04; transform: translateY(-1px); }
     .btn-teslim-edilenler-fixed {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.75rem 1.5rem;
+      padding: 0.55rem 1.1rem;
       border-radius: 9999px;
-      font-size: 1.15rem;
+      font-size: 0.95rem;
       font-weight: 700;
-      background: #15803d;
+      background: rgba(255, 255, 255, 0.14);
       color: #fff;
-      border: none;
+      border: 1px solid rgba(255, 255, 255, 0.28);
       cursor: pointer;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: background 0.2s, transform 0.2s;
     }
-    .btn-teslim-edilenler-fixed:hover { background: #166534; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
+    .btn-teslim-edilenler-fixed:hover { background: rgba(255, 255, 255, 0.22); transform: translateY(-1px); }
 
     @media (max-width: 1024px) {
       .panel-card { margin: 0.5rem; }
@@ -556,30 +690,36 @@
       .search-wrap { max-width: none; }
     }
     @media (max-width: 640px) {
-      .panel-header { padding: 1rem; }
+      .panel-topbar-inner { padding: 0.75rem 1rem; }
+      .panel-topbar .panel-brand-name { font-size: 1.25rem; }
+      .panel-topbar-sub { font-size: 0.65rem; letter-spacing: 0.1em; }
+      .panel-topbar-actions { width: 100%; margin-left: 0; }
+      .btn-teslim-fixed,
+      .btn-teslim-edilenler-fixed { flex: 1; justify-content: center; font-size: 0.85rem; padding: 0.5rem 0.65rem; }
       .panel-table { min-width: 600px; }
       .panel-table .row-actions button { font-size: 13px; padding: 0.25rem 0.35rem; }
     }
   </style>
 </head>
 <body>
-  <div class="btn-teslim-wrap">
-    <button type="button" id="btn-teslim-fixed" class="btn-teslim-fixed" aria-label="Teslim edilecekler">
-      <span aria-hidden="true">🚚</span> Teslim edilecekler
-    </button>
-    <button type="button" id="btn-teslim-edilenler-fixed" class="btn-teslim-edilenler-fixed" aria-label="Teslim edilenler">
-      <span aria-hidden="true">✓</span> Teslim edilenler
-    </button>
-  </div>
+  <header class="panel-topbar">
+    <div class="panel-topbar-inner">
+      <div class="panel-topbar-brand">
+        <span class="panel-brand-name">İklim Fide</span>
+        <p class="panel-topbar-sub">Operasyonel Takip & Stok Yönetimi</p>
+      </div>
+      <div class="panel-topbar-actions btn-teslim-wrap">
+        <button type="button" id="btn-teslim-fixed" class="btn-teslim-fixed" aria-label="Teslim edilecekler">
+          <span aria-hidden="true">🚚</span> Teslim edilecekler
+        </button>
+        <button type="button" id="btn-teslim-edilenler-fixed" class="btn-teslim-edilenler-fixed" aria-label="Teslim edilenler">
+          <span aria-hidden="true">✓</span> Teslim edilenler
+        </button>
+      </div>
+    </div>
+  </header>
 
   <div class="panel-card">
-    <header class="panel-header">
-      <div class="panel-header-brand">
-        <span class="panel-brand-name">İklim Fide</span>
-        <p class="sub">Operasyonel Takip & Stok Yönetimi</p>
-      </div>
-    </header>
-
     <div class="panel-nav-wrap">
       <nav class="panel-nav-list">
         <button type="button" class="panel-nav panel-nav-stok active" data-view="stok">Stok</button>
@@ -617,11 +757,11 @@
           <table class="panel-table" id="mainTable">
             <thead>
               <tr>
-                <th class="sortable" data-sort="cesit">Çeşit ↕</th>
+                <th class="sortable col-cesit" data-sort="cesit">Çeşit ↕</th>
                 <th class="sortable" data-sort="ekim_tarihi">Ekim Tarihi ↕</th>
                 <th class="sortable" data-sort="teslim_tarihi">Teslim Tarihi ↕</th>
-                <th class="sortable" data-sort="ekilen_miktar">Ekilen fide (viyol) ↕</th>
-                <th class="sortable" data-sort="extra_fide">Extra Fide ↕</th>
+                <th class="sortable col-fide-qty" data-sort="ekilen_miktar">Ekilen fide (viyol) ↕</th>
+                <th class="sortable col-fide-qty" data-sort="extra_fide">Extra Fide ↕</th>
                 <th>İşlemler</th>
                 <th class="th-sec"><input type="checkbox" id="stok-select-all" title="Tümünü seç" aria-label="Tümünü seç" /></th>
               </tr>
@@ -630,8 +770,8 @@
             <tfoot>
               <tr id="stok-extra-fide-toplam-row">
                 <td colspan="3" class="px-4 py-2" style="text-align:right;font-weight:700;">Toplam</td>
-                <td id="stok-ekilen-toplam" class="px-4 py-2" style="font-weight:700;">0</td>
-                <td id="stok-extra-fide-toplam" class="px-4 py-2" style="font-weight:700;">0</td>
+                <td id="stok-ekilen-toplam" class="px-4 py-2 col-fide-qty" style="font-weight:700;">0</td>
+                <td id="stok-extra-fide-toplam" class="px-4 py-2 col-fide-qty" style="font-weight:700;">0</td>
                 <td colspan="2"></td>
               </tr>
               <tr id="stok-secilen-info" class="stok-secilen-info" style="display: none;"><td colspan="7"><span id="stok-secilen-count">0</span> satır seçili</td></tr>
@@ -717,7 +857,10 @@
     <div class="modal-box modal-cop-box">
       <h3 style="color: #991b1b;">FİRE KAYDI</h3>
       <label>Çöpe Atılan Miktar</label>
-      <input type="text" id="cop-miktar" inputmode="numeric" placeholder="örn. 10.000" maxlength="7" />
+      <div class="modal-miktar-row">
+        <input type="text" id="cop-miktar" inputmode="numeric" placeholder="örn. 10.000" maxlength="7" />
+        <button type="button" id="btn-cop-hepsini" class="btn-modal-hepsini" title="Tüm extra fideyi çöpe at">Tamamını</button>
+      </div>
       <div class="actions">
         <button type="button" data-modal-close="cop" style="background: #15803d; color: #fff;">İPTAL</button>
         <button type="button" id="btn-cop-onay" style="background: #dc2626; color: #fff; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">KAYDET</button>

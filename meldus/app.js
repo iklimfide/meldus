@@ -430,13 +430,13 @@
       if (cesitCls) trClasses.push(cesitCls);
       var trClassAttr = trClasses.length ? ' class="' + trClasses.join(' ') + '"' : '';
       return '<tr data-id="' + id + '"' + trClassAttr + '>' +
-        '<td class="px-4 py-2">' + (r.cesit || '—').replace(/</g, '&lt;') + '</td>' +
+        '<td class="px-4 py-2 col-cesit">' + (r.cesit || '—').replace(/</g, '&lt;') + '</td>' +
         '<td class="px-4 py-2">' + formatDate(r.ekim_tarihi) + '</td>' +
         '<td class="px-4 py-2">' + formatDate(r.teslim_tarihi) + '</td>' +
-        '<td class="px-4 py-2">' + formatNum(r.ekilen_miktar) + '</td>' +
-        '<td class="px-4 py-2">' + formatNum(r.extra_fide) + '</td>' +
+        '<td class="px-4 py-2 col-fide-qty">' + formatNum(r.ekilen_miktar) + '</td>' +
+        '<td class="px-4 py-2 col-fide-qty">' + formatNum(r.extra_fide) + '</td>' +
         '<td class="px-4 py-2"><button type="button" class="btn-sat row-act" data-id="' + id + '">Sat</button> <button type="button" class="btn-kime-satildi row-act" data-id="' + id + '">Kime satıldı</button> <button type="button" class="btn-aktar row-act" data-id="' + id + '">Sonrakine aktar</button> <button type="button" class="btn-onceki-aktar row-act" data-id="' + id + '">Öncekine aktar</button> <button type="button" class="btn-cope-at row-act" data-id="' + id + '">Çöpe at</button> <button type="button" class="btn-degistir row-act" data-id="' + id + '">Değiştir</button> <button type="button" class="btn-gizle row-act" data-id="' + id + '">' + (hidden ? 'Göster' : 'Gizle') + '</button> <button type="button" class="btn-sil" data-id="' + id + '">Sil</button> <button type="button" class="btn-hareketler row-act" data-id="' + id + '">Hareketler</button></td>' +
-        '<td class="px-4 py-2"><input type="checkbox" class="row-select" data-id="' + id + '"' + (sel ? ' checked' : '') + ' aria-label="Seç" /></td></tr>';
+        '<td class="td-sec"><input type="checkbox" class="row-select" data-id="' + id + '"' + (sel ? ' checked' : '') + ' aria-label="Seç" /></td></tr>';
     }).join('');
 
     tbody.querySelectorAll('.btn-gizle').forEach(function (btn) {
@@ -1830,11 +1830,17 @@
   }
 
   var copFideId = null;
+  var copFideMaxExtra = 0;
   var modalCop = document.getElementById('modal-cop');
   var copMiktarEl = document.getElementById('cop-miktar');
 
   function openModalCop(fideId) {
     copFideId = fideId;
+    copFideMaxExtra = 0;
+    var row = stok.find(function (r) { return String(r.id) === String(fideId); });
+    if (row && row.extra_fide != null && !isNaN(Number(row.extra_fide))) {
+      copFideMaxExtra = Math.max(0, Math.floor(Number(row.extra_fide)));
+    }
     if (copMiktarEl) copMiktarEl.value = '';
     if (modalCop) {
       modalCop.classList.add('open');
@@ -1845,6 +1851,7 @@
 
   function closeModalCop() {
     copFideId = null;
+    copFideMaxExtra = 0;
     if (modalCop) {
       modalCop.classList.remove('open');
       modalCop.setAttribute('aria-hidden', 'true');
@@ -1854,6 +1861,25 @@
   document.querySelectorAll('[data-modal-close="cop"]').forEach(function (btn) {
     btn.addEventListener('click', closeModalCop);
   });
+  if (copMiktarEl) {
+    copMiktarEl.addEventListener('input', function () {
+      this.value = formatMiktarBinlik(this.value);
+    });
+  }
+  var btnCopHepsini = document.getElementById('btn-cop-hepsini');
+  if (btnCopHepsini) {
+    btnCopHepsini.addEventListener('click', function () {
+      if (!copFideId) return;
+      if (copFideMaxExtra < 1) {
+        alert('Bu satırda çöpe atılacak extra fide yok.');
+        return;
+      }
+      if (copMiktarEl) {
+        copMiktarEl.value = formatMiktarBinlik(String(copFideMaxExtra));
+        copMiktarEl.focus();
+      }
+    });
+  }
   document.querySelectorAll('[data-modal-close="cop-kaydi"]').forEach(function (btn) {
     btn.addEventListener('click', closeModalCopKaydi);
   });
