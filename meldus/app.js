@@ -119,10 +119,254 @@
     vernelia: '#dbeafe'
   };
 
+  var CESIT_STORAGE_KEY = 'meldus-cesit-tanimlari';
+  var DEFAULT_CESITLER = ['KANARYOLE', 'PRESİDENTİAL', 'COSPİRİNA', 'VERNELİA'];
+  var cesitTanimlari = [];
+
+  function normalizeCesitAd(ad) {
+    return (ad || '').trim().toLocaleUpperCase('tr-TR');
+  }
+
+  function cesitAdEsit(a, b) {
+    return normalizeCesitAd(a) === normalizeCesitAd(b);
+  }
+
+  function loadCesitTanimlari() {
+    try {
+      var raw = localStorage.getItem(CESIT_STORAGE_KEY);
+      if (raw) {
+        var parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length) {
+          cesitTanimlari = parsed.map(function (x) {
+            return { name: normalizeCesitAd(x.name), hidden: Boolean(x.hidden) };
+          }).filter(function (x) { return x.name; });
+          return;
+        }
+      }
+    } catch (e) {}
+    cesitTanimlari = DEFAULT_CESITLER.map(function (n) { return { name: n, hidden: false }; });
+    saveCesitTanimlari();
+  }
+
+  function saveCesitTanimlari() {
+    try {
+      localStorage.setItem(CESIT_STORAGE_KEY, JSON.stringify(cesitTanimlari));
+    } catch (e) {}
+  }
+
+  function sortCesitTanimlari() {
+    cesitTanimlari.sort(function (a, b) { return a.name.localeCompare(b.name, 'tr'); });
+  }
+
+  function findCesitTanim(ad) {
+    var key = normalizeCesitAd(ad);
+    for (var i = 0; i < cesitTanimlari.length; i++) {
+      if (cesitTanimlari[i].name === key) return cesitTanimlari[i];
+    }
+    return null;
+  }
+
+  function syncCesitTanimlariFromStok() {
+    var seen = {};
+    cesitTanimlari.forEach(function (c) { seen[c.name] = true; });
+    var changed = false;
+    stok.forEach(function (r) {
+      var n = normalizeCesitAd(r.cesit);
+      if (n && !seen[n]) {
+        cesitTanimlari.push({ name: n, hidden: false });
+        seen[n] = true;
+        changed = true;
+      }
+    });
+    if (changed) {
+      sortCesitTanimlari();
+      saveCesitTanimlari();
+    }
+  }
+
+  function cesitKullanimda(ad) {
+    var key = normalizeCesitAd(ad);
+    return stok.some(function (r) { return normalizeCesitAd(r.cesit) === key; });
+  }
+
+  function getVisibleCesitTanimlari() {
+    return cesitTanimlari.filter(function (c) { return !c.hidden; });
+  }
+
+  function getCesitNamesForForms() {
+    var names = {};
+    cesitTanimlari.forEach(function (c) {
+      if (!c.hidden) names[c.name] = true;
+    });
+    stok.forEach(function (r) {
+      var n = normalizeCesitAd(r.cesit);
+      if (n) names[n] = true;
+    });
+    return Object.keys(names).sort(function (a, b) { return a.localeCompare(b, 'tr'); });
+  }
+
+  function updateCesitDatalists() {
+    var list = getCesitNamesForForms();
+    var html = list.map(function (c) { return '<option value="' + c.replace(/"/g, '&quot;') + '">'; }).join('');
+    if (cesitDatalist) cesitDatalist.innerHTML = html;
+    var degistirList = document.getElementById('degistir-cesit-list');
+    if (degistirList) degistirList.innerHTML = html;
+  }
+
+  function renderCesitFilters() {
+    var container = document.getElementById('panel-filters');
+    var mobileSelect = document.getElementById('panel-filters-mobile');
+
+    if (quickFilterCesit && !getVisibleCesitTanimlari().some(function (c) { return c.name === quickFilterCesit; })) {
+      quickFilterCesit = '';
+    }
+
+    var html = '<button type="button" class="filter-btn' + (quickFilterCesit === '' ? ' active' : '') + '" data-cesit="">HEPSİ</button>';
+    getVisibleCesitTanimlari().forEach(function (c) {
+      var active = quickFilterCesit === c.name ? ' active' : '';
+      html += '<button type="button" class="filter-btn' + active + '" data-cesit="' + c.name.replace(/"/g, '&quot;') + '">' + c.name.replace(/</g, '&lt;') + '</button>';
+    });
+    if (container) container.innerHTML = html;
+
+    if (mobileSelect) {
+      var opts = '<option value="">HEPSİ</option>';
+      getVisibleCesitTanimlari().forEach(function (c) {
+        var selected = quickFilterCesit === c.name ? ' selected' : '';
+        opts += '<option value="' + c.name.replace(/"/g, '&quot;') + '"' + selected + '>' + c.name.replace(/</g, '&lt;') + '</option>';
+      });
+      mobileSelect.innerHTML = opts;
+      mobileSelect.value = quickFilterCesit || '';
+    }
+  }
+
+  function renderCesitGizleList() {
+    var host = document.getElementById('cesit-gizle-list');
+    if (!host) return;
+
+    var visible = cesitTanimlari.filter(function (c) { return !c.hidden; });
+    var hidden = cesitTanimlari.filter(function (c) { return c.hidden; });
+    var html = '';
+
+    if (!visible.length && !hidden.length) {
+      host.innerHTML = '<p class="empty-msg">Henüz çeşit tanımı yok.</p>';
+      return;
+    }
+
+    if (visible.length) {
+      html += '<p class="cesit-gizle-section-title">Görünür çeşitler</p>';
+      visible.forEach(function (c) {
+        var kullanimda = cesitKullanimda(c.name);
+        html += '<div class="cesit-gizle-row">' +
+          '<div><div class="cesit-gizle-row-name">' + c.name.replace(/</g, '&lt;') + '</div>' +
+          '<div class="cesit-gizle-row-meta">' + (kullanimda ? 'Stokta kayıt var' : 'Kullanılmıyor — gizlenebilir') + '</div></div>' +
+          '<button type="button" class="btn-cesit-gizle-row" data-cesit-hide="' + c.name.replace(/"/g, '&quot;') + '"' + (kullanimda ? ' disabled title="Stokta kayıt olduğu için gizlenemez"' : '') + '>Gizle</button>' +
+          '</div>';
+      });
+    }
+
+    if (hidden.length) {
+      html += '<p class="cesit-gizle-section-title">Gizli çeşitler</p>';
+      hidden.forEach(function (c) {
+        html += '<div class="cesit-gizle-row">' +
+          '<div><div class="cesit-gizle-row-name">' + c.name.replace(/</g, '&lt;') + '</div>' +
+          '<div class="cesit-gizle-row-meta">' + (cesitKullanimda(c.name) ? 'Stokta kayıt var' : 'Filtrede gizli') + '</div></div>' +
+          '<button type="button" class="btn-cesit-goster-row" data-cesit-show="' + c.name.replace(/"/g, '&quot;') + '">Göster</button>' +
+          '</div>';
+      });
+    }
+
+    host.innerHTML = html;
+  }
+
+  function openModalCesitEkle() {
+    var modal = document.getElementById('modal-cesit-ekle');
+    var input = document.getElementById('cesit-ekle-ad');
+    if (!modal) return;
+    if (input) input.value = '';
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    if (input) input.focus();
+  }
+
+  function closeModalCesitEkle() {
+    var modal = document.getElementById('modal-cesit-ekle');
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  function openModalCesitGizle() {
+    var modal = document.getElementById('modal-cesit-gizle');
+    if (!modal) return;
+    renderCesitGizleList();
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeModalCesitGizle() {
+    var modal = document.getElementById('modal-cesit-gizle');
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  function addCesitTanim(ad) {
+    var name = normalizeCesitAd(ad);
+    if (!name) {
+      openModalUyari('Çeşit adı boş olamaz.');
+      return false;
+    }
+    if (findCesitTanim(name)) {
+      var existing = findCesitTanim(name);
+      if (existing.hidden) {
+        existing.hidden = false;
+        saveCesitTanimlari();
+        renderCesitFilters();
+        updateCesitDatalists();
+        return true;
+      }
+      openModalUyari('Bu çeşit zaten listede.');
+      return false;
+    }
+    cesitTanimlari.push({ name: name, hidden: false });
+    sortCesitTanimlari();
+    saveCesitTanimlari();
+    renderCesitFilters();
+    updateCesitDatalists();
+    return true;
+  }
+
+  function hideCesitTanim(ad) {
+    var item = findCesitTanim(ad);
+    if (!item || item.hidden) return;
+    if (cesitKullanimda(item.name)) {
+      openModalUyari('Bu çeşit stokta kullanıldığı için gizlenemez.');
+      return;
+    }
+    item.hidden = true;
+    if (quickFilterCesit === item.name) quickFilterCesit = '';
+    saveCesitTanimlari();
+    renderCesitFilters();
+    renderStok();
+    renderCesitGizleList();
+  }
+
+  function showCesitTanim(ad) {
+    var item = findCesitTanim(ad);
+    if (!item || !item.hidden) return;
+    item.hidden = false;
+    saveCesitTanimlari();
+    renderCesitFilters();
+    renderCesitGizleList();
+  }
+
   function loadStok() {
     if (!supabase) return;
     supabase.from('fide_stok').select('*').order('ekim_tarihi', { ascending: false }).then(function (res) {
       stok = (res.data && res.data.slice()) || [];
+      syncCesitTanimlariFromStok();
+      renderCesitFilters();
+      updateCesitDatalists();
       renderStok();
     });
   }
@@ -363,7 +607,7 @@
     var tbody = document.getElementById('stok-tbody');
     if (!tbody) return;
     try { hiddenRowIds = JSON.parse(localStorage.getItem('meldus_hidden_row_ids') || '{}'); } catch (e) {}
-    var list = quickFilterCesit ? stok.filter(function (r) { return (r.cesit || '').trim() === quickFilterCesit; }) : stok.slice();
+    var list = quickFilterCesit ? stok.filter(function (r) { return cesitAdEsit(r.cesit, quickFilterCesit); }) : stok.slice();
     if (tableSearchQuery) {
       var q = tableSearchQuery.toLowerCase();
       list = list.filter(function (r) {
@@ -513,20 +757,7 @@
       if (yeniEkim) yeniEkim.value = new Date().toISOString().slice(0, 10);
       if (yeniCesit) { yeniCesit.value = ''; cesitAutocompletePrevLen = 0; }
       if (yeniMiktar) yeniMiktar.value = '';
-      if (supabase && cesitDatalist) {
-        supabase.from('fide_stok').select('cesit').then(function (res) {
-          if (res.data && res.data.length) {
-            var seen = {};
-            var list = [];
-            res.data.forEach(function (r) {
-              var c = (r.cesit || '').trim();
-              if (c && !seen[c]) { seen[c] = true; list.push(c); }
-            });
-            list.sort();
-            cesitDatalist.innerHTML = list.map(function (c) { return '<option value="' + c.replace(/"/g, '&quot;') + '">'; }).join('');
-          }
-        });
-      }
+      updateCesitDatalists();
       modalYeni.classList.add('open');
       modalYeni.setAttribute('aria-hidden', 'false');
       if (yeniCesit) yeniCesit.focus();
@@ -633,7 +864,7 @@
   }
 
   function downloadStokJpg() {
-    var list = quickFilterCesit ? stok.filter(function (r) { return (r.cesit || '').trim() === quickFilterCesit; }) : stok.slice();
+    var list = quickFilterCesit ? stok.filter(function (r) { return cesitAdEsit(r.cesit, quickFilterCesit); }) : stok.slice();
     if (tableSearchQuery) {
       var q = tableSearchQuery.toLowerCase();
       list = list.filter(function (r) {
@@ -670,20 +901,31 @@
         return 0;
       });
     }
+    list = list.filter(function (r) {
+      var n = r.extra_fide != null ? Number(r.extra_fide) : 0;
+      return !isNaN(n) && n > 3000;
+    });
     if (list.length === 0) {
       alert('İndirilecek kayıt yok.');
       return;
     }
+    var logoImg = new Image();
+    logoImg.onload = function () { renderStokJpgDownload(list, logoImg); };
+    logoImg.onerror = function () { renderStokJpgDownload(list, null); };
+    logoImg.src = '/meldus/logo.png';
+  }
+
+  function renderStokJpgDownload(list, logoImg) {
     var pad = 20;
     var rowH = 36;
     var wCesit = 260;
     var wTeslim = 140;
     var wExtra = 120;
-    var W = pad * 2 + wCesit + wTeslim + wExtra;
+    var wViyol = 110;
+    var W = pad * 2 + wCesit + wTeslim + wExtra + wViyol;
     var titleH = 52;
     var footerH = 48;
-    var totalRowH = 36;
-    var H = pad + titleH + rowH + list.length * rowH + totalRowH + footerH + pad;
+    var H = pad + titleH + rowH + list.length * rowH + footerH + pad;
     var exportScale = 4;
     var canvas = document.createElement('canvas');
     canvas.width = Math.round(W * exportScale);
@@ -702,13 +944,25 @@
     var accentBar = '#15803d';
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, W, H);
+    var title = 'İKLİM FİDE EKSTRA LİSTESİ';
+    ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
+    var titleW = ctx.measureText(title).width;
+    var titleY = pad + 32;
+    var logoSize = 36;
+    var logoGap = 10;
+    var headerBlockW = logoImg ? logoSize + logoGap + titleW : titleW;
+    var headerLeft = W / 2 - headerBlockW / 2;
     ctx.fillStyle = accentBar;
     ctx.fillRect(Math.floor(W / 2) - 36, pad + 4, 72, 3);
-    ctx.textAlign = 'center';
     ctx.fillStyle = navyBold;
-    ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
-    ctx.fillText('İKLİM FİDE EKSTRA LİSTESİ', W / 2, pad + 32);
-    ctx.textAlign = 'left';
+    if (logoImg) {
+      ctx.drawImage(logoImg, headerLeft, pad + 8, logoSize, logoSize);
+      ctx.textAlign = 'left';
+      ctx.fillText(title, headerLeft + logoSize + logoGap, titleY);
+    } else {
+      ctx.textAlign = 'center';
+      ctx.fillText(title, W / 2, titleY);
+    }
     ctx.strokeStyle = line;
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -728,6 +982,7 @@
     ctx.textAlign = 'center';
     ctx.fillText('Teslim Tarihi', pad + wCesit + wTeslim / 2, y + 24);
     ctx.fillText('Extra Fide', pad + wCesit + wTeslim + wExtra / 2, y + 24);
+    ctx.fillText('Viyol Tipi', pad + wCesit + wTeslim + wExtra + wViyol / 2, y + 24);
     ctx.textAlign = 'left';
     ctx.strokeStyle = line;
     ctx.beginPath();
@@ -735,6 +990,8 @@
     ctx.lineTo(pad + wCesit, y + rowH);
     ctx.moveTo(pad + wCesit + wTeslim, y);
     ctx.lineTo(pad + wCesit + wTeslim, y + rowH);
+    ctx.moveTo(pad + wCesit + wTeslim + wExtra, y);
+    ctx.lineTo(pad + wCesit + wTeslim + wExtra, y + rowH);
     ctx.stroke();
     y += rowH;
     ctx.font = '15px Arial, Helvetica, sans-serif';
@@ -750,6 +1007,8 @@
       ctx.lineTo(pad + wCesit, y + rowH);
       ctx.moveTo(pad + wCesit + wTeslim, y);
       ctx.lineTo(pad + wCesit + wTeslim, y + rowH);
+      ctx.moveTo(pad + wCesit + wTeslim + wExtra, y);
+      ctx.lineTo(pad + wCesit + wTeslim + wExtra, y + rowH);
       ctx.stroke();
       ctx.fillStyle = cellText;
       var cesit = String(r.cesit || '—');
@@ -759,32 +1018,10 @@
       ctx.textAlign = 'center';
       ctx.fillText(formatDate(r.teslim_tarihi), pad + wCesit + wTeslim / 2, y + 24);
       ctx.fillText(formatNum(r.extra_fide), pad + wCesit + wTeslim + wExtra / 2, y + 24);
+      ctx.fillText("300'LÜK", pad + wCesit + wTeslim + wExtra + wViyol / 2, y + 24);
       ctx.textAlign = 'left';
       y += rowH;
     });
-    var toplamExtra = list.reduce(function (sum, r) {
-      var n = r.extra_fide != null ? Number(r.extra_fide) : 0;
-      return sum + (isNaN(n) ? 0 : n);
-    }, 0);
-    ctx.fillStyle = '#dcfce7';
-    ctx.fillRect(pad, y, tableW, totalRowH);
-    ctx.strokeStyle = line;
-    ctx.lineWidth = 1;
-    ctx.strokeRect(pad, y, tableW, totalRowH);
-    ctx.beginPath();
-    ctx.moveTo(pad + wCesit, y);
-    ctx.lineTo(pad + wCesit, y + totalRowH);
-    ctx.moveTo(pad + wCesit + wTeslim, y);
-    ctx.lineTo(pad + wCesit + wTeslim, y + totalRowH);
-    ctx.stroke();
-    ctx.fillStyle = '#14532d';
-    ctx.font = 'bold 15px Arial, Helvetica, sans-serif';
-    ctx.textAlign = 'left';
-    ctx.fillText('Toplam', pad + 12, y + 24);
-    ctx.textAlign = 'center';
-    ctx.fillText(formatNum(toplamExtra), pad + wCesit + wTeslim + wExtra / 2, y + 24);
-    ctx.textAlign = 'left';
-    y += totalRowH;
     ctx.textAlign = 'center';
     ctx.font = 'bold 15px Arial, Helvetica, sans-serif';
     ctx.fillStyle = navyBold;
@@ -826,15 +1063,66 @@
     });
   }
 
-  document.querySelectorAll('.filter-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var cesit = (btn.getAttribute('data-cesit') || '').trim();
-      document.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
-      btn.classList.add('active');
-      quickFilterCesit = cesit;
+  document.getElementById('panel-filters') && document.getElementById('panel-filters').addEventListener('click', function (ev) {
+    var btn = ev.target.closest('.filter-btn');
+    if (!btn) return;
+    quickFilterCesit = normalizeCesitAd(btn.getAttribute('data-cesit') || '');
+    renderCesitFilters();
+    renderStok();
+  });
+
+  var panelFiltersMobile = document.getElementById('panel-filters-mobile');
+  if (panelFiltersMobile) {
+    panelFiltersMobile.addEventListener('change', function () {
+      quickFilterCesit = normalizeCesitAd(panelFiltersMobile.value || '');
+      renderCesitFilters();
       renderStok();
     });
+  }
+
+  var btnCesitEkle = document.getElementById('btn-cesit-ekle');
+  if (btnCesitEkle) btnCesitEkle.addEventListener('click', openModalCesitEkle);
+
+  var btnCesitGizle = document.getElementById('btn-cesit-gizle');
+  if (btnCesitGizle) btnCesitGizle.addEventListener('click', openModalCesitGizle);
+
+  document.querySelectorAll('[data-modal-close="cesit-ekle"]').forEach(function (btn) {
+    btn.addEventListener('click', closeModalCesitEkle);
   });
+  document.querySelectorAll('[data-modal-close="cesit-gizle"]').forEach(function (btn) {
+    btn.addEventListener('click', closeModalCesitGizle);
+  });
+
+  var btnCesitEkleOnay = document.getElementById('btn-cesit-ekle-onay');
+  if (btnCesitEkleOnay) {
+    btnCesitEkleOnay.addEventListener('click', function () {
+      var input = document.getElementById('cesit-ekle-ad');
+      if (addCesitTanim(input && input.value)) closeModalCesitEkle();
+    });
+  }
+
+  var cesitGizleList = document.getElementById('cesit-gizle-list');
+  if (cesitGizleList) {
+    cesitGizleList.addEventListener('click', function (ev) {
+      var hideBtn = ev.target.closest('[data-cesit-hide]');
+      if (hideBtn) {
+        hideCesitTanim(hideBtn.getAttribute('data-cesit-hide'));
+        return;
+      }
+      var showBtn = ev.target.closest('[data-cesit-show]');
+      if (showBtn) showCesitTanim(showBtn.getAttribute('data-cesit-show'));
+    });
+  }
+
+  var cesitEkleAd = document.getElementById('cesit-ekle-ad');
+  if (cesitEkleAd) {
+    cesitEkleAd.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') {
+        ev.preventDefault();
+        if (addCesitTanim(cesitEkleAd.value)) closeModalCesitEkle();
+      }
+    });
+  }
 
   var searchTableEl = document.getElementById('search-table');
   if (searchTableEl) {
@@ -885,20 +1173,7 @@
     if (degistirTeslim) degistirTeslim.value = toIsoDate(r.teslim_tarihi);
     if (degistirEkilen) degistirEkilen.value = r.ekilen_miktar != null && r.ekilen_miktar !== '' ? String(r.ekilen_miktar) : '';
     if (degistirExtra) degistirExtra.value = r.extra_fide != null && r.extra_fide !== '' ? String(r.extra_fide) : '';
-    if (supabase && degistirCesitList) {
-      supabase.from('fide_stok').select('cesit').then(function (res) {
-        if (res.data && res.data.length) {
-          var seen = {};
-          var list = [];
-          res.data.forEach(function (x) {
-            var c = (x.cesit || '').trim();
-            if (c && !seen[c]) { seen[c] = true; list.push(c); }
-          });
-          list.sort();
-          degistirCesitList.innerHTML = list.map(function (c) { return '<option value="' + c.replace(/"/g, '&quot;') + '">'; }).join('');
-        }
-      });
-    }
+    updateCesitDatalists();
     if (modalDegistir) {
       modalDegistir.classList.add('open');
       modalDegistir.setAttribute('aria-hidden', 'false');
@@ -2231,5 +2506,7 @@
     btnToolbarCop.addEventListener('click', function () { openModalCopKaydi(); });
   }
 
+  loadCesitTanimlari();
+  renderCesitFilters();
   loadStok();
 })();

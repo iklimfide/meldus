@@ -10,3 +10,6 @@ meldus/config.js
 # Ortam değişkenleri (gizli bilgiler)
 .env
 .env.local
+
+.vercel
+.env*.local

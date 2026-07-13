@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="/scripts/dev-mobile-preview-embed.js"></script>
   <meta name="robots" content="noindex, nofollow" />
   <title>Meldus – İklim Fide</title>
   <link rel="icon" href="/meldus/logo.png" type="image/png" />
@@ -51,6 +52,22 @@
       gap: 1rem;
     }
     .panel-topbar-brand {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.75rem;
+      min-width: 0;
+    }
+    .panel-topbar-logo {
+      width: 2.5rem;
+      height: 2.5rem;
+      flex-shrink: 0;
+      object-fit: contain;
+      border-radius: 0.375rem;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 0.15rem;
+    }
+    .panel-topbar-brand-text {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
@@ -119,7 +136,58 @@
       justify-content: space-between;
       gap: 0.75rem;
     }
-    .panel-nav-wrap .panel-filters-center { flex: 1; display: flex; justify-content: center; align-items: center; min-width: 0; }
+    .panel-nav-wrap .panel-filters-center { flex: 1; display: flex; justify-content: center; align-items: center; gap: 0.5rem; min-width: 0; }
+    .panel-cesit-actions { display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0; }
+    .btn-cesit-action {
+      padding: 0.25rem 0.65rem;
+      border-radius: 0.25rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .btn-cesit-action:hover { background: #f3f4f6; }
+    #btn-cesit-ekle { color: #15803d; border-color: #86efac; }
+    #btn-cesit-gizle { color: #475569; border-color: #cbd5e1; }
+    .cesit-gizle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    .cesit-gizle-row:last-child { border-bottom: 0; }
+    .cesit-gizle-row-name { font-weight: 700; color: #111827; }
+    .cesit-gizle-row-meta { font-size: 0.8rem; color: #6b7280; margin-top: 0.15rem; }
+    .btn-cesit-gizle-row,
+    .btn-cesit-goster-row {
+      flex-shrink: 0;
+      padding: 0.35rem 0.7rem;
+      border-radius: 0.375rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-cesit-gizle-row { background: #6b7280; color: #fff; }
+    .btn-cesit-gizle-row:hover:not(:disabled) { background: #4b5563; }
+    .btn-cesit-gizle-row:disabled { opacity: 0.45; cursor: not-allowed; }
+    .btn-cesit-goster-row { background: #15803d; color: #fff; }
+    .btn-cesit-goster-row:hover { background: #166534; }
+    .modal-cesit-help { margin: 0 0 1rem; font-size: 0.9rem; color: #6b7280; line-height: 1.45; }
+    .cesit-gizle-section-title {
+      margin: 0.75rem 0 0.35rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #6b7280;
+    }
+    .panel-filters-mobile-wrap { display: none; }
     .panel-nav-list { display: flex; flex-wrap: wrap; gap: 0.25rem; }
     .panel-nav-list .panel-nav {
       padding: 0.5rem 1rem;
@@ -700,13 +768,17 @@
       .panel-table .row-actions button { font-size: 13px; padding: 0.25rem 0.35rem; }
     }
   </style>
+  <link rel="stylesheet" href="/meldus/mobile.css" />
 </head>
 <body>
   <header class="panel-topbar">
     <div class="panel-topbar-inner">
       <div class="panel-topbar-brand">
-        <span class="panel-brand-name">İklim Fide</span>
-        <p class="panel-topbar-sub">Operasyonel Takip & Stok Yönetimi</p>
+        <img src="/meldus/logo.png" alt="İklim Fide logosu" class="panel-topbar-logo" width="40" height="40" />
+        <div class="panel-topbar-brand-text">
+          <span class="panel-brand-name">İklim Fide</span>
+          <p class="panel-topbar-sub">Operasyonel Takip & Stok Yönetimi</p>
+        </div>
       </div>
       <div class="panel-topbar-actions btn-teslim-wrap">
         <button type="button" id="btn-teslim-fixed" class="btn-teslim-fixed" aria-label="Teslim edilecekler">
@@ -725,12 +797,18 @@
         <button type="button" class="panel-nav panel-nav-stok active" data-view="stok">Stok</button>
       </nav>
       <div class="panel-filters-center">
-        <div class="panel-filters">
+        <label class="panel-filters-mobile-wrap" for="panel-filters-mobile">
+          <span class="panel-filters-mobile-label">Çeşit</span>
+          <select id="panel-filters-mobile" class="panel-filters-mobile" aria-label="Çeşit filtresi">
+            <option value="">HEPSİ</option>
+          </select>
+        </label>
+        <div class="panel-filters" id="panel-filters">
           <button type="button" class="filter-btn active" data-cesit="">HEPSİ</button>
-          <button type="button" class="filter-btn" data-cesit="KANARYOLE">KANARYOLE</button>
-          <button type="button" class="filter-btn" data-cesit="PRESİDENTİAL">PRESİDENTİAL</button>
-          <button type="button" class="filter-btn" data-cesit="COSPİRİNA">COSPİRİNA</button>
-          <button type="button" class="filter-btn" data-cesit="VERNELİA">VERNELİA</button>
+        </div>
+        <div class="panel-cesit-actions">
+          <button type="button" id="btn-cesit-ekle" class="btn-cesit-action" title="Yeni çeşit ekle">+ Çeşit</button>
+          <button type="button" id="btn-cesit-gizle" class="btn-cesit-action" title="Çeşit gizle veya göster">Gizle</button>
         </div>
       </div>
     </div>
@@ -956,14 +1034,25 @@
     </div>
   </div>
 
-  <div id="modal-onceki-aktar" class="modal-backdrop" aria-hidden="true">
-    <div class="modal-box modal-onceki-aktar-box">
-      <h3 style="color: #0f766e;">ÖNCEKİNE AKTAR</h3>
-      <label>Aktarılacak miktar</label>
-      <input type="text" id="onceki-aktar-miktar" inputmode="numeric" placeholder="örn. 10.000" maxlength="7" />
+  <div id="modal-cesit-ekle" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-box modal-yeni-box">
+      <h3 style="color: #15803d;">Çeşit ekle</h3>
+      <label>Çeşit adı</label>
+      <input type="text" id="cesit-ekle-ad" autocomplete="off" placeholder="örn. KANARYOLE" />
       <div class="actions">
-        <button type="button" data-modal-close="onceki-aktar" style="background: #15803d; color: #fff;">İPTAL</button>
-        <button type="button" id="btn-onceki-aktar-onay" style="background: #0d9488; color: #fff; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);">ONAYLA</button>
+        <button type="button" data-modal-close="cesit-ekle" style="background: #15803d; color: #fff;">İptal</button>
+        <button type="button" id="btn-cesit-ekle-onay" style="background: #15803d; color: #fff;">Ekle</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-cesit-gizle" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-box modal-list-box">
+      <h3 style="color: #475569;">Çeşit gizle / göster</h3>
+      <p class="modal-cesit-help">Stokta kaydı olan çeşitler gizlenemez. Gizlenen çeşitler filtre çubuğunda görünmez; kayıt eklerken yine seçilebilir.</p>
+      <div id="cesit-gizle-list" class="modal-list-body"></div>
+      <div class="actions">
+        <button type="button" data-modal-close="cesit-gizle" style="background: #15803d; color: #fff;">Kapat</button>
       </div>
     </div>
   </div>
@@ -1140,5 +1229,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/meldus/config.js"></script>
   <script src="/meldus/app.js"></script>
+  <script src="/scripts/dev-mobile-preview.js" defer></script>
 </body>
 </html>
