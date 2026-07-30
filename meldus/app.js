@@ -54,6 +54,89 @@
   var cesitAutocompletePrevLen = 0;
   var stokSortKey = 'ekim_tarihi';
   var stokSortDir = 'asc';
+  var EKIM_CUTOFF_DATE = '2026-06-01';
+  var EKIM_CUTOFF_STORAGE_KEY = 'meldus-show-ekim-before-cutoff';
+  var showEkimBeforeCutoff = false;
+
+  try {
+    showEkimBeforeCutoff = localStorage.getItem(EKIM_CUTOFF_STORAGE_KEY) === '1';
+  } catch (e) {}
+
+  function ekimTarihiIso(r) {
+    return (r && r.ekim_tarihi) ? String(r.ekim_tarihi).trim().slice(0, 10) : '';
+  }
+
+  function isEkimBeforeCutoff(r) {
+    var d = ekimTarihiIso(r);
+    return Boolean(d && d < EKIM_CUTOFF_DATE);
+  }
+
+  function filterStokByEkimCutoff(list) {
+    if (showEkimBeforeCutoff) return list;
+    return list.filter(function (r) { return !isEkimBeforeCutoff(r); });
+  }
+
+  function filterCopRowsByEkimCutoff(rows, stokMap) {
+    if (showEkimBeforeCutoff) return rows;
+    return rows.filter(function (r) {
+      var info = stokMap[r.fide_id];
+      if (!info) return true;
+      return !isEkimBeforeCutoff({ ekim_tarihi: info.ekim_tarihi });
+    });
+  }
+
+  function copRowsHiddenByEkimCutoff(rows, stokMap) {
+    if (showEkimBeforeCutoff) return false;
+    return rows.some(function (r) {
+      var info = stokMap[r.fide_id];
+      return info && isEkimBeforeCutoff({ ekim_tarihi: info.ekim_tarihi });
+    });
+  }
+
+  function sortStokList(list) {
+    if (!stokSortKey) return list;
+    list.sort(function (a, b) {
+      var key = stokSortKey;
+      var va = a[key];
+      var vb = b[key];
+      if (key === 'cesit') {
+        va = (va || '').trim();
+        vb = (vb || '').trim();
+        return stokSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      }
+      if (key === 'ekim_tarihi' || key === 'teslim_tarihi') {
+        va = (va || '').toString().slice(0, 10);
+        vb = (vb || '').toString().slice(0, 10);
+        return stokSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      }
+      if (key === 'ekilen_miktar' || key === 'extra_fide') {
+        va = Number(va);
+        vb = Number(vb);
+        if (isNaN(va)) va = 0;
+        if (isNaN(vb)) vb = 0;
+        return stokSortDir === 'asc' ? va - vb : vb - va;
+      }
+      return 0;
+    });
+    return list;
+  }
+
+  function getStokListForView() {
+    var list = quickFilterCesit ? stok.filter(function (r) { return cesitAdEsit(r.cesit, quickFilterCesit); }) : stok.slice();
+    if (tableSearchQuery) {
+      var q = tableSearchQuery.toLowerCase();
+      list = list.filter(function (r) {
+        var cesitStr = (r.cesit || '').toLowerCase();
+        var ekimStr = formatDate(r.ekim_tarihi).toLowerCase();
+        var teslimStr = formatDate(r.teslim_tarihi).toLowerCase();
+        var miktarStr = formatNum(r.ekilen_miktar).toLowerCase();
+        var extraStr = formatNum(r.extra_fide).toLowerCase();
+        return cesitStr.indexOf(q) !== -1 || ekimStr.indexOf(q) !== -1 || teslimStr.indexOf(q) !== -1 || miktarStr.indexOf(q) !== -1 || extraStr.indexOf(q) !== -1;
+      });
+    }
+    list = filterStokByEkimCutoff(list);
+    return sortStokList(list);
+  }
 
   function formatDate(iso) {
     if (!iso) return '—';
@@ -186,7 +269,11 @@
 
   function cesitKullanimda(ad) {
     var key = normalizeCesitAd(ad);
-    return stok.some(function (r) { return normalizeCesitAd(r.cesit) === key; });
+    return stok.some(function (r) {
+      if (normalizeCesitAd(r.cesit) !== key) return false;
+      if (!showEkimBeforeCutoff && isEkimBeforeCutoff(r)) return false;
+      return true;
+    });
   }
 
   function getVisibleCesitTanimlari() {
@@ -258,8 +345,8 @@
         var kullanimda = cesitKullanimda(c.name);
         html += '<div class="cesit-gizle-row">' +
           '<div><div class="cesit-gizle-row-name">' + c.name.replace(/</g, '&lt;') + '</div>' +
-          '<div class="cesit-gizle-row-meta">' + (kullanimda ? 'Stokta kayıt var' : 'Kullanılmıyor — gizlenebilir') + '</div></div>' +
-          '<button type="button" class="btn-cesit-gizle-row" data-cesit-hide="' + c.name.replace(/"/g, '&quot;') + '"' + (kullanimda ? ' disabled title="Stokta kayıt olduğu için gizlenemez"' : '') + '>Gizle</button>' +
+          '<div class="cesit-gizle-row-meta">' + (kullanimda ? 'Tabloda görünür stok kaydı var' : 'Görünür kayıt yok — gizlenebilir') + '</div></div>' +
+          '<button type="button" class="btn-cesit-gizle-row" data-cesit-hide="' + c.name.replace(/"/g, '&quot;') + '"' + (kullanimda ? ' disabled title="Tabloda görünen stok kaydı olduğu için gizlenemez"' : '') + '>Gizle</button>' +
           '</div>';
       });
     }
@@ -269,7 +356,7 @@
       hidden.forEach(function (c) {
         html += '<div class="cesit-gizle-row">' +
           '<div><div class="cesit-gizle-row-name">' + c.name.replace(/</g, '&lt;') + '</div>' +
-          '<div class="cesit-gizle-row-meta">' + (cesitKullanimda(c.name) ? 'Stokta kayıt var' : 'Filtrede gizli') + '</div></div>' +
+          '<div class="cesit-gizle-row-meta">' + (cesitKullanimda(c.name) ? 'Tabloda görünür stok kaydı var' : 'Filtrede gizli') + '</div></div>' +
           '<button type="button" class="btn-cesit-goster-row" data-cesit-show="' + c.name.replace(/"/g, '&quot;') + '">Göster</button>' +
           '</div>';
       });
@@ -310,6 +397,11 @@
     modal.setAttribute('aria-hidden', 'true');
   }
 
+  function refreshCesitGizleModalIfOpen() {
+    var m = document.getElementById('modal-cesit-gizle');
+    if (m && m.classList.contains('open')) renderCesitGizleList();
+  }
+
   function addCesitTanim(ad) {
     var name = normalizeCesitAd(ad);
     if (!name) {
@@ -340,7 +432,7 @@
     var item = findCesitTanim(ad);
     if (!item || item.hidden) return;
     if (cesitKullanimda(item.name)) {
-      openModalUyari('Bu çeşit stokta kullanıldığı için gizlenemez.');
+      openModalUyari('Bu çeşitte tabloda görünen stok kaydı var; gizlenemez. Eski kayıtlar 1 Haz. 2026 filtresiyle gizliyse çeşit gizlenebilir.');
       return;
     }
     item.hidden = true;
@@ -360,13 +452,46 @@
     renderCesitGizleList();
   }
 
+  var stokLoadedOnce = false;
+  var STOK_SKELETON_ROWS = 8;
+
+  function stokSkeletonRowHtml() {
+    return '<tr class="skeleton-row" aria-hidden="true">' +
+      '<td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td>' +
+      '<td><span class="skeleton-block skeleton-block-sm"></span></td>' +
+      '<td><span class="skeleton-block skeleton-block-sm"></span></td>' +
+      '<td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td>' +
+      '<td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td>' +
+      '<td><span class="skeleton-block skeleton-block-actions"></span></td>' +
+      '<td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td>' +
+      '</tr>';
+  }
+
+  function renderStokSkeleton() {
+    var tbody = document.getElementById('stok-tbody');
+    if (!tbody) return;
+    var html = '';
+    for (var i = 0; i < STOK_SKELETON_ROWS; i++) html += stokSkeletonRowHtml();
+    tbody.innerHTML = html;
+    tbody.setAttribute('aria-busy', 'true');
+  }
+
   function loadStok() {
-    if (!supabase) return;
+    if (!supabase) {
+      var tbodyNoConn = document.getElementById('stok-tbody');
+      if (tbodyNoConn) {
+        tbodyNoConn.removeAttribute('aria-busy');
+        tbodyNoConn.innerHTML = '<tr><td colspan="7" class="empty-state px-4 py-8">Veritabanı bağlantısı yok.</td></tr>';
+      }
+      return;
+    }
+    if (!stokLoadedOnce) renderStokSkeleton();
     supabase.from('fide_stok').select('*').order('ekim_tarihi', { ascending: false }).then(function (res) {
       stok = (res.data && res.data.slice()) || [];
       syncCesitTanimlariFromStok();
       renderCesitFilters();
       updateCesitDatalists();
+      stokLoadedOnce = true;
       renderStok();
     });
   }
@@ -407,11 +532,21 @@
         if (fid != null && !seen[fid]) { seen[fid] = true; fideIds.push(fid); }
       });
       function fillCopRows(stokMap) {
-        var toplam = rows.reduce(function (s, r) {
+        var visibleRows = filterCopRowsByEkimCutoff(rows, stokMap);
+        if (visibleRows.length === 0) {
+          var copEmptyMsg = copRowsHiddenByEkimCutoff(rows, stokMap)
+            ? '1 Haziran 2026 öncesi çöp kayıtları gizli. Göstermek için «1 Haz. 2026 öncesini göster» kutusunu işaretleyin.'
+            : 'Henüz çöp kaydı yok.';
+          if (wrapTable) hostEl.innerHTML = '<p class="px-4 py-2">' + copEmptyMsg + '</p>';
+          else hostEl.innerHTML = '<tr><td colspan="5" class="px-4 py-2">' + copEmptyMsg + '</td></tr>';
+          clearCopTfoot();
+          return;
+        }
+        var toplam = visibleRows.reduce(function (s, r) {
           var n = r.miktar != null ? Number(r.miktar) : 0;
           return s + (isNaN(n) ? 0 : n);
         }, 0);
-        var inner = rows.map(function (r) {
+        var inner = visibleRows.map(function (r) {
           var info = stokMap[r.fide_id];
           var cesit = (info && info.cesit ? info.cesit : '—').replace(/</g, '&lt;');
           var ekimStr = info && info.ekim_tarihi ? formatDate(String(info.ekim_tarihi)) : '—';
@@ -606,50 +741,22 @@
   function renderStok() {
     var tbody = document.getElementById('stok-tbody');
     if (!tbody) return;
+    if (!stokLoadedOnce) return;
+    tbody.removeAttribute('aria-busy');
     try { hiddenRowIds = JSON.parse(localStorage.getItem('meldus_hidden_row_ids') || '{}'); } catch (e) {}
-    var list = quickFilterCesit ? stok.filter(function (r) { return cesitAdEsit(r.cesit, quickFilterCesit); }) : stok.slice();
-    if (tableSearchQuery) {
-      var q = tableSearchQuery.toLowerCase();
-      list = list.filter(function (r) {
-        var cesitStr = (r.cesit || '').toLowerCase();
-        var ekimStr = formatDate(r.ekim_tarihi).toLowerCase();
-        var teslimStr = formatDate(r.teslim_tarihi).toLowerCase();
-        var miktarStr = formatNum(r.ekilen_miktar).toLowerCase();
-        var extraStr = formatNum(r.extra_fide).toLowerCase();
-        return cesitStr.indexOf(q) !== -1 || ekimStr.indexOf(q) !== -1 || teslimStr.indexOf(q) !== -1 || miktarStr.indexOf(q) !== -1 || extraStr.indexOf(q) !== -1;
-      });
-    }
-    if (stokSortKey) {
-      list.sort(function (a, b) {
-        var key = stokSortKey;
-        var va = a[key];
-        var vb = b[key];
-        if (key === 'cesit') {
-          va = (va || '').trim();
-          vb = (vb || '').trim();
-          return stokSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
-        }
-        if (key === 'ekim_tarihi' || key === 'teslim_tarihi') {
-          va = (va || '').toString().slice(0, 10);
-          vb = (vb || '').toString().slice(0, 10);
-          return stokSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
-        }
-        if (key === 'ekilen_miktar' || key === 'extra_fide') {
-          va = Number(va);
-          vb = Number(vb);
-          if (isNaN(va)) va = 0;
-          if (isNaN(vb)) vb = 0;
-          return stokSortDir === 'asc' ? va - vb : vb - va;
-        }
-        return 0;
-      });
-    }
+    var list = getStokListForView();
     var topEl = document.getElementById('stok-extra-fide-toplam');
     var topEkilenEl = document.getElementById('stok-ekilen-toplam');
     if (list.length === 0) {
       if (topEl) topEl.textContent = formatNum(0);
       if (topEkilenEl) topEkilenEl.textContent = formatNum(0);
-      var emptyMsg = tableSearchQuery ? 'Arama ile eşleşen kayıt yok.' : (quickFilterCesit ? 'Bu çeşitte kayıt yok.' : 'Henüz kayıt yok. Yeni kayıt ekleyin.');
+      var emptyMsg = tableSearchQuery
+        ? 'Arama ile eşleşen kayıt yok.'
+        : (quickFilterCesit
+          ? 'Bu çeşitte kayıt yok.'
+          : (!showEkimBeforeCutoff && stok.some(isEkimBeforeCutoff)
+            ? '1 Haziran 2026 öncesi kayıtlar gizli. Göstermek için «1 Haz. 2026 öncesini göster» kutusunu işaretleyin.'
+            : 'Henüz kayıt yok. Yeni kayıt ekleyin.'));
       tbody.innerHTML = '<tr><td colspan="7" class="empty-state px-4 py-8">' + emptyMsg + '</td></tr>';
       return;
     }
@@ -864,44 +971,7 @@
   }
 
   function downloadStokJpg() {
-    var list = quickFilterCesit ? stok.filter(function (r) { return cesitAdEsit(r.cesit, quickFilterCesit); }) : stok.slice();
-    if (tableSearchQuery) {
-      var q = tableSearchQuery.toLowerCase();
-      list = list.filter(function (r) {
-        var cesitStr = (r.cesit || '').toLowerCase();
-        var ekimStr = formatDate(r.ekim_tarihi).toLowerCase();
-        var teslimStr = formatDate(r.teslim_tarihi).toLowerCase();
-        var miktarStr = formatNum(r.ekilen_miktar).toLowerCase();
-        var extraStr = formatNum(r.extra_fide).toLowerCase();
-        return cesitStr.indexOf(q) !== -1 || ekimStr.indexOf(q) !== -1 || teslimStr.indexOf(q) !== -1 || miktarStr.indexOf(q) !== -1 || extraStr.indexOf(q) !== -1;
-      });
-    }
-    if (stokSortKey) {
-      list.sort(function (a, b) {
-        var key = stokSortKey;
-        var va = a[key];
-        var vb = b[key];
-        if (key === 'cesit') {
-          va = (va || '').trim();
-          vb = (vb || '').trim();
-          return stokSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
-        }
-        if (key === 'ekim_tarihi' || key === 'teslim_tarihi') {
-          va = (va || '').toString().slice(0, 10);
-          vb = (vb || '').toString().slice(0, 10);
-          return stokSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
-        }
-        if (key === 'ekilen_miktar' || key === 'extra_fide') {
-          va = Number(va);
-          vb = Number(vb);
-          if (isNaN(va)) va = 0;
-          if (isNaN(vb)) vb = 0;
-          return stokSortDir === 'asc' ? va - vb : vb - va;
-        }
-        return 0;
-      });
-    }
-    list = list.filter(function (r) {
+    var list = getStokListForView().filter(function (r) {
       var n = r.extra_fide != null ? Number(r.extra_fide) : 0;
       return !isNaN(n) && n > 3000;
     });
@@ -932,16 +1002,46 @@
     canvas.height = Math.round(H * exportScale);
     var ctx = canvas.getContext('2d');
     ctx.setTransform(exportScale, 0, 0, exportScale, 0, 0);
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = 'high';
+    ctx.imageSmoothingEnabled = false;
     var navyBold = '#1e3a8a';
-    var line = '#e2e8f0';
+    var line = '#000000';
     var theadBg = '#166534';
     var theadText = '#ffffff';
     var rowA = '#ffffff';
     var rowB = '#f8fafc';
     var cellText = '#1e293b';
     var accentBar = '#15803d';
+
+    function setSharpStroke(w) {
+      ctx.strokeStyle = line;
+      ctx.lineWidth = w != null ? w : 1.5;
+      ctx.lineJoin = 'miter';
+      ctx.lineCap = 'butt';
+    }
+
+    function strokeSharpRect(x, y, w, h, lw) {
+      setSharpStroke(lw);
+      ctx.strokeRect(Math.round(x) + 0.5, Math.round(y) + 0.5, Math.round(w), Math.round(h));
+    }
+
+    function strokeSharpVLine(x, y1, y2, lw) {
+      setSharpStroke(lw);
+      x = Math.round(x) + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(x, Math.round(y1));
+      ctx.lineTo(x, Math.round(y2));
+      ctx.stroke();
+    }
+
+    function strokeSharpHLine(x1, x2, y, lw) {
+      setSharpStroke(lw);
+      y = Math.round(y) + 0.5;
+      ctx.beginPath();
+      ctx.moveTo(Math.round(x1), y);
+      ctx.lineTo(Math.round(x2), y);
+      ctx.stroke();
+    }
+
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, W, H);
     var title = 'İKLİM FİDE EKSTRA LİSTESİ';
@@ -956,25 +1056,22 @@
     ctx.fillRect(Math.floor(W / 2) - 36, pad + 4, 72, 3);
     ctx.fillStyle = navyBold;
     if (logoImg) {
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
       ctx.drawImage(logoImg, headerLeft, pad + 8, logoSize, logoSize);
+      ctx.imageSmoothingEnabled = false;
       ctx.textAlign = 'left';
       ctx.fillText(title, headerLeft + logoSize + logoGap, titleY);
     } else {
       ctx.textAlign = 'center';
       ctx.fillText(title, W / 2, titleY);
     }
-    ctx.strokeStyle = line;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(pad, pad + titleH - 6);
-    ctx.lineTo(W - pad, pad + titleH - 6);
-    ctx.stroke();
+    strokeSharpHLine(pad, W - pad, pad + titleH - 6, 1.5);
     var y = pad + titleH;
     var tableW = W - pad * 2;
     ctx.fillStyle = theadBg;
     ctx.fillRect(pad, y, tableW, rowH);
-    ctx.strokeStyle = line;
-    ctx.strokeRect(pad, y, tableW, rowH);
+    strokeSharpRect(pad, y, tableW, rowH, 2);
     ctx.fillStyle = theadText;
     ctx.font = 'bold 14px Arial, Helvetica, sans-serif';
     ctx.textAlign = 'left';
@@ -984,15 +1081,9 @@
     ctx.fillText('Extra Fide', pad + wCesit + wTeslim + wExtra / 2, y + 24);
     ctx.fillText('Viyol Tipi', pad + wCesit + wTeslim + wExtra + wViyol / 2, y + 24);
     ctx.textAlign = 'left';
-    ctx.strokeStyle = line;
-    ctx.beginPath();
-    ctx.moveTo(pad + wCesit, y);
-    ctx.lineTo(pad + wCesit, y + rowH);
-    ctx.moveTo(pad + wCesit + wTeslim, y);
-    ctx.lineTo(pad + wCesit + wTeslim, y + rowH);
-    ctx.moveTo(pad + wCesit + wTeslim + wExtra, y);
-    ctx.lineTo(pad + wCesit + wTeslim + wExtra, y + rowH);
-    ctx.stroke();
+    strokeSharpVLine(pad + wCesit, y, y + rowH);
+    strokeSharpVLine(pad + wCesit + wTeslim, y, y + rowH);
+    strokeSharpVLine(pad + wCesit + wTeslim + wExtra, y, y + rowH);
     y += rowH;
     ctx.font = '15px Arial, Helvetica, sans-serif';
     list.forEach(function (r, i) {
@@ -1000,16 +1091,10 @@
       var rowBg = ck && CESIT_EXPORT_ROW_BG[ck] ? CESIT_EXPORT_ROW_BG[ck] : (i % 2 === 0 ? rowA : rowB);
       ctx.fillStyle = rowBg;
       ctx.fillRect(pad, y, tableW, rowH);
-      ctx.strokeStyle = line;
-      ctx.strokeRect(pad, y, tableW, rowH);
-      ctx.beginPath();
-      ctx.moveTo(pad + wCesit, y);
-      ctx.lineTo(pad + wCesit, y + rowH);
-      ctx.moveTo(pad + wCesit + wTeslim, y);
-      ctx.lineTo(pad + wCesit + wTeslim, y + rowH);
-      ctx.moveTo(pad + wCesit + wTeslim + wExtra, y);
-      ctx.lineTo(pad + wCesit + wTeslim + wExtra, y + rowH);
-      ctx.stroke();
+      strokeSharpRect(pad, y, tableW, rowH, 1.5);
+      strokeSharpVLine(pad + wCesit, y, y + rowH);
+      strokeSharpVLine(pad + wCesit + wTeslim, y, y + rowH);
+      strokeSharpVLine(pad + wCesit + wTeslim + wExtra, y, y + rowH);
       ctx.fillStyle = cellText;
       var cesit = String(r.cesit || '—');
       if (cesit.length > 28) cesit = cesit.slice(0, 27) + '…';
@@ -1056,10 +1141,24 @@
   if (btnStokJpg) btnStokJpg.addEventListener('click', downloadStokJpg);
 
   var showHiddenEl = document.getElementById('show-hidden-rows');
+  var showEkimBeforeCutoffEl = document.getElementById('show-ekim-before-cutoff');
   var viewStok = document.getElementById('view-stok');
   if (showHiddenEl && viewStok) {
     showHiddenEl.addEventListener('change', function () {
       viewStok.classList.toggle('show-hidden-rows', showHiddenEl.checked);
+    });
+  }
+  if (showEkimBeforeCutoffEl) {
+    showEkimBeforeCutoffEl.checked = showEkimBeforeCutoff;
+    showEkimBeforeCutoffEl.addEventListener('change', function () {
+      showEkimBeforeCutoff = showEkimBeforeCutoffEl.checked;
+      try {
+        localStorage.setItem(EKIM_CUTOFF_STORAGE_KEY, showEkimBeforeCutoff ? '1' : '0');
+      } catch (e) {}
+      renderStok();
+      refreshCopKaydiModalIfOpen();
+      refreshCesitGizleModalIfOpen();
+      loadCop();
     });
   }
 

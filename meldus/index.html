@@ -715,6 +715,27 @@
     }
     @keyframes panel-fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+    @keyframes skeleton-shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    .skeleton-row td { pointer-events: none; vertical-align: middle; }
+    .skeleton-row:hover { box-shadow: none !important; }
+    #view-stok #stok-tbody tr.skeleton-row:nth-child(odd) { background: #fff !important; }
+    #view-stok #stok-tbody tr.skeleton-row:nth-child(even) { background: #f3f4f6 !important; }
+    #view-stok #stok-tbody tr.skeleton-row:hover { background: inherit !important; }
+    .skeleton-block {
+      display: inline-block;
+      border-radius: 0.25rem;
+      background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 40%, #e5e7eb 80%);
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.4s ease-in-out infinite;
+    }
+    .skeleton-block-sm { width: 72%; height: 1.15rem; min-width: 4.5rem; }
+    .skeleton-block-num { width: 4.5rem; height: 1.25rem; }
+    .skeleton-block-actions { width: 92%; height: 2.1rem; min-width: 16rem; border-radius: 9999px; }
+    .skeleton-block-check { width: 1.1rem; height: 1.1rem; border-radius: 0.2rem; }
+
     .btn-teslim-wrap {
       display: inline-flex;
       align-items: center;
@@ -818,6 +839,10 @@
         <div class="panel-toolbar">
           <div class="panel-toolbar-right">
             <label class="gizlileri-goster-wrap">
+              <input type="checkbox" id="show-ekim-before-cutoff" />
+              <span>1 Haz. 2026 öncesini göster</span>
+            </label>
+            <label class="gizlileri-goster-wrap">
               <input type="checkbox" id="show-hidden-rows" />
               <span>Gizli satırları göster</span>
             </label>
@@ -844,7 +869,16 @@
                 <th class="th-sec"><input type="checkbox" id="stok-select-all" title="Tümünü seç" aria-label="Tümünü seç" /></th>
               </tr>
             </thead>
-            <tbody id="stok-tbody"></tbody>
+            <tbody id="stok-tbody" aria-busy="true">
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+            </tbody>
             <tfoot>
               <tr id="stok-extra-fide-toplam-row">
                 <td colspan="3" class="px-4 py-2" style="text-align:right;font-weight:700;">Toplam</td>
@@ -1049,7 +1083,7 @@
   <div id="modal-cesit-gizle" class="modal-backdrop" aria-hidden="true">
     <div class="modal-box modal-list-box">
       <h3 style="color: #475569;">Çeşit gizle / göster</h3>
-      <p class="modal-cesit-help">Stokta kaydı olan çeşitler gizlenemez. Gizlenen çeşitler filtre çubuğunda görünmez; kayıt eklerken yine seçilebilir.</p>
+      <p class="modal-cesit-help">Tabloda görünen stok kaydı olan çeşitler gizlenemez. 1 Haziran 2026 öncesi kayıtlar gizliyse çeşit filtreden kaldırılabilir. Gizlenen çeşitler filtre çubuğunda görünmez; yeni kayıt eklerken yine seçilebilir.</p>
       <div id="cesit-gizle-list" class="modal-list-body"></div>
       <div class="actions">
         <button type="button" data-modal-close="cesit-gizle" style="background: #15803d; color: #fff;">Kapat</button>
