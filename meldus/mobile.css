@@ -136,10 +136,6 @@
     gap: 0.65rem;
   }
 
-  .gizlileri-goster-wrap {
-    display: none !important;
-  }
-
   #view-stok .panel-toolbar-right {
     display: grid !important;
     grid-template-columns: 1fr 1fr;
@@ -158,7 +154,19 @@
   }
 
   .gizlileri-goster-wrap {
-    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    white-space: normal;
+    line-height: 1.3;
+    min-height: 2.25rem;
+  }
+
+  .gizlileri-goster-wrap input {
+    flex-shrink: 0;
+    width: 1.15rem;
+    height: 1.15rem;
   }
 
   .search-wrap {
