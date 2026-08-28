@@ -49,7 +49,10 @@
   var stok = [];
   var hiddenRowIds = {};
   var selectedStokIds = {};
-  var quickFilterCesit = '';
+  var quickFilterCesit = [];
+  var quickFilterEkim = [];
+  var quickFilterTeslim = [];
+  var DATE_FILTER_EMPTY = '__empty__';
   var tableSearchQuery = '';
   var cesitAutocompletePrevLen = 0;
   var stokSortKey = 'ekim_tarihi';
@@ -64,6 +67,16 @@
 
   function ekimTarihiIso(r) {
     return (r && r.ekim_tarihi) ? String(r.ekim_tarihi).trim().slice(0, 10) : '';
+  }
+
+  function teslimTarihiIso(r) {
+    return (r && r.teslim_tarihi) ? String(r.teslim_tarihi).trim().slice(0, 10) : '';
+  }
+
+  function dateFilterMatches(iso, filterVals) {
+    if (!filterVals || !filterVals.length) return true;
+    if (!iso) return filterVals.indexOf(DATE_FILTER_EMPTY) !== -1;
+    return filterVals.indexOf(iso) !== -1;
   }
 
   function isEkimBeforeCutoff(r) {
@@ -121,8 +134,24 @@
     return list;
   }
 
+  function getStokListForDateOptions() {
+    var list = stok.slice();
+    if (quickFilterCesit.length) {
+      list = list.filter(function (r) {
+        return quickFilterCesit.some(function (name) { return cesitAdEsit(r.cesit, name); });
+      });
+    }
+    return filterStokByEkimCutoff(list);
+  }
+
   function getStokListForView() {
-    var list = quickFilterCesit ? stok.filter(function (r) { return cesitAdEsit(r.cesit, quickFilterCesit); }) : stok.slice();
+    var list = getStokListForDateOptions();
+    if (quickFilterEkim.length) {
+      list = list.filter(function (r) { return dateFilterMatches(ekimTarihiIso(r), quickFilterEkim); });
+    }
+    if (quickFilterTeslim.length) {
+      list = list.filter(function (r) { return dateFilterMatches(teslimTarihiIso(r), quickFilterTeslim); });
+    }
     if (tableSearchQuery) {
       var q = tableSearchQuery.toLowerCase();
       list = list.filter(function (r) {
@@ -134,8 +163,108 @@
         return cesitStr.indexOf(q) !== -1 || ekimStr.indexOf(q) !== -1 || teslimStr.indexOf(q) !== -1 || miktarStr.indexOf(q) !== -1 || extraStr.indexOf(q) !== -1;
       });
     }
-    list = filterStokByEkimCutoff(list);
     return sortStokList(list);
+  }
+
+  function uniqueIsoDates(list, getIso) {
+    var map = {};
+    var hasEmpty = false;
+    list.forEach(function (r) {
+      var iso = getIso(r);
+      if (!iso) hasEmpty = true;
+      else map[iso] = true;
+    });
+    var keys = Object.keys(map).sort();
+    return { keys: keys, hasEmpty: hasEmpty };
+  }
+
+  function dateFilterLabel(vals) {
+    if (!vals || !vals.length) return 'Tümü';
+    if (vals.length === 1) return vals[0] === DATE_FILTER_EMPTY ? '—' : formatDate(vals[0]);
+    return vals.length + ' tarih';
+  }
+
+  function updateDateFilterButton(btn, vals) {
+    if (!btn) return;
+    btn.textContent = dateFilterLabel(vals);
+    btn.classList.toggle('filter-active', vals.length > 0);
+    var kind = 'Filtre';
+    if (btn.id === 'stok-filter-ekim') kind = 'Ekim tarihi filtresi';
+    else if (btn.id === 'stok-filter-teslim') kind = 'Teslim tarihi filtresi';
+    else if (btn.id === 'stok-filter-cesit') kind = 'Çeşit filtresi';
+    btn.setAttribute('aria-label', kind + ', ' + dateFilterLabel(vals));
+  }
+
+  function fillStokDateFilter(host, isoInfo, currentArr) {
+    if (!host) return [];
+    var panel = host.querySelector('.date-multi-panel');
+    var btn = host.querySelector('.date-multi-btn');
+    if (!panel || !btn) return [];
+    var valid = {};
+    isoInfo.keys.forEach(function (k) { valid[k] = true; });
+    if (isoInfo.hasEmpty) valid[DATE_FILTER_EMPTY] = true;
+    var next = (currentArr || []).filter(function (v) { return valid[v]; });
+    var keySig = isoInfo.keys.join('|') + (isoInfo.hasEmpty ? '|__empty__' : '');
+    if (host.getAttribute('data-keys') !== keySig) {
+      host.setAttribute('data-keys', keySig);
+      var html = '';
+      isoInfo.keys.forEach(function (iso) {
+        html += '<label class="date-multi-option"><input type="checkbox" value="' + iso + '"' + (next.indexOf(iso) !== -1 ? ' checked' : '') + '> ' + formatDate(iso) + '</label>';
+      });
+      if (isoInfo.hasEmpty) {
+        html += '<label class="date-multi-option"><input type="checkbox" value="' + DATE_FILTER_EMPTY + '"' + (next.indexOf(DATE_FILTER_EMPTY) !== -1 ? ' checked' : '') + '> —</label>';
+      }
+      if (!html) html = '<p class="date-multi-empty">Tarih yok</p>';
+      panel.innerHTML = html;
+    } else {
+      panel.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+        cb.checked = next.indexOf(cb.value) !== -1;
+      });
+    }
+    updateDateFilterButton(btn, next);
+    return next;
+  }
+
+  function updateStokFiltersClearBtn() {
+    var clearBtn = document.getElementById('stok-date-filters-clear');
+    if (clearBtn) clearBtn.hidden = !(quickFilterCesit.length || quickFilterEkim.length || quickFilterTeslim.length);
+  }
+
+  function fillStokDateFilterSelects() {
+    var list = getStokListForDateOptions();
+    quickFilterEkim = fillStokDateFilter(document.getElementById('stok-filter-ekim-wrap'), uniqueIsoDates(list, ekimTarihiIso), quickFilterEkim);
+    quickFilterTeslim = fillStokDateFilter(document.getElementById('stok-filter-teslim-wrap'), uniqueIsoDates(list, teslimTarihiIso), quickFilterTeslim);
+    updateStokFiltersClearBtn();
+  }
+
+  function closeAllDateMultis(exceptWrap) {
+    document.querySelectorAll('.date-multi').forEach(function (wrap) {
+      if (exceptWrap && wrap === exceptWrap) return;
+      var panel = wrap.querySelector('.date-multi-panel');
+      var btn = wrap.querySelector('.date-multi-btn');
+      if (panel) panel.hidden = true;
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    });
+  }
+
+  function toggleDateMulti(wrap) {
+    if (!wrap) return;
+    var panel = wrap.querySelector('.date-multi-panel');
+    var btn = wrap.querySelector('.date-multi-btn');
+    var open = panel && panel.hidden;
+    closeAllDateMultis(open ? wrap : null);
+    if (!panel || !btn) return;
+    panel.hidden = !open;
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  function readDateFilterValues(wrap) {
+    var vals = [];
+    if (!wrap) return vals;
+    wrap.querySelectorAll('.date-multi-option input:checked').forEach(function (cb) {
+      if (cb.value) vals.push(cb.value);
+    });
+    return vals;
   }
 
   function formatDate(iso) {
@@ -300,30 +429,40 @@
     if (degistirList) degistirList.innerHTML = html;
   }
 
+  function cesitFilterLabel(vals) {
+    if (!vals || !vals.length) return 'Tümü';
+    if (vals.length === 1) return vals[0];
+    return vals.length + ' çeşit';
+  }
+
   function renderCesitFilters() {
-    var container = document.getElementById('panel-filters');
-    var mobileSelect = document.getElementById('panel-filters-mobile');
-
-    if (quickFilterCesit && !getVisibleCesitTanimlari().some(function (c) { return c.name === quickFilterCesit; })) {
-      quickFilterCesit = '';
-    }
-
-    var html = '<button type="button" class="filter-btn' + (quickFilterCesit === '' ? ' active' : '') + '" data-cesit="">HEPSİ</button>';
-    getVisibleCesitTanimlari().forEach(function (c) {
-      var active = quickFilterCesit === c.name ? ' active' : '';
-      html += '<button type="button" class="filter-btn' + active + '" data-cesit="' + c.name.replace(/"/g, '&quot;') + '">' + c.name.replace(/</g, '&lt;') + '</button>';
-    });
-    if (container) container.innerHTML = html;
-
-    if (mobileSelect) {
-      var opts = '<option value="">HEPSİ</option>';
-      getVisibleCesitTanimlari().forEach(function (c) {
-        var selected = quickFilterCesit === c.name ? ' selected' : '';
-        opts += '<option value="' + c.name.replace(/"/g, '&quot;') + '"' + selected + '>' + c.name.replace(/</g, '&lt;') + '</option>';
+    var host = document.getElementById('stok-filter-cesit-wrap');
+    if (!host) return;
+    var panel = host.querySelector('.date-multi-panel');
+    var btn = host.querySelector('.date-multi-btn');
+    if (!panel || !btn) return;
+    var names = getVisibleCesitTanimlari().map(function (c) { return c.name; });
+    var valid = {};
+    names.forEach(function (n) { valid[n] = true; });
+    quickFilterCesit = (quickFilterCesit || []).filter(function (n) { return valid[n]; });
+    var keySig = names.join('|');
+    if (host.getAttribute('data-keys') !== keySig) {
+      host.setAttribute('data-keys', keySig);
+      var html = '';
+      names.forEach(function (name) {
+        html += '<label class="date-multi-option"><input type="checkbox" value="' + name.replace(/"/g, '&quot;') + '"' + (quickFilterCesit.indexOf(name) !== -1 ? ' checked' : '') + '> ' + name.replace(/</g, '&lt;') + '</label>';
       });
-      mobileSelect.innerHTML = opts;
-      mobileSelect.value = quickFilterCesit || '';
+      if (!html) html = '<p class="date-multi-empty">Çeşit yok</p>';
+      panel.innerHTML = html;
+    } else {
+      panel.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+        cb.checked = quickFilterCesit.indexOf(cb.value) !== -1;
+      });
     }
+    btn.textContent = cesitFilterLabel(quickFilterCesit);
+    btn.classList.toggle('filter-active', quickFilterCesit.length > 0);
+    btn.setAttribute('aria-label', 'Çeşit filtresi, ' + cesitFilterLabel(quickFilterCesit));
+    updateStokFiltersClearBtn();
   }
 
   function renderCesitGizleList() {
@@ -436,7 +575,7 @@
       return;
     }
     item.hidden = true;
-    if (quickFilterCesit === item.name) quickFilterCesit = '';
+    quickFilterCesit = quickFilterCesit.filter(function (n) { return n !== item.name; });
     saveCesitTanimlari();
     renderCesitFilters();
     renderStok();
@@ -803,6 +942,8 @@
     var tbody = document.getElementById('stok-tbody');
     if (!tbody) return;
     if (!stokLoadedOnce) return;
+    renderCesitFilters();
+    fillStokDateFilterSelects();
     tbody.removeAttribute('aria-busy');
     try { hiddenRowIds = JSON.parse(localStorage.getItem('meldus_hidden_row_ids') || '{}'); } catch (e) {}
     var list = getStokListForView();
@@ -813,11 +954,13 @@
       if (topEkilenEl) topEkilenEl.textContent = formatNum(0);
       var emptyMsg = tableSearchQuery
         ? 'Arama ile eşleşen kayıt yok.'
-        : (quickFilterCesit
-          ? 'Bu çeşitte kayıt yok.'
-          : (!showEkimBeforeCutoff && stok.some(isEkimBeforeCutoff)
-            ? '1 Haziran 2026 öncesi kayıtlar gizli. Göstermek için «1 Haz. 2026 öncesini göster» kutusunu işaretleyin.'
-            : 'Henüz kayıt yok. Yeni kayıt ekleyin.'));
+        : ((quickFilterEkim.length || quickFilterTeslim.length)
+          ? 'Bu tarih filtresine uyan kayıt yok.'
+          : (quickFilterCesit.length
+            ? 'Bu çeşit filtresine uyan kayıt yok.'
+            : (!showEkimBeforeCutoff && stok.some(isEkimBeforeCutoff)
+              ? '1 Haziran 2026 öncesi kayıtlar gizli. Göstermek için «1 Haz. 2026 öncesini göster» kutusunu işaretleyin.'
+              : 'Henüz kayıt yok. Yeni kayıt ekleyin.')));
       tbody.innerHTML = '<tr><td colspan="7" class="empty-state px-4 py-8">' + emptyMsg + '</td></tr>';
       return;
     }
@@ -1223,23 +1366,6 @@
     });
   }
 
-  document.getElementById('panel-filters') && document.getElementById('panel-filters').addEventListener('click', function (ev) {
-    var btn = ev.target.closest('.filter-btn');
-    if (!btn) return;
-    quickFilterCesit = normalizeCesitAd(btn.getAttribute('data-cesit') || '');
-    renderCesitFilters();
-    renderStok();
-  });
-
-  var panelFiltersMobile = document.getElementById('panel-filters-mobile');
-  if (panelFiltersMobile) {
-    panelFiltersMobile.addEventListener('change', function () {
-      quickFilterCesit = normalizeCesitAd(panelFiltersMobile.value || '');
-      renderCesitFilters();
-      renderStok();
-    });
-  }
-
   var btnCesitEkle = document.getElementById('btn-cesit-ekle');
   if (btnCesitEkle) btnCesitEkle.addEventListener('click', openModalCesitEkle);
 
@@ -1288,6 +1414,45 @@
   if (searchTableEl) {
     searchTableEl.addEventListener('input', function () {
       tableSearchQuery = (searchTableEl.value || '').trim();
+      renderStok();
+    });
+  }
+
+  var panelDateFilters = document.getElementById('panel-date-filters');
+  var stokDateFiltersClear = document.getElementById('stok-date-filters-clear');
+  if (panelDateFilters) {
+    panelDateFilters.addEventListener('click', function (ev) {
+      var btn = ev.target.closest('.date-multi-btn');
+      if (!btn) return;
+      ev.preventDefault();
+      toggleDateMulti(btn.closest('.date-multi'));
+    });
+    panelDateFilters.addEventListener('change', function (ev) {
+      var input = ev.target;
+      if (!input || !input.matches || !input.matches('.date-multi-option input')) return;
+      var wrap = input.closest('.date-multi');
+      if (!wrap) return;
+      var field = wrap.getAttribute('data-filter-field') || wrap.getAttribute('data-date-field');
+      var vals = readDateFilterValues(wrap);
+      if (field === 'cesit') quickFilterCesit = vals;
+      else if (field === 'ekim') quickFilterEkim = vals;
+      else if (field === 'teslim') quickFilterTeslim = vals;
+      renderStok();
+    });
+  }
+  document.addEventListener('click', function (ev) {
+    if (ev.target.closest && ev.target.closest('.date-multi')) return;
+    closeAllDateMultis();
+  });
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') closeAllDateMultis();
+  });
+  if (stokDateFiltersClear) {
+    stokDateFiltersClear.addEventListener('click', function () {
+      quickFilterCesit = [];
+      quickFilterEkim = [];
+      quickFilterTeslim = [];
+      closeAllDateMultis();
       renderStok();
     });
   }

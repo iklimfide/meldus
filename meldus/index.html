@@ -126,17 +126,6 @@
     }
     .btn-teslim:hover { background: #ca8a04; }
 
-    .panel-nav-wrap {
-      padding: 0.5rem 1.5rem;
-      background: #f9fafb;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.75rem;
-    }
-    .panel-nav-wrap .panel-filters-center { flex: 1; display: flex; justify-content: center; align-items: center; gap: 0.5rem; min-width: 0; }
     .panel-cesit-actions { display: flex; align-items: center; gap: 0.35rem; flex-shrink: 0; }
     .btn-cesit-action {
       padding: 0.25rem 0.65rem;
@@ -188,35 +177,117 @@
       color: #6b7280;
     }
     .panel-filters-mobile-wrap { display: none; }
-    .panel-nav-list { display: flex; flex-wrap: wrap; gap: 0.25rem; }
-    .panel-nav-list .panel-nav {
-      padding: 0.5rem 1rem;
+    .panel-date-filters {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+    .panel-toolbar { position: relative; z-index: 5; }
+    .panel-date-filter {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 0.4rem;
+      margin: 0;
+    }
+    .panel-date-filter > span {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+    }
+    .date-multi { position: relative; }
+    .date-multi-btn {
+      min-width: 10.5rem;
+      max-width: 14rem;
+      padding: 0.35rem 2rem 0.35rem 0.6rem;
+      border: 1px solid #d1d5db;
       border-radius: 0.375rem;
-      font-size: 1.125rem;
-      font-weight: 500;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #111827;
+      background: #fff;
+      cursor: pointer;
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2315803d' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.45rem center;
+      background-size: 1rem;
+    }
+    .date-multi-btn:focus {
+      outline: 2px solid #15803d;
+      border-color: transparent;
+    }
+    .date-multi-btn.filter-active {
+      border-color: #15803d;
+      background-color: #f0fdf4;
+      color: #166534;
+    }
+    .date-multi-panel {
+      position: absolute;
+      top: calc(100% + 0.25rem);
+      left: 0;
+      z-index: 40;
+      min-width: 14rem;
+      max-height: 16rem;
+      overflow-y: auto;
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      box-shadow: 0 10px 25px -8px rgba(0,0,0,0.25);
+      padding: 0.35rem;
+    }
+    .date-multi-option {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0;
+      padding: 0.4rem 0.5rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #111827;
+      text-transform: none;
+      text-align: left;
+      cursor: pointer;
+      border-radius: 0.375rem;
+    }
+    .date-multi-option:hover { background: #f0fdf4; }
+    .date-multi-option input {
+      width: 1.1rem;
+      height: 1.1rem;
+      margin: 0;
+      flex-shrink: 0;
+      accent-color: #15803d;
+      cursor: pointer;
+    }
+    .date-multi-empty {
+      margin: 0;
+      padding: 0.5rem;
+      font-size: 0.85rem;
+      color: #6b7280;
+      text-align: center;
+    }
+    .btn-date-filter-clear {
+      padding: 0.3rem 0.65rem;
+      border-radius: 0.375rem;
+      font-size: 0.8rem;
+      font-weight: 700;
       border: 1px solid #d1d5db;
       background: #fff;
-      color: #374151;
+      color: #6b7280;
       cursor: pointer;
-      transition: all 0.2s;
+      white-space: nowrap;
     }
-    .panel-nav-list .panel-nav:hover { background: #15803d; color: #fff; border-color: #15803d; }
-    .panel-nav-list .panel-nav.active { background: #15803d; color: #fff; border-color: #15803d; }
-    .panel-nav-list .panel-nav-stok {
-      padding: 0.4rem 0.75rem;
-      font-size: 0.9rem;
-      font-weight: 600;
-      border-color: #e5e7eb;
-      color: #9ca3af;
-      background: #f3f4f6;
-      box-shadow: none;
-    }
-    .panel-nav-list .panel-nav-stok:hover { background: #e5e7eb; color: #374151; border-color: #d1d5db; }
-    .panel-nav-list .panel-nav-stok.active {
-      background: #15803d;
-      color: #fff;
-      border-color: #14532d;
-    }
+    .btn-date-filter-clear:hover { background: #f3f4f6; color: #111827; }
+    .btn-date-filter-clear[hidden] { display: none !important; }
     .panel-toolbar {
       padding: 1.5rem 1.5rem;
       border-bottom: 1px solid #e5e7eb;
@@ -816,30 +887,37 @@
   </header>
 
   <div class="panel-card">
-    <div class="panel-nav-wrap">
-      <nav class="panel-nav-list">
-        <button type="button" class="panel-nav panel-nav-stok active" data-view="stok">Stok</button>
-      </nav>
-      <div class="panel-filters-center">
-        <label class="panel-filters-mobile-wrap" for="panel-filters-mobile">
-          <span class="panel-filters-mobile-label">Çeşit</span>
-          <select id="panel-filters-mobile" class="panel-filters-mobile" aria-label="Çeşit filtresi">
-            <option value="">HEPSİ</option>
-          </select>
-        </label>
-        <div class="panel-filters" id="panel-filters">
-          <button type="button" class="filter-btn active" data-cesit="">HEPSİ</button>
-        </div>
-        <div class="panel-cesit-actions">
-          <button type="button" id="btn-cesit-ekle" class="btn-cesit-action" title="Yeni çeşit ekle">+ Çeşit</button>
-          <button type="button" id="btn-cesit-gizle" class="btn-cesit-action" title="Çeşit gizle veya göster">Gizle</button>
-        </div>
-      </div>
-    </div>
-
     <main class="panel-main">
       <section id="view-stok" data-view="stok" class="active">
         <div class="panel-toolbar">
+          <div class="panel-date-filters" id="panel-date-filters">
+            <div class="panel-date-filter">
+              <span id="stok-filter-cesit-label">Çeşit</span>
+              <div class="date-multi" data-filter-field="cesit" id="stok-filter-cesit-wrap">
+                <button type="button" class="date-multi-btn" id="stok-filter-cesit" aria-haspopup="listbox" aria-expanded="false" aria-controls="stok-filter-cesit-panel" aria-label="Çeşit filtresi">Tümü</button>
+                <div class="date-multi-panel" id="stok-filter-cesit-panel" hidden role="listbox" aria-multiselectable="true" aria-labelledby="stok-filter-cesit-label"></div>
+              </div>
+            </div>
+            <div class="panel-date-filter">
+              <span id="stok-filter-ekim-label">Ekim tarihi</span>
+              <div class="date-multi" data-filter-field="ekim" data-date-field="ekim" id="stok-filter-ekim-wrap">
+                <button type="button" class="date-multi-btn" id="stok-filter-ekim" aria-haspopup="listbox" aria-expanded="false" aria-controls="stok-filter-ekim-panel" aria-label="Ekim tarihi filtresi">Tümü</button>
+                <div class="date-multi-panel" id="stok-filter-ekim-panel" hidden role="listbox" aria-multiselectable="true" aria-labelledby="stok-filter-ekim-label"></div>
+              </div>
+            </div>
+            <div class="panel-date-filter">
+              <span id="stok-filter-teslim-label">Teslim tarihi</span>
+              <div class="date-multi" data-filter-field="teslim" data-date-field="teslim" id="stok-filter-teslim-wrap">
+                <button type="button" class="date-multi-btn" id="stok-filter-teslim" aria-haspopup="listbox" aria-expanded="false" aria-controls="stok-filter-teslim-panel" aria-label="Teslim tarihi filtresi">Tümü</button>
+                <div class="date-multi-panel" id="stok-filter-teslim-panel" hidden role="listbox" aria-multiselectable="true" aria-labelledby="stok-filter-teslim-label"></div>
+              </div>
+            </div>
+            <button type="button" id="stok-date-filters-clear" class="btn-date-filter-clear" hidden>Filtreleri temizle</button>
+            <div class="panel-cesit-actions">
+              <button type="button" id="btn-cesit-ekle" class="btn-cesit-action" title="Yeni çeşit ekle">+ Çeşit</button>
+              <button type="button" id="btn-cesit-gizle" class="btn-cesit-action" title="Çeşit gizle veya göster">Gizle</button>
+            </div>
+          </div>
           <div class="panel-toolbar-right">
             <label class="gizlileri-goster-wrap">
               <input type="checkbox" id="show-ekim-before-cutoff" />
