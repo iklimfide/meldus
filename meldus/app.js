@@ -89,7 +89,7 @@
     return list.filter(function (r) { return !isEkimBeforeCutoff(r); });
   }
 
-  function filterCopRowsByEkimCutoff(rows, stokMap) {
+  function filterRowsByRelatedEkimCutoff(rows, stokMap) {
     if (showEkimBeforeCutoff) return rows;
     return rows.filter(function (r) {
       var info = stokMap[r.fide_id];
@@ -98,7 +98,7 @@
     });
   }
 
-  function copRowsHiddenByEkimCutoff(rows, stokMap) {
+  function relatedRowsHiddenByEkimCutoff(rows, stokMap) {
     if (showEkimBeforeCutoff) return false;
     return rows.some(function (r) {
       var info = stokMap[r.fide_id];
@@ -728,9 +728,9 @@
       });
       function fillCopRows(stokMap) {
         clearCopBusy();
-        var visibleRows = filterCopRowsByEkimCutoff(rows, stokMap);
+        var visibleRows = filterRowsByRelatedEkimCutoff(rows, stokMap);
         if (visibleRows.length === 0) {
-          var copEmptyMsg = copRowsHiddenByEkimCutoff(rows, stokMap)
+          var copEmptyMsg = relatedRowsHiddenByEkimCutoff(rows, stokMap)
             ? '1 Haziran 2026 öncesi çöp kayıtları gizli. Göstermek için «1 Haz. 2026 öncesini göster» kutusunu işaretleyin.'
             : 'Henüz çöp kaydı yok.';
           if (wrapTable) hostEl.innerHTML = '<p class="px-4 py-2">' + copEmptyMsg + '</p>';
@@ -1362,6 +1362,8 @@
       renderStok();
       refreshCopKaydiModalIfOpen();
       refreshCesitGizleModalIfOpen();
+      refreshTeslimEdilenlerModalIfOpen();
+      refreshTeslimModalIfOpen();
       loadCop();
     });
   }
@@ -1831,8 +1833,18 @@
       });
       function fillTeslimDisplay(list, stokMap) {
         if (modalTeslimTbody) modalTeslimTbody.removeAttribute('aria-busy');
+        var visibleList = filterRowsByRelatedEkimCutoff(list, stokMap);
+        if (visibleList.length === 0) {
+          teslimDisplayRows = [];
+          var emptyMsg = relatedRowsHiddenByEkimCutoff(list, stokMap)
+            ? '1 Haziran 2026 öncesi teslim kayıtları gizli. Göstermek için «1 Haz. 2026 öncesini göster» kutusunu işaretleyin.'
+            : 'Henüz teslim edilecek kayıt yok.';
+          modalTeslimTbody.innerHTML = '<tr><td colspan="8" class="px-4 py-2">' + emptyMsg + '</td></tr>';
+          if (toplamEl) toplamEl.textContent = '0';
+          return;
+        }
         var miktarRaw = function (s) { var n = s.miktar != null ? Number(s.miktar) : 0; return isNaN(n) ? 0 : n; };
-        teslimDisplayRows = list.map(function (s) {
+        teslimDisplayRows = visibleList.map(function (s) {
           var tarih = formatDate(s.satis_tarihi);
           var musteri = (s.musteri_adi || '—').replace(/</g, '&lt;');
           var stokRow = stokMap ? stokMap[s.fide_id] : null;
@@ -1869,6 +1881,10 @@
       modalTeslim.classList.remove('open');
       modalTeslim.setAttribute('aria-hidden', 'true');
     }
+  }
+
+  function refreshTeslimModalIfOpen() {
+    if (modalTeslim && modalTeslim.classList.contains('open')) openModalTeslim();
   }
 
   function openModalTeslimEdilenler() {
@@ -1922,8 +1938,18 @@
       });
       function fillTeslimEdilenlerDisplay(list, stokMap) {
         if (modalTeslimEdilenlerTbody) modalTeslimEdilenlerTbody.removeAttribute('aria-busy');
+        var visibleList = filterRowsByRelatedEkimCutoff(list, stokMap);
+        if (visibleList.length === 0) {
+          teslimEdilenlerDisplayRows = [];
+          var emptyMsg = relatedRowsHiddenByEkimCutoff(list, stokMap)
+            ? '1 Haziran 2026 öncesi teslim kayıtları gizli. Göstermek için «1 Haz. 2026 öncesini göster» kutusunu işaretleyin.'
+            : 'Henüz teslim edilen kayıt yok.';
+          modalTeslimEdilenlerTbody.innerHTML = '<tr><td colspan="7" class="px-4 py-2">' + emptyMsg + '</td></tr>';
+          if (toplamElEdilenler) toplamElEdilenler.textContent = '0';
+          return;
+        }
         var miktarRaw = function (s) { var n = s.miktar != null ? Number(s.miktar) : 0; return isNaN(n) ? 0 : n; };
-        teslimEdilenlerDisplayRows = list.map(function (s) {
+        teslimEdilenlerDisplayRows = visibleList.map(function (s) {
           var tarih = formatDate(s.teslim_edildi_tarihi || s.satis_tarihi);
           var musteri = (s.musteri_adi || '—').replace(/</g, '&lt;');
           var stokRow = stokMap ? stokMap[s.fide_id] : null;
@@ -1956,6 +1982,10 @@
       modalTeslimEdilenler.classList.remove('open');
       modalTeslimEdilenler.setAttribute('aria-hidden', 'true');
     }
+  }
+
+  function refreshTeslimEdilenlerModalIfOpen() {
+    if (modalTeslimEdilenler && modalTeslimEdilenler.classList.contains('open')) openModalTeslimEdilenler();
   }
 
   var btnTeslimFixed = document.getElementById('btn-teslim-fixed');
