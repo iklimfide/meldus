@@ -6,6 +6,7 @@ create table if not exists public.fide_stok (
   id uuid primary key default gen_random_uuid(),
   cesit text not null,
   ekim_tarihi date,
+  ekim_no text,
   teslim_tarihi date,
   ekilen_miktar int default 0,
   cikan_fide int default 0,
@@ -126,3 +127,9 @@ alter table public.fide_stok add column if not exists cikan_fide int default 0;
 
 -- 8. (İsteğe bağlı) satislar tablosuna teslim_tarihi ekle
 alter table public.satislar add column if not exists teslim_tarihi date;
+
+-- 9. (İsteğe bağlı) satislar tablosuna kargo işareti ekle
+alter table public.satislar add column if not exists kargo boolean not null default false;
+
+-- 10. (İsteğe bağlı) fide_stok tablosuna ekim no ekle
+alter table public.fide_stok add column if not exists ekim_no text;

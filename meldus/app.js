@@ -43,6 +43,7 @@
   var btnYeniKayit = document.getElementById('btn-yeni-kayit');
   var yeniCesit = document.getElementById('yeni-cesit');
   var yeniEkim = document.getElementById('yeni-ekim_tarihi');
+  var yeniEkimNo = document.getElementById('yeni-ekim_no');
   var yeniMiktar = document.getElementById('yeni-ekilen_miktar');
   var btnKaydet = document.getElementById('btn-yeni-kayit-onay');
   var cesitDatalist = document.getElementById('yeni-cesit-list');
@@ -122,6 +123,18 @@
         vb = (vb || '').toString().slice(0, 10);
         return stokSortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
       }
+      if (key === 'ekim_no') {
+        var sa = String(va == null ? '' : va).trim();
+        var sb = String(vb == null ? '' : vb).trim();
+        if (!sa && sb) return 1;
+        if (sa && !sb) return -1;
+        var na = Number(sa);
+        var nb = Number(sb);
+        if (sa !== '' && sb !== '' && !isNaN(na) && !isNaN(nb)) {
+          return stokSortDir === 'asc' ? na - nb : nb - na;
+        }
+        return stokSortDir === 'asc' ? sa.localeCompare(sb, 'tr') : sb.localeCompare(sa, 'tr');
+      }
       if (key === 'ekilen_miktar' || key === 'extra_fide') {
         va = Number(va);
         vb = Number(vb);
@@ -160,7 +173,8 @@
         var teslimStr = formatDate(r.teslim_tarihi).toLowerCase();
         var miktarStr = formatNum(r.ekilen_miktar).toLowerCase();
         var extraStr = formatNum(r.extra_fide).toLowerCase();
-        return cesitStr.indexOf(q) !== -1 || ekimStr.indexOf(q) !== -1 || teslimStr.indexOf(q) !== -1 || miktarStr.indexOf(q) !== -1 || extraStr.indexOf(q) !== -1;
+        var ekimNoStr = String(r.ekim_no == null ? '' : r.ekim_no).toLowerCase();
+        return cesitStr.indexOf(q) !== -1 || ekimStr.indexOf(q) !== -1 || teslimStr.indexOf(q) !== -1 || miktarStr.indexOf(q) !== -1 || extraStr.indexOf(q) !== -1 || ekimNoStr.indexOf(q) !== -1;
       });
     }
     return sortStokList(list);
@@ -272,6 +286,24 @@
     var s = String(iso).trim().slice(0, 10);
     if (s.length !== 10) return '—';
     return s.slice(8, 10) + '.' + s.slice(5, 7) + '.' + s.slice(0, 4);
+  }
+
+  function parseEkimNo(str) {
+    var v = String(str == null ? '' : str).trim();
+    return v ? v : null;
+  }
+
+  function formatEkimNo(v) {
+    var s = parseEkimNo(v);
+    return s ? s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '—';
+  }
+
+  function isKargo(row) {
+    return !!(row && (row.kargo === true || row.kargo === 'true' || row.kargo === 't'));
+  }
+
+  function kargoBadgeHtml(row) {
+    return isKargo(row) ? ' <span class="kargo-badge">Kargo</span>' : '';
   }
 
   /** Teslim edilenler listesi: en son teslim üstte (tam ISO zaman damgası). */
@@ -616,6 +648,7 @@
   var STOK_SKELETON_CELLS = [
     { className: 'col-cesit' },
     {},
+    { className: 'col-ekim-no', block: 'skeleton-block-num' },
     {},
     { className: 'col-fide-qty', block: 'skeleton-block-num' },
     { className: 'col-fide-qty', block: 'skeleton-block-num' },
@@ -624,7 +657,7 @@
   ];
 
   var COP_SKELETON_CELLS = [{}, {}, {}, { block: 'skeleton-block-num' }, { block: 'skeleton-block-btn' }];
-  var TESLIM_SKELETON_CELLS = [{}, {}, {}, {}, {}, { block: 'skeleton-block-num' }, {}, { block: 'skeleton-block-btn' }];
+  var TESLIM_SKELETON_CELLS = [{}, {}, {}, { block: 'skeleton-block-num' }, {}, { block: 'skeleton-block-btn' }, {}, {}];
   var TESLIM_EDILENLER_SKELETON_CELLS = [{}, {}, {}, {}, {}, { block: 'skeleton-block-num' }, { block: 'skeleton-block-btn' }];
   var KIME_SATILDI_SKELETON_CELLS = [{}, {}, {}, {}, { block: 'skeleton-block-num' }, {}, { block: 'skeleton-block-btn' }];
 
@@ -668,7 +701,7 @@
       var tbodyNoConn = document.getElementById('stok-tbody');
       if (tbodyNoConn) {
         tbodyNoConn.removeAttribute('aria-busy');
-        tbodyNoConn.innerHTML = '<tr><td colspan="7" class="empty-state px-4 py-8">Veritabanı bağlantısı yok.</td></tr>';
+        tbodyNoConn.innerHTML = '<tr><td colspan="8" class="empty-state px-4 py-8">Veritabanı bağlantısı yok.</td></tr>';
       }
       return;
     }
@@ -961,7 +994,7 @@
             : (!showEkimBeforeCutoff && stok.some(isEkimBeforeCutoff)
               ? '1 Haziran 2026 öncesi kayıtlar gizli. Göstermek için «1 Haz. 2026 öncesini göster» kutusunu işaretleyin.'
               : 'Henüz kayıt yok. Yeni kayıt ekleyin.')));
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state px-4 py-8">' + emptyMsg + '</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" class="empty-state px-4 py-8">' + emptyMsg + '</td></tr>';
       return;
     }
     var toplamExtra = list.reduce(function (sum, r) {
@@ -987,6 +1020,7 @@
       return '<tr data-id="' + id + '"' + trClassAttr + '>' +
         '<td class="px-4 py-2 col-cesit">' + (r.cesit || '—').replace(/</g, '&lt;') + '</td>' +
         '<td class="px-4 py-2">' + formatDate(r.ekim_tarihi) + '</td>' +
+        '<td class="px-4 py-2 col-ekim-no">' + formatEkimNo(r.ekim_no) + '</td>' +
         '<td class="px-4 py-2">' + formatDate(r.teslim_tarihi) + '</td>' +
         '<td class="px-4 py-2 col-fide-qty">' + formatNum(r.ekilen_miktar) + '</td>' +
         '<td class="px-4 py-2 col-fide-qty">' + formatNum(r.extra_fide) + '</td>' +
@@ -1066,6 +1100,7 @@
   function openModalYeniKayit() {
     if (modalYeni) {
       if (yeniEkim) yeniEkim.value = new Date().toISOString().slice(0, 10);
+      if (yeniEkimNo) yeniEkimNo.value = '';
       if (yeniCesit) { yeniCesit.value = ''; cesitAutocompletePrevLen = 0; }
       if (yeniMiktar) yeniMiktar.value = '';
       updateCesitDatalists();
@@ -1119,7 +1154,8 @@
   }
   onEnterGoNext(yeniCesit, yeniEkim);
   onEnterGoNext(yeniEkim, yeniMiktar);
-  onEnterGoNext(yeniMiktar, btnKaydet);
+  onEnterGoNext(yeniMiktar, yeniEkimNo);
+  onEnterGoNext(yeniEkimNo, btnKaydet);
 
   function parseMiktar(str) {
     if (str == null || str === '') return null;
@@ -1152,6 +1188,7 @@
     btnKaydet.addEventListener('click', function () {
       var cesit = (yeniCesit && yeniCesit.value || '').trim();
       var ekim = (yeniEkim && yeniEkim.value || '').trim() || null;
+      var ekimNo = parseEkimNo(yeniEkimNo && yeniEkimNo.value);
       var miktar = parseMiktar(yeniMiktar && yeniMiktar.value);
       if (!cesit) return;
       if (miktar === null) miktar = 0;
@@ -1159,15 +1196,23 @@
       var extraFide = miktar != null ? Math.round(miktar * 0.95) * 300 : 0;
       if (!supabase) return;
       var unlock = submitLock(btnKaydet);
-      supabase.from('fide_stok').insert({
+      var payload = {
         cesit: cesit,
         ekim_tarihi: ekim,
         teslim_tarihi: teslim,
         ekilen_miktar: miktar,
         cikan_fide: 0,
         extra_fide: extraFide
-      }).then(function (res) {
-        if (res.error) return;
+      };
+      if (ekimNo) payload.ekim_no = ekimNo;
+      supabase.from('fide_stok').insert(payload).then(function (res) {
+        if (res.error) {
+          var msg = (res.error && res.error.message) ? res.error.message : '';
+          if (/ekim_no/i.test(msg)) {
+            openModalUyari('Kayıt eklenemedi. Ekim no için veritabanında ekim_no kolonu gerekir.');
+          }
+          return;
+        }
         closeModalYeniKayit();
         loadStok();
       }).finally(unlock);
@@ -1481,6 +1526,7 @@
   var modalDegistir = document.getElementById('modal-degistir');
   var degistirCesit = document.getElementById('degistir-cesit');
   var degistirEkim = document.getElementById('degistir-ekim_tarihi');
+  var degistirEkimNo = document.getElementById('degistir-ekim_no');
   var degistirTeslim = document.getElementById('degistir-teslim_tarihi');
   var degistirEkilen = document.getElementById('degistir-ekilen_miktar');
   var degistirExtra = document.getElementById('degistir-extra_fide');
@@ -1497,6 +1543,7 @@
     editingDegistirOrigEkilen = r.ekilen_miktar != null && r.ekilen_miktar !== '' && !isNaN(Number(r.ekilen_miktar)) ? Number(r.ekilen_miktar) : 0;
     if (degistirCesit) degistirCesit.value = r.cesit || '';
     if (degistirEkim) degistirEkim.value = toIsoDate(r.ekim_tarihi);
+    if (degistirEkimNo) degistirEkimNo.value = parseEkimNo(r.ekim_no) || '';
     if (degistirTeslim) degistirTeslim.value = toIsoDate(r.teslim_tarihi);
     if (degistirEkilen) degistirEkilen.value = r.ekilen_miktar != null && r.ekilen_miktar !== '' ? String(r.ekilen_miktar) : '';
     if (degistirExtra) degistirExtra.value = r.extra_fide != null && r.extra_fide !== '' ? String(r.extra_fide) : '';
@@ -1526,6 +1573,7 @@
   var satTeslimTarihi = document.getElementById('sat-teslim-tarihi');
   var satMiktar = document.getElementById('sat-miktar');
   var satNotlar = document.getElementById('sat-notlar');
+  var satKargo = document.getElementById('sat-kargo');
   var satStokId = null;
 
   function openModalSat(id) {
@@ -1537,6 +1585,7 @@
     }
     if (satMiktar) satMiktar.value = '';
     if (satNotlar) satNotlar.value = '';
+    if (satKargo) satKargo.checked = false;
     if (modalSat) {
       modalSat.classList.add('open');
       modalSat.setAttribute('aria-hidden', 'false');
@@ -1573,17 +1622,23 @@
       var miktar = parseMiktar(satMiktar && satMiktar.value);
       if (miktar === null || miktar < 1) { alert('Kaç adet 1 veya daha fazla olmalıdır.'); return; }
       var notlar = (satNotlar && satNotlar.value || '').trim() || null;
+      var kargo = !!(satKargo && satKargo.checked);
       var unlock = submitLock(btnSatOnay);
       // notlar kolonu yoksa: ALTER TABLE satislar ADD COLUMN notlar text;
+      // kargo kolonu yoksa: ALTER TABLE satislar ADD COLUMN kargo boolean default false;
       supabase.from('satislar').insert({
         fide_id: satStokId,
         musteri_adi: musteri || '',
         teslim_tarihi: teslimTarihi || null,
         miktar: miktar,
         satis_tarihi: new Date().toISOString(),
-        notlar: notlar
+        notlar: notlar,
+        kargo: kargo
       }).then(function (res) {
-        if (res.error) return;
+        if (res.error) {
+          openModalUyari('Satış kaydedilemedi. Kargo kutusu için veritabanında kargo kolonu gerekir.');
+          return;
+        }
         return supabase.from('fide_stok').select('extra_fide').eq('id', satStokId).maybeSingle();
       }).then(function (r) {
         if (!r || !r.data) return;
@@ -1603,6 +1658,7 @@
       if (!editingStokId || !supabase) return;
       var cesit = (degistirCesit && degistirCesit.value || '').trim();
       var ekim = (degistirEkim && degistirEkim.value || '').trim() || null;
+      var ekimNo = parseEkimNo(degistirEkimNo && degistirEkimNo.value);
       var teslim = (degistirTeslim && degistirTeslim.value || '').trim() || null;
       var ekilen = parseMiktar(degistirEkilen && degistirEkilen.value);
       var extra = parseMiktar(degistirExtra && degistirExtra.value);
@@ -1616,17 +1672,26 @@
         extra = Math.round(ekilen * 0.95) * 300;
       }
       var unlock = submitLock(btnDegistirOnay);
-      supabase.from('fide_stok').update({
+      var payload = {
         cesit: cesit || null,
         ekim_tarihi: ekim,
         teslim_tarihi: teslim,
         ekilen_miktar: ekilen,
         extra_fide: extra
-      }).eq('id', editingStokId).then(function (res) {
-        if (!res.error) {
-          closeModalDegistir();
-          loadStok();
+      };
+      var origRow = stok.find(function (x) { return String(x.id) === String(editingStokId); });
+      var origEkimNo = origRow ? parseEkimNo(origRow.ekim_no) : null;
+      if (ekimNo || origEkimNo) payload.ekim_no = ekimNo;
+      supabase.from('fide_stok').update(payload).eq('id', editingStokId).then(function (res) {
+        if (res.error) {
+          var msg = (res.error && res.error.message) ? res.error.message : '';
+          if (/ekim_no/i.test(msg)) {
+            openModalUyari('Kayıt güncellenemedi. Ekim no için veritabanında ekim_no kolonu gerekir.');
+          }
+          return;
         }
+        closeModalDegistir();
+        loadStok();
       }).finally(unlock);
     });
   }
@@ -1647,7 +1712,6 @@
 
   function fillTeslimFilterSelects() {
     var uniq = function (arr) { var s = {}; arr.forEach(function (v) { s[v] = true; }); return Object.keys(s).sort(); };
-    var tarih = uniq(teslimDisplayRows.map(function (r) { return r.tarih; }));
     var cesit = uniq(teslimDisplayRows.map(function (r) { return r.cesitStr; }));
     var musteri = uniq(teslimDisplayRows.map(function (r) { return r.musteri; }));
     var ekim = uniq(teslimDisplayRows.map(function (r) { return r.ekimStr; }));
@@ -1656,6 +1720,7 @@
     function setOptions(id, values) {
       var sel = document.getElementById(id);
       if (!sel) return;
+      var prev = sel.value;
       sel.innerHTML = '<option value="">Tümü</option>';
       values.forEach(function (v) {
         var opt = document.createElement('option');
@@ -1663,8 +1728,8 @@
         opt.textContent = v;
         sel.appendChild(opt);
       });
+      if (prev && Array.prototype.some.call(sel.options, function (o) { return o.value === prev; })) sel.value = prev;
     }
-    setOptions('teslim-filter-tarih', tarih);
     setOptions('teslim-filter-cesit', cesit);
     setOptions('teslim-filter-musteri', musteri);
     setOptions('teslim-filter-ekim', ekim);
@@ -1700,19 +1765,21 @@
   }
 
   function renderTeslimTable() {
-    var fTarih = (document.getElementById('teslim-filter-tarih') || {}).value || '';
+    var fKargo = (document.getElementById('teslim-filter-kargo') || {}).value || '';
     var fCesit = (document.getElementById('teslim-filter-cesit') || {}).value || '';
     var fMusteri = (document.getElementById('teslim-filter-musteri') || {}).value || '';
     var fEkim = (document.getElementById('teslim-filter-ekim') || {}).value || '';
     var fTeslim = (document.getElementById('teslim-filter-teslim') || {}).value || '';
     var fAdet = (document.getElementById('teslim-filter-adet') || {}).value || '';
     var filtered = teslimDisplayRows.filter(function (r) {
-      return (fTarih === '' || r.tarih === fTarih) && (fCesit === '' || r.cesitStr === fCesit) && (fMusteri === '' || r.musteri === fMusteri) && (fEkim === '' || r.ekimStr === fEkim) && (fTeslim === '' || r.teslim === fTeslim) && (fAdet === '' || r.miktarNum === fAdet);
+      var kargoOk = fKargo === '' || (fKargo === '1' && r.kargo) || (fKargo === '0' && !r.kargo);
+      return kargoOk && (fCesit === '' || r.cesitStr === fCesit) && (fMusteri === '' || r.musteri === fMusteri) && (fEkim === '' || r.ekimStr === fEkim) && (fTeslim === '' || r.teslim === fTeslim) && (fAdet === '' || r.miktarNum === fAdet);
     });
     var esc = function (s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
     var rows = filtered.map(function (r) {
       var sid = (r.satisId || '');
-      return '<tr data-satis-id="' + sid + '"><td class="px-4 py-2">' + esc(r.tarih) + '</td><td class="px-4 py-2">' + esc(r.cesitStr || '—') + '</td><td class="px-4 py-2">' + esc(r.musteri) + '</td><td class="px-4 py-2">' + esc(r.ekimStr) + '</td><td class="px-4 py-2">' + esc(r.teslim) + '</td><td class="px-4 py-2">' + esc(r.miktarNum) + '</td><td class="px-4 py-2">' + esc(r.notStr || '—') + '</td><td class="px-4 py-2"><button type="button" class="btn-teslim-et" data-satis-id="' + sid + '">Teslim et</button><button type="button" class="btn-teslim-kismi" data-satis-id="' + sid + '">Kısmen teslim et</button></td></tr>';
+      var kargoCell = r.kargo ? '<span class="kargo-badge">Evet</span>' : '—';
+      return '<tr data-satis-id="' + sid + '"><td class="px-4 py-2">' + esc(r.cesitStr || '—') + '</td><td class="px-4 py-2">' + esc(r.musteri) + '</td><td class="px-4 py-2">' + esc(r.teslim) + '</td><td class="px-4 py-2">' + esc(r.miktarNum) + '</td><td class="px-4 py-2">' + esc(r.notStr || '—') + '</td><td class="px-4 py-2"><button type="button" class="btn-teslim-et" data-satis-id="' + sid + '">Teslim et</button><button type="button" class="btn-teslim-kismi" data-satis-id="' + sid + '">Kısmen teslim et</button><button type="button" class="btn-satis-degistir" data-satis-id="' + sid + '">Değiştir</button></td><td class="px-4 py-2">' + esc(r.ekimStr) + '</td><td class="px-4 py-2">' + kargoCell + '</td></tr>';
     });
     if (modalTeslimTbody) modalTeslimTbody.innerHTML = rows.join('');
     var toplam = filtered.reduce(function (sum, r) { return sum + (r.miktarRaw || 0); }, 0);
@@ -1734,7 +1801,7 @@
     var esc = function (s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
     var rows = filtered.map(function (r) {
       var sid = (r.satisId || '');
-      return '<tr data-satis-id="' + sid + '"><td class="px-4 py-2">' + esc(r.tarih) + '</td><td class="px-4 py-2">' + esc(r.cesitStr || '—') + '</td><td class="px-4 py-2">' + esc(r.musteri) + '</td><td class="px-4 py-2">' + esc(r.ekimStr) + '</td><td class="px-4 py-2">' + esc(r.teslim) + '</td><td class="px-4 py-2">' + esc(r.miktarNum) + '</td><td class="px-4 py-2"><button type="button" class="btn-teslim-geri-al" data-satis-id="' + sid + '">Geri al</button></td></tr>';
+      return '<tr data-satis-id="' + sid + '"><td class="px-4 py-2">' + esc(r.tarih) + '</td><td class="px-4 py-2">' + esc(r.cesitStr || '—') + '</td><td class="px-4 py-2">' + esc(r.musteri) + kargoBadgeHtml(r) + '</td><td class="px-4 py-2">' + esc(r.ekimStr) + '</td><td class="px-4 py-2">' + esc(r.teslim) + '</td><td class="px-4 py-2">' + esc(r.miktarNum) + '</td><td class="px-4 py-2"><button type="button" class="btn-teslim-geri-al" data-satis-id="' + sid + '">Geri al</button></td></tr>';
     });
     if (modalTeslimEdilenlerTbody) modalTeslimEdilenlerTbody.innerHTML = rows.join('');
     var toplam = filtered.reduce(function (sum, r) { return sum + (r.miktarRaw || 0); }, 0);
@@ -1771,7 +1838,7 @@
         var teslim = formatDate(s.teslim_tarihi);
         var musteri = (s.musteri_adi || '—').replace(/</g, '&lt;');
         var notStr = (s.notlar || '—').replace(/</g, '&lt;');
-        return '<tr data-satis-id="' + (s.id || '') + '"><td class="px-4 py-2">' + tarih + '</td><td class="px-4 py-2">' + musteri + '</td><td class="px-4 py-2">' + ekimStr + '</td><td class="px-4 py-2">' + teslim + '</td><td class="px-4 py-2">' + formatNum(displayMiktar) + '</td><td class="px-4 py-2">' + notStr + '</td><td class="px-4 py-2"><button type="button" class="btn-satis-iptal" data-satis-id="' + (s.id || '') + '">Satış iptal</button> <button type="button" class="btn-satis-degistir" data-satis-id="' + (s.id || '') + '">Değiştir</button> <button type="button" class="btn-satis-aktar" data-satis-id="' + (s.id || '') + '">Satışı aktar</button></td></tr>';
+        return '<tr data-satis-id="' + (s.id || '') + '"><td class="px-4 py-2">' + tarih + '</td><td class="px-4 py-2">' + musteri + kargoBadgeHtml(s) + '</td><td class="px-4 py-2">' + ekimStr + '</td><td class="px-4 py-2">' + teslim + '</td><td class="px-4 py-2">' + formatNum(displayMiktar) + '</td><td class="px-4 py-2">' + notStr + '</td><td class="px-4 py-2"><button type="button" class="btn-satis-iptal" data-satis-id="' + (s.id || '') + '">Satış iptal</button> <button type="button" class="btn-satis-degistir" data-satis-id="' + (s.id || '') + '">Değiştir</button> <button type="button" class="btn-satis-aktar" data-satis-id="' + (s.id || '') + '">Satışı aktar</button></td></tr>';
       });
       var toplamRow = '<tfoot><tr><td colspan="4" class="px-4 py-2">Toplam</td><td class="px-4 py-2">' + formatNum(toplam) + '</td><td></td><td></td></tr></tfoot>';
       var html = '<table class="panel-table"><thead><tr><th>Tarih</th><th>Müşteri</th><th>Ekim Tarihi</th><th>Teslim Tarihi</th><th>Adet</th><th>Not</th><th>İşlemler</th></tr></thead><tbody>' + rows.join('') + '</tbody>' + toplamRow + '</table>';
@@ -1857,7 +1924,7 @@
           if (remaining < 0) remaining = 0;
           var notStr = (s.notlar || '—').replace(/</g, '&lt;');
           var cesitStr = stokRow && stokRow.cesit ? stokRow.cesit : '—';
-          return { tarih: tarih, cesitStr: cesitStr, musteri: musteri, ekimStr: ekimStr, teslim: teslim, miktarNum: formatNum(remaining), miktarRaw: remaining, satisId: s.id || '', notStr: notStr };
+          return { tarih: tarih, cesitStr: cesitStr, musteri: musteri, ekimStr: ekimStr, teslim: teslim, miktarNum: formatNum(remaining), miktarRaw: remaining, satisId: s.id || '', notStr: notStr, kargo: isKargo(s) };
         });
         fillTeslimFilterSelects();
         renderTeslimTable();
@@ -1876,7 +1943,15 @@
     });
   }
 
+  function resetTeslimFilters() {
+    ['teslim-filter-kargo', 'teslim-filter-cesit', 'teslim-filter-musteri', 'teslim-filter-ekim', 'teslim-filter-teslim', 'teslim-filter-adet'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+  }
+
   function closeModalTeslim() {
+    resetTeslimFilters();
     if (modalTeslim) {
       modalTeslim.classList.remove('open');
       modalTeslim.setAttribute('aria-hidden', 'true');
@@ -1958,7 +2033,7 @@
           var displayMiktar = s.teslim_edilen_miktar != null ? Number(s.teslim_edilen_miktar) : miktarRaw(s);
           if (isNaN(displayMiktar)) displayMiktar = miktarRaw(s);
           var cesitStr = stokRow && stokRow.cesit ? stokRow.cesit : '—';
-          return { tarih: tarih, tarihTs: tsTeslimEdildiSort(s), cesitStr: cesitStr, musteri: musteri, ekimStr: ekimStr, teslim: teslim, miktarNum: formatNum(displayMiktar), miktarRaw: displayMiktar, satisId: s.id || '' };
+          return { tarih: tarih, tarihTs: tsTeslimEdildiSort(s), cesitStr: cesitStr, musteri: musteri, ekimStr: ekimStr, teslim: teslim, miktarNum: formatNum(displayMiktar), miktarRaw: displayMiktar, satisId: s.id || '', kargo: isKargo(s) };
         });
         fillTeslimEdilenlerFilterSelects();
         renderTeslimEdilenlerTable();
@@ -2038,6 +2113,14 @@
 
   if (modalTeslimTbody) {
     modalTeslimTbody.addEventListener('click', function (e) {
+      var degistirBtn = e.target.closest('.btn-satis-degistir');
+      if (degistirBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        var sid = (degistirBtn.getAttribute('data-satis-id') || '').trim();
+        if (sid) openModalSatisDegistir(sid);
+        return;
+      }
       var btnEt = e.target.closest('.btn-teslim-et');
       var btnKismi = e.target.closest('.btn-teslim-kismi');
       var btn = btnEt || btnKismi;
@@ -2048,7 +2131,7 @@
       if (!satisId) return;
       var tr = btn.closest('tr');
       var adetStr = '';
-      if (tr && tr.cells && tr.cells[5]) adetStr = (tr.cells[5].textContent || '').trim();
+      if (tr && tr.cells && tr.cells[3]) adetStr = (tr.cells[3].textContent || '').trim();
       openModalTeslimAdet(satisId, adetStr, !!btnKismi);
     });
   }
@@ -2149,7 +2232,7 @@
   document.querySelectorAll('[data-modal-close="teslim-edilenler"]').forEach(function (btn) {
     btn.addEventListener('click', closeModalTeslimEdilenler);
   });
-  ['teslim-filter-tarih', 'teslim-filter-cesit', 'teslim-filter-musteri', 'teslim-filter-ekim', 'teslim-filter-teslim', 'teslim-filter-adet'].forEach(function (id) {
+  ['teslim-filter-kargo', 'teslim-filter-cesit', 'teslim-filter-musteri', 'teslim-filter-ekim', 'teslim-filter-teslim', 'teslim-filter-adet'].forEach(function (id) {
     var el = document.getElementById(id);
     if (el) el.addEventListener('change', renderTeslimTable);
   });
@@ -2316,6 +2399,7 @@
   var satisDegistirTeslim = document.getElementById('satis-degistir-teslim');
   var satisDegistirMiktar = document.getElementById('satis-degistir-miktar');
   var satisDegistirNotlar = document.getElementById('satis-degistir-notlar');
+  var satisDegistirKargo = document.getElementById('satis-degistir-kargo');
   var editingSatisId = null;
 
   function openModalSatisDegistir(satisId) {
@@ -2328,6 +2412,7 @@
       if (satisDegistirTeslim) satisDegistirTeslim.value = toIsoDate(s.teslim_tarihi);
       if (satisDegistirMiktar) satisDegistirMiktar.value = s.miktar != null ? String(s.miktar) : '';
       if (satisDegistirNotlar) satisDegistirNotlar.value = s.notlar || '';
+      if (satisDegistirKargo) satisDegistirKargo.checked = isKargo(s);
       if (satisDegistirModal) {
         satisDegistirModal.classList.add('open');
         satisDegistirModal.setAttribute('aria-hidden', 'false');
@@ -2356,16 +2441,19 @@
       var miktar = parseMiktar(satisDegistirMiktar && satisDegistirMiktar.value);
       if (miktar === null || miktar < 1) { alert('Kaç adet 1 veya daha fazla olmalıdır.'); return; }
       var notlar = (satisDegistirNotlar && satisDegistirNotlar.value || '').trim() || null;
+      var kargo = !!(satisDegistirKargo && satisDegistirKargo.checked);
       var unlock = submitLock(btnSatisDegistirOnay);
       supabase.from('satislar').update({
         musteri_adi: musteri || '',
         teslim_tarihi: teslim || null,
         miktar: miktar,
-        notlar: notlar
+        notlar: notlar,
+        kargo: kargo
       }).eq('id', editingSatisId).then(function (res) {
         if (!res.error) {
           closeModalSatisDegistir();
           refreshKimeSatildiList();
+          refreshTeslimModalIfOpen();
           loadStok();
         }
       }).finally(unlock);

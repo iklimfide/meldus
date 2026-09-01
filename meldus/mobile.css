@@ -188,7 +188,9 @@
   #mainTable th.col-fide-qty,
   #mainTable td.col-fide-qty,
   #mainTable th.col-cesit,
-  #mainTable td.col-cesit {
+  #mainTable td.col-cesit,
+  #mainTable th.col-ekim-no,
+  #mainTable td.col-ekim-no {
     width: auto;
     min-width: 5.5rem;
     max-width: none;
