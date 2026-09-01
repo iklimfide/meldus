@@ -54,6 +54,7 @@
   var quickFilterEkim = [];
   var quickFilterTeslim = [];
   var DATE_FILTER_EMPTY = '__empty__';
+  var FILTER_ALL = '__all__';
   var tableSearchQuery = '';
   var cesitAutocompletePrevLen = 0;
   var stokSortKey = 'ekim_tarihi';
@@ -209,6 +210,34 @@
     btn.setAttribute('aria-label', kind + ', ' + dateFilterLabel(vals));
   }
 
+  function dateMultiAllHtml(isAll) {
+    return '<label class="date-multi-option date-multi-all"><input type="checkbox" value="' + FILTER_ALL + '"' + (isAll ? ' checked' : '') + '> Tümü</label>';
+  }
+
+  function syncDateMultiChecks(panel, selected) {
+    if (!panel) return;
+    var isAll = !selected || !selected.length;
+    panel.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
+      if (cb.value === FILTER_ALL) cb.checked = isAll;
+      else cb.checked = selected.indexOf(cb.value) !== -1;
+    });
+  }
+
+  function applyDateMultiChange(wrap, input) {
+    if (!wrap || !input) return [];
+    if (input.value === FILTER_ALL) {
+      input.checked = true;
+      wrap.querySelectorAll('.date-multi-option input').forEach(function (cb) {
+        if (cb.value !== FILTER_ALL) cb.checked = false;
+      });
+      return [];
+    }
+    var vals = readDateFilterValues(wrap);
+    var allCb = wrap.querySelector('.date-multi-all input');
+    if (allCb) allCb.checked = vals.length === 0;
+    return vals;
+  }
+
   function fillStokDateFilter(host, isoInfo, currentArr) {
     if (!host) return [];
     var panel = host.querySelector('.date-multi-panel');
@@ -221,19 +250,17 @@
     var keySig = isoInfo.keys.join('|') + (isoInfo.hasEmpty ? '|__empty__' : '');
     if (host.getAttribute('data-keys') !== keySig) {
       host.setAttribute('data-keys', keySig);
-      var html = '';
+      var html = dateMultiAllHtml(next.length === 0);
       isoInfo.keys.forEach(function (iso) {
         html += '<label class="date-multi-option"><input type="checkbox" value="' + iso + '"' + (next.indexOf(iso) !== -1 ? ' checked' : '') + '> ' + formatDate(iso) + '</label>';
       });
       if (isoInfo.hasEmpty) {
         html += '<label class="date-multi-option"><input type="checkbox" value="' + DATE_FILTER_EMPTY + '"' + (next.indexOf(DATE_FILTER_EMPTY) !== -1 ? ' checked' : '') + '> —</label>';
       }
-      if (!html) html = '<p class="date-multi-empty">Tarih yok</p>';
+      if (!isoInfo.keys.length && !isoInfo.hasEmpty) html += '<p class="date-multi-empty">Tarih yok</p>';
       panel.innerHTML = html;
     } else {
-      panel.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
-        cb.checked = next.indexOf(cb.value) !== -1;
-      });
+      syncDateMultiChecks(panel, next);
     }
     updateDateFilterButton(btn, next);
     return next;
@@ -276,7 +303,7 @@
     var vals = [];
     if (!wrap) return vals;
     wrap.querySelectorAll('.date-multi-option input:checked').forEach(function (cb) {
-      if (cb.value) vals.push(cb.value);
+      if (cb.value && cb.value !== FILTER_ALL) vals.push(cb.value);
     });
     return vals;
   }
@@ -480,16 +507,14 @@
     var keySig = names.join('|');
     if (host.getAttribute('data-keys') !== keySig) {
       host.setAttribute('data-keys', keySig);
-      var html = '';
+      var html = dateMultiAllHtml(quickFilterCesit.length === 0);
       names.forEach(function (name) {
         html += '<label class="date-multi-option"><input type="checkbox" value="' + name.replace(/"/g, '&quot;') + '"' + (quickFilterCesit.indexOf(name) !== -1 ? ' checked' : '') + '> ' + name.replace(/</g, '&lt;') + '</label>';
       });
-      if (!html) html = '<p class="date-multi-empty">Çeşit yok</p>';
+      if (!names.length) html += '<p class="date-multi-empty">Çeşit yok</p>';
       panel.innerHTML = html;
     } else {
-      panel.querySelectorAll('input[type="checkbox"]').forEach(function (cb) {
-        cb.checked = quickFilterCesit.indexOf(cb.value) !== -1;
-      });
+      syncDateMultiChecks(panel, quickFilterCesit);
     }
     btn.textContent = cesitFilterLabel(quickFilterCesit);
     btn.classList.toggle('filter-active', quickFilterCesit.length > 0);
@@ -1480,7 +1505,7 @@
       var wrap = input.closest('.date-multi');
       if (!wrap) return;
       var field = wrap.getAttribute('data-filter-field') || wrap.getAttribute('data-date-field');
-      var vals = readDateFilterValues(wrap);
+      var vals = applyDateMultiChange(wrap, input);
       if (field === 'cesit') quickFilterCesit = vals;
       else if (field === 'ekim') quickFilterEkim = vals;
       else if (field === 'teslim') quickFilterTeslim = vals;
