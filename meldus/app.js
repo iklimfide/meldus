@@ -1863,7 +1863,17 @@
         var teslim = formatDate(s.teslim_tarihi);
         var musteri = (s.musteri_adi || '—').replace(/</g, '&lt;');
         var notStr = (s.notlar || '—').replace(/</g, '&lt;');
-        return '<tr data-satis-id="' + (s.id || '') + '"><td class="px-4 py-2">' + tarih + '</td><td class="px-4 py-2">' + musteri + kargoBadgeHtml(s) + '</td><td class="px-4 py-2">' + ekimStr + '</td><td class="px-4 py-2">' + teslim + '</td><td class="px-4 py-2">' + formatNum(displayMiktar) + '</td><td class="px-4 py-2">' + notStr + '</td><td class="px-4 py-2"><button type="button" class="btn-satis-iptal" data-satis-id="' + (s.id || '') + '">Satış iptal</button> <button type="button" class="btn-satis-degistir" data-satis-id="' + (s.id || '') + '">Değiştir</button> <button type="button" class="btn-satis-aktar" data-satis-id="' + (s.id || '') + '">Satışı aktar</button></td></tr>';
+        var sid = s.id || '';
+        var total = s.miktar != null ? Number(s.miktar) : 0;
+        if (isNaN(total)) total = 0;
+        var del = s.teslim_edilen_miktar != null ? Number(s.teslim_edilen_miktar) : 0;
+        if (isNaN(del)) del = 0;
+        var remaining = total - del;
+        if (remaining < 0) remaining = 0;
+        var teslimBtn = remaining > 0
+          ? '<button type="button" class="btn-teslim-et" data-satis-id="' + sid + '" data-kalan="' + formatNum(remaining) + '">Teslim et</button> '
+          : '';
+        return '<tr data-satis-id="' + sid + '"><td class="px-4 py-2">' + tarih + '</td><td class="px-4 py-2">' + musteri + kargoBadgeHtml(s) + '</td><td class="px-4 py-2">' + ekimStr + '</td><td class="px-4 py-2">' + teslim + '</td><td class="px-4 py-2">' + formatNum(displayMiktar) + '</td><td class="px-4 py-2">' + notStr + '</td><td class="px-4 py-2">' + teslimBtn + '<button type="button" class="btn-satis-iptal" data-satis-id="' + sid + '">Satış iptal</button> <button type="button" class="btn-satis-degistir" data-satis-id="' + sid + '">Değiştir</button> <button type="button" class="btn-satis-aktar" data-satis-id="' + sid + '">Satışı aktar</button></td></tr>';
       });
       var toplamRow = '<tfoot><tr><td colspan="4" class="px-4 py-2">Toplam</td><td class="px-4 py-2">' + formatNum(toplam) + '</td><td></td><td></td></tr></tfoot>';
       var html = '<table class="panel-table"><thead><tr><th>Tarih</th><th>Müşteri</th><th>Ekim Tarihi</th><th>Teslim Tarihi</th><th>Adet</th><th>Not</th><th>İşlemler</th></tr></thead><tbody>' + rows.join('') + '</tbody>' + toplamRow + '</table>';
@@ -2227,7 +2237,9 @@
         return supabase.from('satislar').update(payload).eq('id', satisId).then(function (r) {
           if (r.error) { alert('Güncellenemedi: ' + (r.error.message || '')); return; }
           loadStok();
-          openModalTeslim();
+          refreshTeslimModalIfOpen();
+          refreshKimeSatildiList();
+          refreshTeslimEdilenlerModalIfOpen();
         });
       }).finally(unlock);
     });
@@ -2271,6 +2283,16 @@
   });
   if (modalKimeSatildiBody) {
     modalKimeSatildiBody.addEventListener('click', function (e) {
+      var teslimBtn = e.target.closest('.btn-teslim-et');
+      if (teslimBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        var teslimSatisId = (teslimBtn.getAttribute('data-satis-id') || '').trim();
+        if (!teslimSatisId) return;
+        var adetStr = (teslimBtn.getAttribute('data-kalan') || '').trim();
+        openModalTeslimAdet(teslimSatisId, adetStr, false);
+        return;
+      }
       var iptalBtn = e.target.closest('.btn-satis-iptal');
       if (iptalBtn) {
         var satisId = (iptalBtn.getAttribute('data-satis-id') || '').trim();
