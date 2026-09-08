@@ -9,6 +9,7 @@ export default function middleware(request) {
   if (path.startsWith('/urunler/kivircik-marul-fidesi')) return;
   if (path.startsWith('/urunler/yedikule-marul-fidesi')) return;
   if (path === '/meldus' || path.startsWith('/meldus/')) return;
+  if (path === '/en' || path === '/en/' || path.startsWith('/en/')) return;
 
   // Statik dosyalar - yönlendirme yapma
   if (path.startsWith('/resimler/')) return;

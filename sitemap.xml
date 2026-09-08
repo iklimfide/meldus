@@ -1,69 +1,202 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://iklimfide.com/</loc>
-    <lastmod>2026-02-26</lastmod>
+    <lastmod>2026-09-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/" />
+  </url>
+  <url>
+    <loc>https://iklimfide.com/en/</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/" />
   </url>
   <url>
     <loc>https://iklimfide.com/marul-fidesi.html</loc>
-    <lastmod>2026-02-26</lastmod>
+    <lastmod>2026-09-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/marul-fidesi.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/marul-fidesi.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/marul-fidesi.html" />
+  </url>
+  <url>
+    <loc>https://iklimfide.com/en/marul-fidesi.html</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/marul-fidesi.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/marul-fidesi.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/marul-fidesi.html" />
   </url>
   <url>
     <loc>https://iklimfide.com/urunler/kivircik-marul-fidesi/</loc>
-    <lastmod>2026-02-26</lastmod>
+    <lastmod>2026-09-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/urunler/kivircik-marul-fidesi/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/urunler/kivircik-marul-fidesi/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/urunler/kivircik-marul-fidesi/" />
+  </url>
+  <url>
+    <loc>https://iklimfide.com/en/urunler/kivircik-marul-fidesi/</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/urunler/kivircik-marul-fidesi/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/urunler/kivircik-marul-fidesi/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/urunler/kivircik-marul-fidesi/" />
   </url>
   <url>
     <loc>https://iklimfide.com/urunler/yedikule-marul-fidesi/</loc>
-    <lastmod>2026-02-26</lastmod>
+    <lastmod>2026-09-08</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/urunler/yedikule-marul-fidesi/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/urunler/yedikule-marul-fidesi/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/urunler/yedikule-marul-fidesi/" />
+  </url>
+  <url>
+    <loc>https://iklimfide.com/en/urunler/yedikule-marul-fidesi/</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/urunler/yedikule-marul-fidesi/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/urunler/yedikule-marul-fidesi/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/urunler/yedikule-marul-fidesi/" />
+  </url>
+  <url>
+    <loc>https://iklimfide.com/blog/</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/blog/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/blog/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/blog/" />
+  </url>
+  <url>
+    <loc>https://iklimfide.com/en/blog/</loc>
+    <lastmod>2026-09-08</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.65</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/blog/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/blog/" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/blog/" />
   </url>
   <url>
     <loc>https://iklimfide.com/blog/marul-fidesi-nasil-yetistirilir.html</loc>
     <lastmod>2026-03-28</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/blog/marul-fidesi-nasil-yetistirilir.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/blog/marul-fidesi-nasil-yetistirilir.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/blog/marul-fidesi-nasil-yetistirilir.html" />
+  </url>
+  <url>
+    <loc>https://iklimfide.com/en/blog/marul-fidesi-nasil-yetistirilir.html</loc>
+    <lastmod>2026-03-28</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/blog/marul-fidesi-nasil-yetistirilir.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/blog/marul-fidesi-nasil-yetistirilir.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/blog/marul-fidesi-nasil-yetistirilir.html" />
   </url>
   <url>
     <loc>https://iklimfide.com/blog/marul-fidesi-ne-zaman-dikilir-ekim-rehberi.html</loc>
     <lastmod>2026-03-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/blog/marul-fidesi-ne-zaman-dikilir-ekim-rehberi.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/blog/marul-fidesi-ne-zaman-dikilir-ekim-rehberi.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/blog/marul-fidesi-ne-zaman-dikilir-ekim-rehberi.html" />
+  </url>
+  <url>
+    <loc>https://iklimfide.com/en/blog/marul-fidesi-ne-zaman-dikilir-ekim-rehberi.html</loc>
+    <lastmod>2026-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/blog/marul-fidesi-ne-zaman-dikilir-ekim-rehberi.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/blog/marul-fidesi-ne-zaman-dikilir-ekim-rehberi.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/blog/marul-fidesi-ne-zaman-dikilir-ekim-rehberi.html" />
   </url>
   <url>
     <loc>https://iklimfide.com/blog/marul-fidesi-ne-zaman-ekilir.html</loc>
     <lastmod>2026-03-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/blog/marul-fidesi-ne-zaman-ekilir.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/blog/marul-fidesi-ne-zaman-ekilir.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/blog/marul-fidesi-ne-zaman-ekilir.html" />
   </url>
   <url>
-    <loc>https://iklimfide.com/blog/</loc>
-    <lastmod>2026-03-28</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.75</priority>
+    <loc>https://iklimfide.com/en/blog/marul-fidesi-ne-zaman-ekilir.html</loc>
+    <lastmod>2026-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/blog/marul-fidesi-ne-zaman-ekilir.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/blog/marul-fidesi-ne-zaman-ekilir.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/blog/marul-fidesi-ne-zaman-ekilir.html" />
   </url>
   <url>
     <loc>https://iklimfide.com/blog/fideyi-gununde-yetistirmek.html</loc>
     <lastmod>2026-03-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.65</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/blog/fideyi-gununde-yetistirmek.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/blog/fideyi-gununde-yetistirmek.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/blog/fideyi-gununde-yetistirmek.html" />
+  </url>
+  <url>
+    <loc>https://iklimfide.com/en/blog/fideyi-gununde-yetistirmek.html</loc>
+    <lastmod>2026-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.55</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/blog/fideyi-gununde-yetistirmek.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/blog/fideyi-gununde-yetistirmek.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/blog/fideyi-gununde-yetistirmek.html" />
   </url>
   <url>
     <loc>https://iklimfide.com/blog/marul-fidesinde-yil-boyu-tedarik.html</loc>
     <lastmod>2026-03-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.65</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/blog/marul-fidesinde-yil-boyu-tedarik.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/blog/marul-fidesinde-yil-boyu-tedarik.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/blog/marul-fidesinde-yil-boyu-tedarik.html" />
+  </url>
+  <url>
+    <loc>https://iklimfide.com/en/blog/marul-fidesinde-yil-boyu-tedarik.html</loc>
+    <lastmod>2026-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.55</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/blog/marul-fidesinde-yil-boyu-tedarik.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/blog/marul-fidesinde-yil-boyu-tedarik.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/blog/marul-fidesinde-yil-boyu-tedarik.html" />
   </url>
   <url>
     <loc>https://iklimfide.com/blog/turkiye-geneli-lojistik.html</loc>
     <lastmod>2026-03-24</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.65</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/blog/turkiye-geneli-lojistik.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/blog/turkiye-geneli-lojistik.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/blog/turkiye-geneli-lojistik.html" />
+  </url>
+  <url>
+    <loc>https://iklimfide.com/en/blog/turkiye-geneli-lojistik.html</loc>
+    <lastmod>2026-03-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.55</priority>
+    <xhtml:link rel="alternate" hreflang="tr" href="https://iklimfide.com/blog/turkiye-geneli-lojistik.html" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://iklimfide.com/en/blog/turkiye-geneli-lojistik.html" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://iklimfide.com/blog/turkiye-geneli-lojistik.html" />
   </url>
 </urlset>

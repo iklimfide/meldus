@@ -3,6 +3,11 @@
   "outputDirectory": ".",
   "redirects": [
     {
+      "source": "/en",
+      "destination": "/en/",
+      "permanent": true
+    },
+    {
       "source": "/index.html",
       "destination": "/",
       "permanent": true
