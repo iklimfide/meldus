@@ -14,8 +14,16 @@
   }
 
   function browserIsTr() {
-    var primary = (navigator.languages && navigator.languages[0]) || navigator.language || '';
-    return isTrCode(primary);
+    var codes = [];
+    if (navigator.languages && navigator.languages.length) {
+      codes.push(navigator.languages[0]);
+    }
+    if (navigator.language) codes.push(navigator.language);
+    if (navigator.userLanguage) codes.push(navigator.userLanguage);
+    for (var i = 0; i < codes.length; i++) {
+      if (isTrCode(codes[i])) return true;
+    }
+    return false;
   }
 
   function isEnPath(p) {
@@ -54,12 +62,11 @@
   var stored = null;
   try { stored = localStorage.getItem(KEY); } catch (e) {}
 
-  var currentlyEn = isEnPath(path);
-  var wantEn = stored === 'en' ? true : stored === 'tr' ? false : !browserIsTr();
+  var trBrowser = browserIsTr();
+  var wantEn = stored === 'en' ? true : stored === 'tr' ? false : !trBrowser;
 
-  if (wantEn && !currentlyEn) {
-    location.replace(toEnPath(path) + location.search + location.hash);
-  } else if (stored === 'tr' && currentlyEn) {
-    location.replace(toTrPath(path) + location.search + location.hash);
+  var dest = wantEn ? toEnPath(path) : toTrPath(path);
+  if (dest !== path && dest !== path + '/' && dest + '/' !== path) {
+    location.replace(dest + location.search + location.hash);
   }
 })();
