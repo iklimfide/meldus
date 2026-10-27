@@ -1104,22 +1104,23 @@
     var btnToplu = document.getElementById('btn-toplu-sil');
     var ids = Object.keys(selectedStokIds).filter(function (id) { return selectedStokIds[id]; });
     if (ids.length === 0) return;
-    if (!confirm(ids.length + ' kayıt silinecek. Emin misiniz?')) return;
     if (!supabase) return;
-    var unlock = submitLock(btnToplu);
-    supabase.from('fide_stok').delete().in('id', ids).then(function (res) {
-      if (!res.error) {
-        ids.forEach(function (id) { delete selectedStokIds[id]; });
-        loadStok();
-      } else {
-        var msg = (res.error && res.error.message) ? res.error.message : 'Silme yapılamadı.';
-        if (/foreign key|violates|referenced|ilişkili/i.test(msg)) {
-          alert('Seçili kayıtlar silinemiyor: Satış veya başka ilişkili kayıtlar var. Önce ilgili satışları kaldırmanız gerekebilir.');
+    openModalOnay(ids.length + ' kayıt silinecek. Emin misiniz?', function () {
+      var unlock = submitLock(btnToplu);
+      supabase.from('fide_stok').delete().in('id', ids).then(function (res) {
+        if (!res.error) {
+          ids.forEach(function (id) { delete selectedStokIds[id]; });
+          loadStok();
         } else {
-          alert('Silinemedi: ' + msg);
+          var msg = (res.error && res.error.message) ? res.error.message : 'Silme yapılamadı.';
+          if (/foreign key|violates|referenced|ilişkili/i.test(msg)) {
+            openModalUyari('Seçili kayıtlar silinemiyor: Satış veya başka ilişkili kayıtlar var. Önce ilgili satışları kaldırmanız gerekebilir.');
+          } else {
+            openModalUyari('Silinemedi: ' + msg);
+          }
         }
-      }
-    }).finally(unlock);
+      }).finally(unlock);
+    }, { confirmText: 'Sil' });
   }
 
   function openModalYeniKayit() {
@@ -1250,7 +1251,7 @@
       return !isNaN(n) && n > 3000;
     });
     if (list.length === 0) {
-      alert('İndirilecek kayıt yok.');
+      openModalUyari('İndirilecek kayıt yok.');
       return;
     }
     var logoImg = new Image();
@@ -1645,7 +1646,7 @@
       var musteri = (satMusteri && satMusteri.value || '').trim() || null;
       var teslimTarihi = (satTeslimTarihi && satTeslimTarihi.value || '').trim() || null;
       var miktar = parseMiktar(satMiktar && satMiktar.value);
-      if (miktar === null || miktar < 1) { alert('Kaç adet 1 veya daha fazla olmalıdır.'); return; }
+      if (miktar === null || miktar < 1) { openModalUyari('Kaç adet 1 veya daha fazla olmalıdır.'); return; }
       var notlar = (satNotlar && satNotlar.value || '').trim() || null;
       var kargo = !!(satKargo && satKargo.checked);
       var unlock = submitLock(btnSatOnay);
@@ -1789,17 +1790,155 @@
     setOptions('teslim-edilenler-filter-adet', adet);
   }
 
-  function renderTeslimTable() {
+  function getTeslimFilteredRows() {
     var fKargo = (document.getElementById('teslim-filter-kargo') || {}).value || '';
     var fCesit = (document.getElementById('teslim-filter-cesit') || {}).value || '';
     var fMusteri = (document.getElementById('teslim-filter-musteri') || {}).value || '';
     var fEkim = (document.getElementById('teslim-filter-ekim') || {}).value || '';
     var fTeslim = (document.getElementById('teslim-filter-teslim') || {}).value || '';
     var fAdet = (document.getElementById('teslim-filter-adet') || {}).value || '';
-    var filtered = teslimDisplayRows.filter(function (r) {
+    return teslimDisplayRows.filter(function (r) {
       var kargoOk = fKargo === '' || (fKargo === '1' && r.kargo) || (fKargo === '0' && !r.kargo);
       return kargoOk && (fCesit === '' || r.cesitStr === fCesit) && (fMusteri === '' || r.musteri === fMusteri) && (fEkim === '' || r.ekimStr === fEkim) && (fTeslim === '' || r.teslim === fTeslim) && (fAdet === '' || r.miktarNum === fAdet);
     });
+  }
+
+  function downloadTeslimExcel() {
+    var rows = getTeslimFilteredRows();
+    if (!rows.length) {
+      openModalUyari('Aktarılacak kayıt yok.');
+      return;
+    }
+    var unescapeHtml = function (s) {
+      return String(s == null ? '' : s)
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&amp;/g, '&');
+    };
+    var xmlEsc = function (s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+    var displayText = function (v) {
+      return unescapeHtml(v == null ? '' : v);
+    };
+    var borders = '<Borders>' +
+      '<Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1"/>' +
+      '<Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1"/>' +
+      '<Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1"/>' +
+      '<Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/>' +
+      '</Borders>';
+    var cell = function (style, type, v) {
+      var data;
+      if (type === 'Number' || type === 'DateTime') data = String(v);
+      else data = xmlEsc(displayText(v));
+      return '<Cell ss:StyleID="' + style + '"><Data ss:Type="' + type + '">' + data + '</Data></Cell>';
+    };
+    var emptyCell = function (style) {
+      return '<Cell ss:StyleID="' + style + '"/>';
+    };
+    var toExcelDate = function (str) {
+      var s = displayText(str);
+      if (!s || s === '—') return null;
+      var dmy = s.match(/^(\d{2})[./](\d{2})[./](\d{4})$/);
+      if (dmy) return dmy[3] + '-' + dmy[2] + '-' + dmy[1] + 'T00:00:00.000';
+      var iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (iso) return iso[1] + '-' + iso[2] + '-' + iso[3] + 'T00:00:00.000';
+      return null;
+    };
+    var dateCell = function (style, str) {
+      var dt = toExcelDate(str);
+      if (!dt) return emptyCell(style);
+      return cell(style, 'DateTime', dt);
+    };
+    var headers = ['Çeşit', 'Müşteri', 'Teslim Tarihi', 'Adet', 'Not', 'Ekim Tarihi', 'Kargo'];
+    var dataRows = rows.map(function (r) {
+      var adet = Number(r.miktarRaw);
+      if (isNaN(adet)) adet = 0;
+      return [
+        displayText(r.cesitStr),
+        displayText(r.musteri),
+        displayText(r.teslim),
+        adet,
+        displayText(r.notStr === '—' ? '' : r.notStr),
+        displayText(r.ekimStr),
+        r.kargo ? 'Evet' : 'Hayır'
+      ];
+    });
+    var toplam = dataRows.reduce(function (sum, r) { return sum + r[3]; }, 0);
+    var widthVal = function (v, i) {
+      if (i === 3) return formatNum(v).length;
+      if (i === 2 || i === 5) return 10;
+      return String(v == null ? '' : v).length;
+    };
+    var colWidths = headers.map(function (h) { return String(h).length; });
+    dataRows.forEach(function (r) {
+      r.forEach(function (v, i) {
+        var len = widthVal(v, i);
+        if (len > colWidths[i]) colWidths[i] = len;
+      });
+    });
+    var totLen = formatNum(toplam).length;
+    if (totLen > colWidths[3]) colWidths[3] = totLen;
+    if (6 > colWidths[0]) colWidths[0] = 6;
+    var colXml = colWidths.map(function (len) {
+      var w = Math.max(12, len + 3) * 6.2;
+      if (w > 220) w = 220;
+      return '<Column ss:AutoFitWidth="1" ss:Width="' + w.toFixed(1) + '"/>';
+    }).join('');
+    var xml = '<?xml version="1.0" encoding="UTF-8"?>' +
+      '<?mso-application progid="Excel.Sheet"?>' +
+      '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">' +
+      '<Styles>' +
+      '<Style ss:ID="sCell"><Alignment ss:Vertical="Center" ss:Horizontal="Center"/>' + borders + '</Style>' +
+      '<Style ss:ID="sHead"><Font ss:Bold="1"/><Interior ss:Color="#E0F2FE" ss:Pattern="Solid"/><Alignment ss:Vertical="Center" ss:Horizontal="Center"/>' + borders + '</Style>' +
+      '<Style ss:ID="sTotal"><Font ss:Bold="1"/><Alignment ss:Vertical="Center" ss:Horizontal="Center"/>' + borders + '</Style>' +
+      '<Style ss:ID="sNum"><Alignment ss:Vertical="Center" ss:Horizontal="Center"/><NumberFormat ss:Format="#,##0"/>' + borders + '</Style>' +
+      '<Style ss:ID="sNumTotal"><Font ss:Bold="1"/><Alignment ss:Vertical="Center" ss:Horizontal="Center"/><NumberFormat ss:Format="#,##0"/>' + borders + '</Style>' +
+      '<Style ss:ID="sDate"><Alignment ss:Vertical="Center" ss:Horizontal="Center"/><NumberFormat ss:Format="dd/mm/yyyy"/>' + borders + '</Style>' +
+      '</Styles>' +
+      '<Worksheet ss:Name="Teslim edilecekler"><Table>';
+    xml += colXml;
+    xml += '<Row>' + headers.map(function (h) { return cell('sHead', 'String', h); }).join('') + '</Row>';
+    dataRows.forEach(function (r) {
+      xml += '<Row>' +
+        cell('sCell', 'String', r[0]) +
+        cell('sCell', 'String', r[1]) +
+        dateCell('sDate', r[2]) +
+        cell('sNum', 'Number', r[3]) +
+        cell('sCell', 'String', r[4]) +
+        dateCell('sDate', r[5]) +
+        cell('sCell', 'String', r[6]) +
+        '</Row>';
+    });
+    xml += '<Row>' +
+      cell('sTotal', 'String', 'Toplam') +
+      emptyCell('sTotal') +
+      emptyCell('sTotal') +
+      cell('sNumTotal', 'Number', toplam) +
+      emptyCell('sTotal') +
+      emptyCell('sTotal') +
+      emptyCell('sTotal') +
+      '</Row>';
+    xml += '</Table></Worksheet></Workbook>';
+    var blob = new Blob([xml], { type: 'application/vnd.ms-excel' });
+    var a = document.createElement('a');
+    var d = new Date();
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    a.href = URL.createObjectURL(blob);
+    a.download = 'teslim-edilecekler-' + d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + '.xls';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 1500);
+  }
+
+  function renderTeslimTable() {
+    var filtered = getTeslimFilteredRows();
     var esc = function (s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
     var rows = filtered.map(function (r) {
       var sid = (r.satisId || '');
@@ -2184,11 +2323,11 @@
       if (isNaN(enteredAmount) || enteredAmount < 0) enteredAmount = null;
       if (teslimAdetKismen) {
         if (enteredStr === '' || enteredAmount == null || isNaN(enteredAmount) || enteredAmount < 1) {
-          alert('Kısmen teslim için teslim edilen adeti girin.');
+          openModalUyari('Kısmen teslim için teslim edilen adeti girin.');
           return;
         }
         if (!isNaN(teslimAdetMaxMiktar) && enteredAmount > teslimAdetMaxMiktar) {
-          alert('Kalan adetten fazla giremezsiniz (maks. ' + formatNum(teslimAdetMaxMiktar) + ').');
+          openModalUyari('Kalan adetten fazla giremezsiniz (maks. ' + formatNum(teslimAdetMaxMiktar) + ').');
           return;
         }
       }
@@ -2196,7 +2335,7 @@
       supabase.from('satislar').select('miktar, teslim_edilen_miktar').eq('id', satisId).maybeSingle().then(function (res) {
         var s = res.data;
         if (!s) {
-          alert('Kayıt bulunamadı.');
+          openModalUyari('Kayıt bulunamadı.');
           return;
         }
         var saleMiktar = s.miktar != null ? Number(s.miktar) : 0;
@@ -2207,7 +2346,7 @@
         already = Math.floor(already);
         var remaining = saleMiktar - already;
         if (remaining < 1) {
-          alert('Bu satırda teslim edilecek adet kalmadı.');
+          openModalUyari('Bu satırda teslim edilecek adet kalmadı.');
           return;
         }
         var teslimThis;
@@ -2219,11 +2358,11 @@
           teslimThis = enteredAmount;
         }
         if (teslimThis < 1) {
-          alert('En az 1 adet girin.');
+          openModalUyari('En az 1 adet girin.');
           return;
         }
         if (teslimThis > remaining) {
-          alert('Kalan adetten fazla giremezsiniz (kalan: ' + formatNum(remaining) + ').');
+          openModalUyari('Kalan adetten fazla giremezsiniz (kalan: ' + formatNum(remaining) + ').');
           return;
         }
         closeModalTeslimAdet();
@@ -2235,7 +2374,7 @@
           teslim_edilen_miktar: saleMiktar > 0 && newDelivered >= saleMiktar ? saleMiktar : newDelivered
         };
         return supabase.from('satislar').update(payload).eq('id', satisId).then(function (r) {
-          if (r.error) { alert('Güncellenemedi: ' + (r.error.message || '')); return; }
+          if (r.error) { openModalUyari('Güncellenemedi: ' + (r.error.message || '')); return; }
           loadStok();
           refreshTeslimModalIfOpen();
           refreshKimeSatildiList();
@@ -2248,6 +2387,8 @@
   document.querySelectorAll('[data-modal-close="teslim"]').forEach(function (btn) {
     btn.addEventListener('click', closeModalTeslim);
   });
+  var btnTeslimExcel = document.getElementById('btn-teslim-excel');
+  if (btnTeslimExcel) btnTeslimExcel.addEventListener('click', downloadTeslimExcel);
   if (modalTeslimEdilenlerTbody) {
     modalTeslimEdilenlerTbody.addEventListener('click', function (e) {
       var btn = e.target.closest('.btn-teslim-geri-al');
@@ -2259,7 +2400,7 @@
       var unlock = submitLock(btn);
       supabase.from('satislar').update({ teslim_edildi_tarihi: null, teslim_edilen_miktar: null }).eq('id', satisId).then(function (r) {
         if (r.error) {
-          alert('Güncellenemedi: ' + (r.error.message || ''));
+          openModalUyari('Güncellenemedi: ' + (r.error.message || ''));
           return;
         }
         openModalTeslimEdilenler();
@@ -2296,26 +2437,27 @@
       var iptalBtn = e.target.closest('.btn-satis-iptal');
       if (iptalBtn) {
         var satisId = (iptalBtn.getAttribute('data-satis-id') || '').trim();
-        if (!satisId || !confirm('Bu satışı iptal etmek istediğinize emin misiniz?')) return;
-        if (!supabase) return;
-        supabase.from('satislar').select('fide_id, miktar').eq('id', satisId).maybeSingle().then(function (res) {
-          var fideId = (res.data && res.data.fide_id) ? res.data.fide_id : null;
-          var miktar = (res.data && res.data.miktar != null) ? Number(res.data.miktar) : 0;
-          supabase.from('satislar').delete().eq('id', satisId).then(function (del) {
-            if (del.error) {
-              alert('Satış kaydı silinemedi: ' + (del.error.message || 'Yetki hatası olabilir.'));
-      return;
-    }
-            refreshKimeSatildiList();
-            loadStok();
-            if (fideId && miktar > 0) {
-              supabase.from('fide_stok').select('extra_fide').eq('id', fideId).maybeSingle().then(function (r2) {
-                var extra = (r2.data && r2.data.extra_fide != null ? Number(r2.data.extra_fide) : 0);
-                supabase.from('fide_stok').update({ extra_fide: extra + miktar }).eq('id', fideId).then(function () { loadStok(); });
-              });
-            }
+        if (!satisId || !supabase) return;
+        openModalOnay('Bu satışı iptal etmek istediğinize emin misiniz?', function () {
+          supabase.from('satislar').select('fide_id, miktar').eq('id', satisId).maybeSingle().then(function (res) {
+            var fideId = (res.data && res.data.fide_id) ? res.data.fide_id : null;
+            var miktar = (res.data && res.data.miktar != null) ? Number(res.data.miktar) : 0;
+            supabase.from('satislar').delete().eq('id', satisId).then(function (del) {
+              if (del.error) {
+                openModalUyari('Satış kaydı silinemedi: ' + (del.error.message || 'Yetki hatası olabilir.'));
+                return;
+              }
+              refreshKimeSatildiList();
+              loadStok();
+              if (fideId && miktar > 0) {
+                supabase.from('fide_stok').select('extra_fide').eq('id', fideId).maybeSingle().then(function (r2) {
+                  var extra = (r2.data && r2.data.extra_fide != null ? Number(r2.data.extra_fide) : 0);
+                  supabase.from('fide_stok').update({ extra_fide: extra + miktar }).eq('id', fideId).then(function () { loadStok(); });
+                });
+              }
+            });
           });
-        });
+        }, { confirmText: 'İptal et' });
         return;
       }
       var degistirBtn = e.target.closest('.btn-satis-degistir');
@@ -2402,22 +2544,22 @@
     btnSatisAktarOnay.addEventListener('click', function () {
       if (!aktarSatisId || !aktarFideId || !supabase) return;
       var hedefEkim = (satisAktarHedefEkim && satisAktarHedefEkim.value || '').trim();
-      if (!hedefEkim) { alert('Hedef ekim tarihi seçin.'); return; }
+      if (!hedefEkim) { openModalUyari('Hedef ekim tarihi seçin.'); return; }
       var unlock = submitLock(btnSatisAktarOnay);
       supabase.from('fide_stok').select('id, extra_fide').eq('ekim_tarihi', hedefEkim).eq('cesit', aktarCesit).limit(1).then(function (rNew) {
         var newRows = rNew.data && rNew.data.length ? rNew.data : [];
         var newStok = newRows[0];
         if (!newStok) {
-          alert('Bu ekim tarihine ait stok kaydı bulunamadı.');
+          openModalUyari('Bu ekim tarihine ait stok kaydı bulunamadı.');
           return;
         }
         if (newStok.id === aktarFideId) {
-          alert('Satış zaten bu gruba ait.');
+          openModalUyari('Satış zaten bu gruba ait.');
           return;
         }
         var newExtra = (newStok.extra_fide != null ? Number(newStok.extra_fide) : 0);
         if (newExtra < aktarMiktar) {
-          alert('Hedef stokta yeterli extra fide yok (' + newExtra + ').');
+          openModalUyari('Hedef stokta yeterli extra fide yok (' + newExtra + ').');
           return;
         }
         return supabase.from('fide_stok').select('extra_fide').eq('id', aktarFideId).maybeSingle().then(function (rOld) {
@@ -2486,7 +2628,7 @@
       var musteri = (satisDegistirMusteri && satisDegistirMusteri.value || '').trim() || null;
       var teslim = (satisDegistirTeslim && satisDegistirTeslim.value || '').trim() || null;
       var miktar = parseMiktar(satisDegistirMiktar && satisDegistirMiktar.value);
-      if (miktar === null || miktar < 1) { alert('Kaç adet 1 veya daha fazla olmalıdır.'); return; }
+      if (miktar === null || miktar < 1) { openModalUyari('Kaç adet 1 veya daha fazla olmalıdır.'); return; }
       var notlar = (satisDegistirNotlar && satisDegistirNotlar.value || '').trim() || null;
       var kargo = !!(satisDegistirKargo && satisDegistirKargo.checked);
       var unlock = submitLock(btnSatisDegistirOnay);
@@ -2659,7 +2801,7 @@
     btnCopHepsini.addEventListener('click', function () {
       if (!copFideId) return;
       if (copFideMaxExtra < 1) {
-        alert('Bu satırda çöpe atılacak extra fide yok.');
+        openModalUyari('Bu satırda çöpe atılacak extra fide yok.');
         return;
       }
       if (copMiktarEl) {
@@ -2717,6 +2859,32 @@
   }
   document.querySelectorAll('[data-modal-close="uyari"]').forEach(function (btn) {
     btn.addEventListener('click', closeModalUyari);
+  });
+
+  var modalOnay = document.getElementById('modal-onay');
+  var modalOnayMesaj = document.getElementById('modal-onay-mesaj');
+  var btnOnayEvet = document.getElementById('btn-onay-evet');
+  var onayPendingFn = null;
+  function openModalOnay(msg, onConfirm, opts) {
+    opts = opts || {};
+    onayPendingFn = typeof onConfirm === 'function' ? onConfirm : null;
+    if (modalOnayMesaj) modalOnayMesaj.textContent = msg || '';
+    if (btnOnayEvet) btnOnayEvet.textContent = opts.confirmText || 'Onayla';
+    if (modalOnay) { modalOnay.classList.add('open'); modalOnay.setAttribute('aria-hidden', 'false'); }
+  }
+  function closeModalOnay() {
+    onayPendingFn = null;
+    if (modalOnay) { modalOnay.classList.remove('open'); modalOnay.setAttribute('aria-hidden', 'true'); }
+  }
+  if (btnOnayEvet) {
+    btnOnayEvet.addEventListener('click', function () {
+      var fn = onayPendingFn;
+      closeModalOnay();
+      if (fn) fn();
+    });
+  }
+  document.querySelectorAll('[data-modal-close="onay"]').forEach(function (btn) {
+    btn.addEventListener('click', closeModalOnay);
   });
 
   var copKaydiDegistirId = null;
@@ -2803,7 +2971,7 @@
       if (!copKaydiDegistirId || !copKaydiDegistirFideId || !supabase) return;
       var newM = parseMiktar(copKaydiDegistirMiktarEl && copKaydiDegistirMiktarEl.value);
       if (newM === null || newM < 1) {
-        alert('Miktar 1 veya daha fazla olmalıdır.');
+        openModalUyari('Miktar 1 veya daha fazla olmalıdır.');
         return;
       }
       var oldM = copKaydiDegistirOldMiktar;
@@ -2814,7 +2982,7 @@
         if (isNaN(extra)) extra = 0;
         var newExtra = extra - delta;
         if (newExtra < 0) {
-          alert('Stokta yeterli extra fide yok (mevcut: ' + extra + ', gerekli ek düşüş: ' + delta + ').');
+          openModalUyari('Stokta yeterli extra fide yok (mevcut: ' + extra + ', gerekli ek düşüş: ' + delta + ').');
           return;
         }
         return supabase.from('cop_kayitlari').update({ miktar: newM }).eq('id', copKaydiDegistirId).then(function (up) {
@@ -2871,14 +3039,14 @@
       if (!copFideId || !supabase) return;
       var miktar = parseMiktar(copMiktarEl && copMiktarEl.value);
       if (miktar === null || miktar < 1) {
-        alert('Çöpe atılacak miktar 1 veya daha fazla olmalıdır.');
+        openModalUyari('Çöpe atılacak miktar 1 veya daha fazla olmalıdır.');
         return;
       }
       var unlock = submitLock(btnCopOnay);
       supabase.from('fide_stok').select('extra_fide').eq('id', copFideId).maybeSingle().then(function (r) {
         var extra = (r.data && r.data.extra_fide != null ? Number(r.data.extra_fide) : 0);
         if (miktar > extra) {
-          alert('Stokta yeterli extra fide yok (mevcut: ' + extra + ').');
+          openModalUyari('Stokta yeterli extra fide yok (mevcut: ' + extra + ').');
           return;
         }
         return supabase.from('cop_kayitlari').insert({ fide_id: copFideId, miktar: miktar }).then(function (res) {
