@@ -35,6 +35,9 @@ create table if not exists public.satislar (
   musteri_adi text not null,
   miktar int not null check (miktar > 0),
   teslim_tarihi date,
+  teslim_edildi_tarihi timestamptz,
+  teslim_edilen_miktar int,
+  kargo boolean not null default false,
   satis_tarihi timestamptz default now(),
   created_at timestamptz default now()
 );
@@ -133,3 +136,7 @@ alter table public.satislar add column if not exists kargo boolean not null defa
 
 -- 10. (İsteğe bağlı) fide_stok tablosuna ekim no ekle
 alter table public.fide_stok add column if not exists ekim_no text;
+
+-- 11. Teslim kaydı (Meldus Teslim et)
+alter table public.satislar add column if not exists teslim_edildi_tarihi timestamptz;
+alter table public.satislar add column if not exists teslim_edilen_miktar int;
