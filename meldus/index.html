@@ -1099,12 +1099,12 @@
   <div id="modal-sat" class="modal-backdrop" aria-hidden="true">
     <div class="modal-box modal-sat-box">
       <h3 style="color: #1e3a8a;">SATIŞ YAP</h3>
-      <label>Müşteri ismi</label>
-      <input type="text" id="sat-musteri" placeholder="İsim Giriniz" />
-      <label>Teslim tarihi</label>
-      <input type="date" id="sat-teslim-tarihi" />
-      <label>Kaç adet</label>
-      <input type="text" id="sat-miktar" inputmode="numeric" placeholder="örn. 10.000" maxlength="7" />
+      <label>Müşteri ismi *</label>
+      <input type="text" id="sat-musteri" placeholder="İsim Giriniz" required />
+      <label>Teslim tarihi *</label>
+      <input type="date" id="sat-teslim-tarihi" required />
+      <label>Kaç adet *</label>
+      <input type="text" id="sat-miktar" inputmode="numeric" placeholder="örn. 10.000" maxlength="7" required />
       <label>Notlar</label>
       <input type="text" id="sat-notlar" placeholder="Notlar (isteğe bağlı)" />
       <label class="modal-check-wrap">
@@ -1248,13 +1248,13 @@
   <div id="modal-yeni-kayit" class="modal-backdrop" aria-hidden="true">
     <div class="modal-box modal-yeni-box">
       <h3 style="color: #15803d;">Yeni kayıt</h3>
-      <label>Çeşit</label>
-      <input type="text" id="yeni-cesit" list="yeni-cesit-list" autocomplete="off" />
+      <label>Çeşit *</label>
+      <input type="text" id="yeni-cesit" list="yeni-cesit-list" autocomplete="off" required />
       <datalist id="yeni-cesit-list"></datalist>
-      <label>Ekim tarihi</label>
-      <input type="date" id="yeni-ekim_tarihi" />
-      <label>Ekilen fide (viyol)</label>
-      <input type="text" id="yeni-ekilen_miktar" inputmode="numeric" maxlength="7" />
+      <label>Ekim tarihi *</label>
+      <input type="date" id="yeni-ekim_tarihi" required />
+      <label>Ekilen fide (viyol) *</label>
+      <input type="text" id="yeni-ekilen_miktar" inputmode="numeric" maxlength="7" required />
       <label>Ekim no</label>
       <input type="text" id="yeni-ekim_no" inputmode="numeric" maxlength="20" placeholder="İsteğe bağlı" />
       <div class="actions">
@@ -1267,15 +1267,15 @@
   <div id="modal-degistir" class="modal-backdrop" aria-hidden="true">
     <div class="modal-box modal-yeni-box">
       <h3 style="color: #7c3aed;">Kayıt değiştir</h3>
-      <label>Çeşit</label>
-      <input type="text" id="degistir-cesit" list="degistir-cesit-list" autocomplete="off" />
+      <label>Çeşit *</label>
+      <input type="text" id="degistir-cesit" list="degistir-cesit-list" autocomplete="off" required />
       <datalist id="degistir-cesit-list"></datalist>
-      <label>Ekim tarihi</label>
-      <input type="date" id="degistir-ekim_tarihi" />
+      <label>Ekim tarihi *</label>
+      <input type="date" id="degistir-ekim_tarihi" required />
       <label>Teslim tarihi</label>
       <input type="date" id="degistir-teslim_tarihi" />
-      <label>Ekilen fide (viyol)</label>
-      <input type="text" id="degistir-ekilen_miktar" inputmode="numeric" maxlength="7" />
+      <label>Ekilen fide (viyol) *</label>
+      <input type="text" id="degistir-ekilen_miktar" inputmode="numeric" maxlength="7" required />
       <label>Extra Fide</label>
       <input type="text" id="degistir-extra_fide" inputmode="numeric" maxlength="7" />
       <label>Ekim no</label>
@@ -1315,12 +1315,12 @@
   <div id="modal-satis-degistir" class="modal-backdrop" aria-hidden="true">
     <div class="modal-box modal-yeni-box">
       <h3 style="color: #ea580c;">Satış değiştir</h3>
-      <label>Müşteri ismi</label>
-      <input type="text" id="satis-degistir-musteri" />
-      <label>Teslim tarihi</label>
-      <input type="date" id="satis-degistir-teslim" />
-      <label>Kaç adet</label>
-      <input type="text" id="satis-degistir-miktar" inputmode="numeric" maxlength="7" />
+      <label>Müşteri ismi *</label>
+      <input type="text" id="satis-degistir-musteri" required />
+      <label>Teslim tarihi *</label>
+      <input type="date" id="satis-degistir-teslim" required />
+      <label>Kaç adet *</label>
+      <input type="text" id="satis-degistir-miktar" inputmode="numeric" maxlength="7" required />
       <label>Notlar</label>
       <input type="text" id="satis-degistir-notlar" placeholder="İsteğe bağlı" />
       <label class="modal-check-wrap">
