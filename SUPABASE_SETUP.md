@@ -94,9 +94,54 @@ create policy "extra_aktar_hareketleri_select"
 
 create policy "extra_aktar_hareketleri_insert"
   on public.extra_aktar_hareketleri for insert with check (true);
+
+create policy "extra_aktar_hareketleri_delete"
+  on public.extra_aktar_hareketleri for delete using (true);
 ```
 
 **Not:** Bu tabloyu eklemeden önce yapılmış sonrakine/öncekine aktarımlar kayıtlı olmadığı için geçmişte görünmez; tablo sonrası yapılanlar listelenir.
+
+Aktarım **geri alma** için `extra_aktar_hareketleri_delete` politikası gerekir. Tablo zaten varsa sadece şunu çalıştırın:
+
+```sql
+create policy "extra_aktar_hareketleri_delete"
+  on public.extra_aktar_hareketleri for delete using (true);
+```
+
+### 1.5 Soft delete (`fide_stok.deleted_at`)
+
+Stok **Sil** / **Seçilenleri sil** satırı hard delete etmez; `deleted_at` yazar. Panelde **Silinenler → Geri al** ile geri gelir. Mevcut DB için bir kez: `meldus/sql/fide_stok_soft_delete.sql`.
+
+```sql
+alter table public.fide_stok add column if not exists deleted_at timestamptz;
+create index if not exists idx_fide_stok_deleted_at
+  on public.fide_stok (deleted_at)
+  where deleted_at is not null;
+```
+
+### 1.6 `meldus_islem_log` (Son işlemler)
+
+Kim ne yaptı kaydı için. **Mevcut projede yoksa** SQL Editor’da bir kez çalıştırın (`meldus/sql/meldus_islem_log.sql`).
+
+```sql
+create table if not exists public.meldus_islem_log (
+  id uuid primary key default gen_random_uuid(),
+  kullanici text not null,
+  islem text not null,
+  detay text,
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_meldus_islem_log_created on public.meldus_islem_log(created_at desc);
+
+alter table public.meldus_islem_log enable row level security;
+
+create policy "meldus_islem_log_select"
+  on public.meldus_islem_log for select using (true);
+
+create policy "meldus_islem_log_insert"
+  on public.meldus_islem_log for insert with check (true);
+```
 
 ---
 

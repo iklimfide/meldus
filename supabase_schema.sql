@@ -125,6 +125,9 @@ create policy "extra_aktar_hareketleri_select" on public.extra_aktar_hareketleri
 drop policy if exists "extra_aktar_hareketleri_insert" on public.extra_aktar_hareketleri;
 create policy "extra_aktar_hareketleri_insert" on public.extra_aktar_hareketleri for insert with check (true);
 
+drop policy if exists "extra_aktar_hareketleri_delete" on public.extra_aktar_hareketleri;
+create policy "extra_aktar_hareketleri_delete" on public.extra_aktar_hareketleri for delete using (true);
+
 -- 7. (İsteğe bağlı) Eski kurulumda cikan_fide yoksa ekle
 alter table public.fide_stok add column if not exists cikan_fide int default 0;
 
@@ -140,3 +143,28 @@ alter table public.fide_stok add column if not exists ekim_no text;
 -- 11. Teslim kaydı (Meldus Teslim et)
 alter table public.satislar add column if not exists teslim_edildi_tarihi timestamptz;
 alter table public.satislar add column if not exists teslim_edilen_miktar int;
+
+-- 12. fide_stok soft delete (silinenler geri alınabilir)
+alter table public.fide_stok add column if not exists deleted_at timestamptz;
+create index if not exists idx_fide_stok_deleted_at
+  on public.fide_stok (deleted_at)
+  where deleted_at is not null;
+
+-- 13. Son işlemler logu (kim ne yaptı)
+create table if not exists public.meldus_islem_log (
+  id uuid primary key default gen_random_uuid(),
+  kullanici text not null,
+  islem text not null,
+  detay text,
+  created_at timestamptz default now()
+);
+
+create index if not exists idx_meldus_islem_log_created on public.meldus_islem_log(created_at desc);
+
+alter table public.meldus_islem_log enable row level security;
+
+drop policy if exists "meldus_islem_log_select" on public.meldus_islem_log;
+create policy "meldus_islem_log_select" on public.meldus_islem_log for select using (true);
+
+drop policy if exists "meldus_islem_log_insert" on public.meldus_islem_log;
+create policy "meldus_islem_log_insert" on public.meldus_islem_log for insert with check (true);

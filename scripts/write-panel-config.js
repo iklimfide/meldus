@@ -23,7 +23,8 @@ loadDotEnv(path.join(__dirname, '..', '.env'));
 
 var url = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || '';
 var key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY || process.env.SUPABASE_ANON_KEY || '';
-var content = '// Otomatik oluşturuldu (build/env)\nwindow.SUPABASE_URL = ' + JSON.stringify(url) + ';\nwindow.SUPABASE_ANON_KEY = ' + JSON.stringify(key) + ';\n';
+var registerCode = process.env.MELDUS_REGISTER_CODE || 'iklim2026';
+var content = '// Otomatik oluşturuldu (build/env)\nwindow.SUPABASE_URL = ' + JSON.stringify(url) + ';\nwindow.SUPABASE_ANON_KEY = ' + JSON.stringify(key) + ';\nwindow.MELDUS_REGISTER_CODE = ' + JSON.stringify(registerCode) + ';\n';
 
 function writeConfig(filePath, label) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });

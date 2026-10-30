@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Arif – Meldus Yönetim</title>
+  <link rel="icon" href="/meldus/logo.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --green: #15803d;
+      --slate: #475569;
+      --bg: #f3f4f6;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #111827;
+      background: var(--bg);
+      min-height: 100vh;
+    }
+    .topbar {
+      background: linear-gradient(180deg, #166534 0%, #15803d 100%);
+      color: #fff;
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .topbar h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+    .topbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .topbar a, .topbar button {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.45rem 0.85rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .topbar a:hover, .topbar button:hover { background: rgba(255,255,255,0.22); }
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+    }
+    .card {
+      background: #fff;
+      border-radius: 1rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .card h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1.2rem;
+      color: var(--slate);
+    }
+    .card .sub {
+      margin: 0 0 1rem;
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 0.55rem 0.65rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #f3f4f6; font-weight: 700; }
+    tr:nth-child(even) td { background: #f9fafb; }
+    .table-wrap { overflow-x: auto; }
+    .btn-danger {
+      padding: 0.3rem 0.6rem;
+      border: none;
+      border-radius: 0.35rem;
+      background: #dc2626;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn-danger:hover { background: #b91c1c; }
+    .btn-muted {
+      padding: 0.3rem 0.6rem;
+      border: none;
+      border-radius: 0.35rem;
+      background: #64748b;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.85rem;
+      margin-right: 0.35rem;
+    }
+    .btn-muted:hover { background: #475569; }
+    .denied, .loading {
+      max-width: 32rem;
+      margin: 4rem auto;
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    }
+    .denied a { color: var(--green); font-weight: 700; }
+    .badge-master {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      background: #dcfce7;
+      color: #166534;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+    .empty { color: #6b7280; padding: 0.75rem 0; }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.55);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 50;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-box {
+      width: 100%;
+      max-width: 24rem;
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1.25rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    }
+    .modal-box h3 { margin: 0 0 0.75rem; color: var(--slate); }
+    .modal-box label {
+      display: block;
+      margin: 0.65rem 0 0.3rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .modal-box input {
+      width: 100%;
+      padding: 0.6rem 0.7rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.45rem;
+      font-size: 1rem;
+    }
+    .modal-box .hint {
+      margin: 0.35rem 0 0;
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+    .modal-box .error {
+      margin: 0.65rem 0 0;
+      color: #b91c1c;
+      font-size: 0.9rem;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+      margin-top: 1rem;
+    }
+    .modal-actions button {
+      padding: 0.5rem 0.9rem;
+      border: none;
+      border-radius: 0.45rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .modal-actions .cancel { background: #e5e7eb; color: #111827; }
+    .modal-actions .save { background: var(--green); color: #fff; }
+    @media (max-width: 640px) {
+      .wrap { padding: 0.75rem; }
+      .card { padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="arif-denied" class="denied" hidden>
+    <h2>Erişim yok</h2>
+    <p>Bu sayfa sadece master kullanıcı (<strong>arif</strong>) içindir.</p>
+    <p><a href="/meldus/">Meldus girişine dön</a></p>
+  </div>
+
+  <div id="arif-app" hidden>
+    <header class="topbar">
+      <h1>Arif · Meldus yönetim</h1>
+      <div class="topbar-actions">
+        <span id="arif-user-label"></span>
+        <a href="/meldus/">Meldus’a dön</a>
+        <button type="button" id="arif-logout">Çıkış</button>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <section class="card">
+        <h2>Kullanıcılar</h2>
+        <p class="sub">Bu tarayıcıda kayıtlı hesaplar. Kullanıcı adı / şifre değiştirilebilir. Master hesabı silinemez.</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Kullanıcı</th>
+                <th>Tür</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="arif-users-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <div id="arif-edit-modal" class="modal-backdrop" aria-hidden="true">
+        <div class="modal-box" role="dialog" aria-labelledby="arif-edit-title">
+          <h3 id="arif-edit-title">Kullanıcıyı düzenle</h3>
+          <input type="hidden" id="arif-edit-old" />
+          <label for="arif-edit-user">Kullanıcı adı</label>
+          <input type="text" id="arif-edit-user" autocomplete="off" />
+          <label for="arif-edit-pass">Yeni şifre</label>
+          <input type="text" id="arif-edit-pass" autocomplete="off" />
+          <p class="hint">Şifreyi değiştirmek istemiyorsanız boş bırakın.</p>
+          <p id="arif-edit-error" class="error" hidden></p>
+          <div class="modal-actions">
+            <button type="button" class="cancel" id="arif-edit-cancel">Vazgeç</button>
+            <button type="button" class="save" id="arif-edit-save">Kaydet</button>
+          </div>
+        </div>
+      </div>
+
+      <section class="card">
+        <h2>Son işlemler</h2>
+        <p class="sub">Tüm log kayıtları (en yeni üstte, son 300).</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Zaman</th>
+                <th>Kullanıcı</th>
+                <th>İşlem</th>
+                <th>Detay</th>
+              </tr>
+            </thead>
+            <tbody id="arif-logs-tbody">
+              <tr><td colspan="4" class="empty">Yükleniyor…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/meldus/config.js"></script>
+  <script src="/meldus/auth.js"></script>
+  <script src="/arif/app.js"></script>
+</body>
+</html>

@@ -372,6 +372,30 @@
       white-space: nowrap;
     }
     .btn-toolbar-cop:hover { background: #b91c1c; }
+    .btn-toolbar-silinenler {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 1.125rem;
+      font-weight: 700;
+      background: #64748b;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-toolbar-silinenler:hover { background: #475569; }
+    .btn-son-islemler {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 700;
+      background: #475569;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-son-islemler:hover { background: #334155; }
     #btn-stok-jpg-indir {
       padding: 0.5rem 1rem;
       border-radius: 0.5rem;
@@ -599,6 +623,26 @@
     .btn-sil:hover { background: #b91c1c; }
     .btn-hareketler { background: #0ea5e9; color: #fff; }
     .btn-hareketler:hover { background: #0284c7; }
+    .btn-aktar-geri-al {
+      padding: 0.3rem 0.55rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 0.35rem;
+      background: #ca8a04;
+      color: #000;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-aktar-geri-al:hover { background: #a16207; color: #fff; }
+    .btn-aktar-geri-al:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-hareketler:disabled,
+    .btn-hareketler:disabled:hover {
+      background: #94a3b8;
+      color: #f8fafc;
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
     .btn-gizle { background: #6b7280; color: #fff; }
     .btn-gizle:hover { background: #4b5563; }
     .btn-degistir-kaydet { background: #15803d; color: #fff; }
@@ -639,7 +683,54 @@
     }
     .modal-cop-kaydi-box .modal-list-body { max-height: 72vh; overflow: auto; }
     .modal-cop-kaydi-box .modal-list-body .panel-table { width: 100%; min-width: 720px; }
+    .modal-box.modal-silinenler-box {
+      max-width: min(96vw, 1100px);
+      width: 96%;
+      min-width: 320px;
+    }
+    .modal-silinenler-box .modal-list-body { max-height: 72vh; overflow: auto; }
+    .modal-silinenler-box .modal-list-body .panel-table { width: 100%; min-width: 640px; }
+    .btn-silinen-geri-al {
+      padding: 0.35rem 0.75rem;
+      border-radius: 0.375rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      background: #0d9488;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-silinen-geri-al:hover { background: #0f766e; }
     .modal-box.modal-kime-satildi-box { max-width: 95vw; width: 95%; min-width: 320px; }
+    #modal-stok-hareketler .modal-box {
+      max-width: 96vw;
+      width: 96%;
+      min-width: 280px;
+      max-height: 92vh;
+      display: flex;
+      flex-direction: column;
+    }
+    #modal-stok-hareketler .modal-list-body {
+      flex: 1 1 auto;
+      max-height: none;
+      overflow: auto;
+      min-height: 0;
+    }
+    #modal-stok-hareketler .panel-table {
+      width: 100%;
+      min-width: 0 !important;
+      table-layout: fixed;
+    }
+    #modal-stok-hareketler .panel-table th,
+    #modal-stok-hareketler .panel-table td {
+      min-width: 0 !important;
+      white-space: normal;
+      word-break: break-word;
+    }
+    #modal-stok-hareketler .panel-table th:last-of-type,
+    #modal-stok-hareketler .panel-table td:last-of-type {
+      min-width: 0 !important;
+    }
     .modal-kime-satildi-box .modal-list-body { max-height: 70vh; overflow: auto; }
     .modal-kime-satildi-box .modal-list-body table { min-width: 100%; table-layout: auto; }
     .modal-kime-satildi-box .modal-list-body th:nth-child(1),
@@ -914,6 +1005,127 @@
     }
     .btn-teslim-edilenler-fixed:hover { background: rgba(255, 255, 255, 0.22); transform: translateY(-1px); }
 
+    body.meldus-locked .panel-topbar,
+    body.meldus-locked .panel-card,
+    body.meldus-locked .modal-backdrop,
+    body.meldus-locked .toast { display: none !important; }
+    #meldus-auth-gate {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background:
+        linear-gradient(160deg, rgba(21, 128, 61, 0.92) 0%, rgba(15, 23, 42, 0.94) 100%),
+        #0f172a;
+    }
+    #meldus-auth-gate[hidden] { display: none !important; }
+    .meldus-auth-card {
+      width: 100%;
+      max-width: 24rem;
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1.75rem 1.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+    }
+    .meldus-auth-card h2 {
+      margin: 0 0 0.35rem;
+      font-size: 1.5rem;
+      color: #15803d;
+    }
+    .meldus-auth-card .auth-sub {
+      margin: 0 0 1.25rem;
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+    .meldus-auth-card label {
+      display: block;
+      margin: 0.75rem 0 0.35rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #374151;
+    }
+    .meldus-auth-card input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+    .meldus-auth-card input:focus {
+      outline: 2px solid rgba(21, 128, 61, 0.35);
+      border-color: #15803d;
+    }
+    .meldus-auth-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-top: 1.25rem;
+    }
+    .meldus-auth-actions button[type="button"].auth-primary {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      background: #15803d;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .meldus-auth-actions button[type="button"].auth-primary:hover { background: #166534; }
+    .meldus-auth-switch {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
+    .meldus-auth-switch button {
+      border: none;
+      background: none;
+      color: #15803d;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0;
+      font-size: inherit;
+    }
+    .meldus-auth-error {
+      margin: 0.75rem 0 0;
+      padding: 0.55rem 0.7rem;
+      border-radius: 0.4rem;
+      background: #fef2f2;
+      color: #b91c1c;
+      font-size: 0.9rem;
+    }
+    .meldus-auth-userbar {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-right: 0.25rem;
+    }
+    .meldus-auth-userbar #meldus-auth-user {
+      font-size: 0.85rem;
+      font-weight: 700;
+      opacity: 0.95;
+      max-width: 8rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #btn-meldus-logout {
+      padding: 0.4rem 0.75rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    #btn-meldus-logout:hover { background: rgba(255, 255, 255, 0.22); }
+
     @media (max-width: 1024px) {
       .panel-card { margin: 0.5rem; }
       .panel-toolbar { flex-direction: column; align-items: stretch; }
@@ -932,7 +1144,41 @@
   </style>
   <link rel="stylesheet" href="/meldus/mobile.css" />
 </head>
-<body>
+<body class="meldus-locked">
+  <div id="meldus-auth-gate" aria-hidden="false" role="dialog" aria-modal="true" aria-labelledby="meldus-auth-title">
+    <div class="meldus-auth-card">
+      <div id="meldus-auth-login">
+        <h2 id="meldus-auth-title" class="sr-only">Giriş</h2>
+        <label for="meldus-login-user">Kullanıcı adı</label>
+        <input type="text" id="meldus-login-user" autocomplete="username" />
+        <label for="meldus-login-pass">Şifre</label>
+        <input type="password" id="meldus-login-pass" autocomplete="current-password" />
+        <p id="meldus-login-error" class="meldus-auth-error" hidden></p>
+        <div class="meldus-auth-actions">
+          <button type="button" class="auth-primary" id="btn-meldus-login">Giriş yap</button>
+          <p class="meldus-auth-switch">Hesabın yok mu? <button type="button" data-auth-show="register">Kayıt ol</button></p>
+        </div>
+      </div>
+      <div id="meldus-auth-register" hidden>
+        <h2>Kayıt ol</h2>
+        <p class="auth-sub">Kendi kullanıcı adı ve şifrenizi oluşturun. Kayıt kodunu ekibinizden alın.</p>
+        <label for="meldus-reg-user">Kullanıcı adı</label>
+        <input type="text" id="meldus-reg-user" autocomplete="username" />
+        <label for="meldus-reg-pass">Şifre</label>
+        <input type="password" id="meldus-reg-pass" autocomplete="new-password" />
+        <label for="meldus-reg-pass2">Şifre (tekrar)</label>
+        <input type="password" id="meldus-reg-pass2" autocomplete="new-password" />
+        <label for="meldus-reg-code">Kayıt kodu</label>
+        <input type="password" id="meldus-reg-code" autocomplete="off" />
+        <p id="meldus-reg-error" class="meldus-auth-error" hidden></p>
+        <div class="meldus-auth-actions">
+          <button type="button" class="auth-primary" id="btn-meldus-register">Hesap oluştur</button>
+          <p class="meldus-auth-switch">Zaten hesabın var mı? <button type="button" data-auth-show="login">Giriş yap</button></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <header class="panel-topbar">
     <div class="panel-topbar-inner">
       <div class="panel-topbar-brand">
@@ -943,6 +1189,10 @@
         </div>
       </div>
       <div class="panel-topbar-actions btn-teslim-wrap">
+        <div class="meldus-auth-userbar">
+          <span id="meldus-auth-user"></span>
+          <button type="button" id="btn-meldus-logout" hidden>Çıkış</button>
+        </div>
         <button type="button" id="btn-teslim-fixed" class="btn-teslim-fixed" aria-label="Teslim edilecekler">
           <span aria-hidden="true">🚚</span> Teslim edilecekler
         </button>
@@ -1000,7 +1250,9 @@
             </div>
             <button type="button" id="btn-yeni-kayit" class="btn-yeni">+ Yeni kayıt ekle</button>
             <button type="button" id="btn-toplu-sil" class="btn-toplu-sil" title="Seçili satırları sil">Seçilenleri sil</button>
+            <button type="button" id="btn-toolbar-silinenler" class="btn-toolbar-silinenler" title="Silinen stok kayıtlarını geri al">Silinenler</button>
             <button type="button" id="btn-toolbar-cop" class="btn-toolbar-cop" title="Çöp kayıtları">Çöp Kaydı</button>
+            <button type="button" id="btn-son-islemler" class="btn-son-islemler" title="Master: Son işlemler" hidden>Son işlemler</button>
             <button type="button" id="btn-stok-jpg-indir" title="Çeşit, teslim, extra fide JPG">JPG indir</button>
           </div>
         </div>
@@ -1368,9 +1620,9 @@
   </div>
 
   <div id="modal-stok-hareketler" class="modal-backdrop" aria-hidden="true">
-    <div class="modal-box modal-list-box" style="max-width: min(96vw, 720px);">
+    <div class="modal-box modal-list-box">
       <h3 id="modal-stok-hareketler-title" style="color: #475569; margin-top: 0;">Hareketler</h3>
-      <div id="modal-stok-hareketler-body" class="modal-list-body" style="max-height: 65vh; overflow: auto;"></div>
+      <div id="modal-stok-hareketler-body" class="modal-list-body"></div>
       <div class="actions" style="margin-top: 1rem;">
         <button type="button" data-modal-close="stok-hareketler" style="background: #15803d; color: #fff;">Kapat</button>
       </div>
@@ -1402,10 +1654,21 @@
   <div id="modal-sil-onay" class="modal-backdrop" aria-hidden="true">
     <div class="modal-box modal-uyari-box">
       <h3 style="margin-bottom: 0.5rem;">Kayıt sil</h3>
-      <p class="uyari-mesaj">Bu kaydı silmek istediğinize emin misiniz?</p>
+      <p class="uyari-mesaj">Bu kayıt silinecek (geri alınabilir). Emin misiniz?</p>
       <div class="actions">
         <button type="button" data-modal-close="sil-onay" style="background: #15803d; color: #fff;">İptal</button>
         <button type="button" id="btn-sil-onay" style="background: #dc2626; color: #fff;">Sil</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-silinenler" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-box modal-list-box modal-silinenler-box">
+      <h3 id="modal-silinenler-title" style="color: #475569;">Silinenler</h3>
+      <p style="margin: 0 0 0.75rem; color: #64748b; font-size: 0.95rem;">Soft silinen stok kayıtları. Geri al ile listeye döner.</p>
+      <div id="modal-silinenler-body" class="modal-list-body"></div>
+      <div class="actions">
+        <button type="button" data-modal-close="silinenler" style="background: #15803d; color: #fff;">Kapat</button>
       </div>
     </div>
   </div>
@@ -1435,6 +1698,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/meldus/config.js"></script>
+  <script src="/meldus/auth.js"></script>
   <script src="/meldus/app.js"></script>
   <script src="/scripts/dev-mobile-preview.js" defer></script>
 </body>
