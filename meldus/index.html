@@ -623,7 +623,8 @@
     .btn-sil:hover { background: #b91c1c; }
     .btn-hareketler { background: #0ea5e9; color: #fff; }
     .btn-hareketler:hover { background: #0284c7; }
-    .btn-aktar-geri-al {
+    .btn-aktar-geri-al,
+    .btn-hareket-cop-geri-al {
       padding: 0.3rem 0.55rem;
       font-size: 0.85rem;
       font-weight: 700;
@@ -634,8 +635,23 @@
       cursor: pointer;
       white-space: nowrap;
     }
-    .btn-aktar-geri-al:hover { background: #a16207; color: #fff; }
-    .btn-aktar-geri-al:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-aktar-geri-al:hover,
+    .btn-hareket-cop-geri-al:hover { background: #a16207; color: #fff; }
+    .btn-aktar-geri-al:disabled,
+    .btn-hareket-cop-geri-al:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-hareket-satis-iptal {
+      padding: 0.3rem 0.55rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 0.35rem;
+      background: #dc2626;
+      color: #fff;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-hareket-satis-iptal:hover:not(:disabled) { background: #b91c1c; }
+    .btn-hareket-satis-iptal:disabled { opacity: 0.55; cursor: not-allowed; }
     .btn-hareketler:disabled,
     .btn-hareketler:disabled:hover {
       background: #94a3b8;
@@ -745,8 +761,6 @@
     .modal-kime-satildi-box .modal-list-body td:nth-child(7) { min-width: 26rem; white-space: nowrap; }
     .modal-kime-satildi-box .btn-teslim-et { padding: 0.35rem 0.6rem; font-size: 0.9rem; background: #15803d; color: #fff; border: none; border-radius: 0.375rem; cursor: pointer; margin-right: 0.25rem; }
     .modal-kime-satildi-box .btn-teslim-et:hover { background: #166534; }
-    .modal-kime-satildi-box .btn-satis-iptal { padding: 0.35rem 0.6rem; font-size: 0.9rem; background: #dc2626; color: #fff; border: none; border-radius: 0.375rem; cursor: pointer; margin-right: 0.25rem; }
-    .modal-kime-satildi-box .btn-satis-iptal:hover { background: #b91c1c; }
     .modal-kime-satildi-box .btn-satis-degistir { padding: 0.35rem 0.6rem; font-size: 0.9rem; background: #ea580c; color: #fff; border: none; border-radius: 0.375rem; cursor: pointer; margin-right: 0.25rem; }
     .modal-kime-satildi-box .btn-satis-degistir:hover { background: #c2410c; }
     .modal-kime-satildi-box .btn-satis-aktar { padding: 0.35rem 0.6rem; font-size: 0.9rem; background: #0d9488; color: #fff; border: none; border-radius: 0.375rem; cursor: pointer; }
@@ -870,15 +884,20 @@
     .modal-list-body th { background: #f3f4f6; font-weight: 600; }
     .modal-list-body .empty-msg { color: #6b7280; padding: 1rem; text-align: center; }
     #modal-teslim .modal-box { max-width: 95vw; width: 95%; min-width: 320px; }
-    #btn-teslim-excel {
+    #btn-teslim-excel,
+    #btn-teslim-jpg {
       background: #0d9488;
       color: #fff;
       border: none;
       border-radius: 0.5rem;
       font-weight: 700;
       cursor: pointer;
+      padding: 0.45rem 0.85rem;
     }
-    #btn-teslim-excel:hover { background: #0f766e; }
+    #btn-teslim-excel:hover,
+    #btn-teslim-jpg:hover { background: #0f766e; }
+    #btn-teslim-jpg { background: #0369a1; }
+    #btn-teslim-jpg:hover { background: #075985; }
     #modal-teslim .modal-list-body { max-height: 70vh; overflow: auto; }
     #modal-teslim .btn-teslim-et { padding: 0.35rem 0.6rem; font-size: 0.9rem; background: #15803d; color: #fff; border: none; border-radius: 0.375rem; cursor: pointer; margin-right: 0.25rem; }
     #modal-teslim .btn-teslim-et:hover { background: #166534; }
@@ -1420,6 +1439,7 @@
       </div>
       <div class="actions">
         <button type="button" id="btn-teslim-excel">Excel'e aktar</button>
+        <button type="button" id="btn-teslim-jpg">JPG indir</button>
         <button type="button" data-modal-close="teslim" style="background: #15803d; color: #fff;">Kapat</button>
       </div>
     </div>
@@ -1697,6 +1717,7 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
   <script src="/meldus/config.js"></script>
   <script src="/meldus/auth.js"></script>
   <script src="/meldus/app.js"></script>

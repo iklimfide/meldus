@@ -96,6 +96,26 @@
     th { background: #f3f4f6; font-weight: 700; }
     tr:nth-child(even) td { background: #f9fafb; }
     .table-wrap { overflow-x: auto; }
+    .logs-table th:nth-child(1),
+    .logs-table td:nth-child(1) {
+      white-space: nowrap;
+      min-width: 11.5rem;
+      width: 11.5rem;
+      font-variant-numeric: tabular-nums;
+    }
+    .logs-table th:nth-child(2),
+    .logs-table td:nth-child(2) {
+      white-space: nowrap;
+      min-width: 5.5rem;
+    }
+    .logs-table th:nth-child(3),
+    .logs-table td:nth-child(3) {
+      white-space: nowrap;
+      min-width: 8rem;
+    }
+    .logs-table td:nth-child(4) {
+      word-break: break-word;
+    }
     .btn-danger {
       padding: 0.3rem 0.6rem;
       border: none;
@@ -259,7 +279,7 @@
         <h2>Son işlemler</h2>
         <p class="sub">Tüm log kayıtları (en yeni üstte, son 300).</p>
         <div class="table-wrap">
-          <table>
+          <table class="logs-table">
             <thead>
               <tr>
                 <th>Zaman</th>
