@@ -5,6 +5,7 @@
   var path = location.pathname || '/';
 
   if (/^\/meldus(\/|$)/i.test(path)) return;
+  if (/^\/arif(\/|$)/i.test(path)) return;
   if (/[?&]__mobile_preview=/.test(location.search)) return;
 
   function isEnPath(p) {

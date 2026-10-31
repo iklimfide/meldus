@@ -1572,7 +1572,11 @@
     var ids = Object.keys(selectedStokIds).filter(function (id) { return selectedStokIds[id]; });
     if (ids.length === 0) return;
     if (!supabase) return;
-    openModalOnay(ids.length + ' kayıt silinecek (geri alınabilir). Emin misiniz?', function () {
+    var hareketIds = ids.filter(function (id) { return hasStokHareket(id); });
+    var msg = hareketIds.length
+      ? (hareketIds.length + ' satırda hareket var, yine de silmek istiyor musunuz?')
+      : (ids.length + ' kayıt silinecek (geri alınabilir). Emin misiniz?');
+    openModalOnay(msg, function () {
       var unlock = submitLock(btnToplu);
       softDeleteStokByIds(ids, function (res) {
         try {
@@ -3754,6 +3758,12 @@
   var modalSilOnay = document.getElementById('modal-sil-onay');
   function openModalSilOnay(id) {
     silOnayPendingId = id;
+    var p = document.getElementById('modal-sil-onay-mesaj');
+    if (p) {
+      p.textContent = hasStokHareket(id)
+        ? 'Bu kayıtta hareket var. Yine de silmek istiyor musunuz? (geri alınabilir)'
+        : 'Bu kayıt silinecek (geri alınabilir). Emin misiniz?';
+    }
     if (modalSilOnay) { modalSilOnay.classList.add('open'); modalSilOnay.setAttribute('aria-hidden', 'false'); }
   }
   function closeModalSilOnay() {
