@@ -256,7 +256,7 @@
         var ekimStr = formatDate(r.ekim_tarihi).toLowerCase();
         var teslimStr = formatDate(r.teslim_tarihi).toLowerCase();
         var miktarStr = formatNum(r.ekilen_miktar).toLowerCase();
-        var extraStr = formatNum(r.extra_fide).toLowerCase();
+        var extraStr = formatNum(extraGoster(r)).toLowerCase();
         var ekimNoStr = String(r.ekim_no == null ? '' : r.ekim_no).toLowerCase();
         return cesitStr.indexOf(q) !== -1 || ekimStr.indexOf(q) !== -1 || teslimStr.indexOf(q) !== -1 || miktarStr.indexOf(q) !== -1 || extraStr.indexOf(q) !== -1 || ekimNoStr.indexOf(q) !== -1;
       });
@@ -977,6 +977,7 @@
       ((results[1] && results[1].data) || []).forEach(function (row) { addId(row.fide_id); });
       ((results[2] && results[2].data) || []).forEach(function (row) { addId(row.kaynak_fide_id); });
       stokHareketIds = map;
+      syncExtraUretimKayitlari();
       finish();
     }).catch(function () {
       finish();
@@ -1490,7 +1491,7 @@
       return;
     }
     var toplamExtra = list.reduce(function (sum, r) {
-      var n = r.extra_fide != null ? Number(r.extra_fide) : 0;
+      var n = extraGoster(r);
       return sum + (isNaN(n) ? 0 : n);
     }, 0);
     var toplamEkilen = list.reduce(function (sum, r) {
@@ -1501,7 +1502,7 @@
     if (topEkilenEl) topEkilenEl.textContent = formatNum(toplamEkilen);
     tbody.innerHTML = list.map(function (r) {
       var id = r.id || '';
-      var extraFide = r.extra_fide != null ? Number(r.extra_fide) : 0;
+      var extraFide = extraGoster(r);
       var hidden = hiddenRowIds[id] || (isNaN(extraFide) ? false : extraFide === 0);
       var sel = selectedStokIds[id];
       var cesitCls = stokRowCesitClass(r.cesit);
@@ -1515,9 +1516,8 @@
         '<td class="px-4 py-2 col-ekim-no">' + formatEkimNo(r.ekim_no) + '</td>' +
         '<td class="px-4 py-2">' + formatDate(r.teslim_tarihi) + '</td>' +
         '<td class="px-4 py-2 col-fide-qty">' + formatNum(r.ekilen_miktar) + '</td>' +
-        '<td class="px-4 py-2 col-fide-qty col-extra-fide">' + formatNum(r.extra_fide) +
-          '<span class="extra-kaynak ' + (hasCikanFide(r) ? 'cimlenme' : 'ekim') + '">' +
-          (hasCikanFide(r) ? 'Çimlenme' : 'Ekim') + '</span></td>' +
+        '<td class="px-4 py-2 col-fide-qty col-extra-fide"><div class="extra-fide-cell"><span class="extra-fide-sayi">' + formatNum(extraFide) + '</span><span class="extra-kaynak ' + (hasCikanFide(r) ? 'cimlenme' : 'ekim') + '">' +
+          (hasCikanFide(r) ? 'Çimlenme' : 'Ekim') + '</span></div></td>' +
         '<td class="px-4 py-2"><button type="button" class="btn-sat row-act" data-id="' + id + '">Sat</button> <button type="button" class="btn-kime-satildi row-act" data-id="' + id + '">Kime satıldı</button> <button type="button" class="btn-aktar row-act" data-id="' + id + '">Sonrakine aktar</button> <button type="button" class="btn-onceki-aktar row-act" data-id="' + id + '">Öncekine aktar</button> <button type="button" class="btn-cope-at row-act" data-id="' + id + '">Çöpe at</button> <button type="button" class="btn-degistir row-act" data-id="' + id + '">Değiştir</button> <button type="button" class="btn-gizle row-act" data-id="' + id + '">' + (hidden ? 'Göster' : 'Gizle') + '</button> <button type="button" class="btn-sil" data-id="' + id + '">Sil</button> <button type="button" class="btn-hareketler row-act" data-id="' + id + '"' + (hasStokHareket(id) ? '' : ' disabled title="Henüz hareket yok"') + '>Hareketler</button></td>' +
         '<td class="td-sec"><input type="checkbox" class="row-select" data-id="' + id + '"' + (sel ? ' checked' : '') + ' aria-label="Seç" /></td></tr>';
     }).join('');
@@ -1699,6 +1699,16 @@
     return n * 300;
   }
 
+  function extraFromEkilenEskiYuzde5(ekilen) {
+    var n = Number(ekilen);
+    if (isNaN(n) || n < 1) return 0;
+    return Math.round(n * 0.95) * 300;
+  }
+
+  function extraYuzde5Farki(ekilen) {
+    return extraFromEkilenTahmini(ekilen) - extraFromEkilenEskiYuzde5(ekilen);
+  }
+
   function hasCikanFide(r) {
     var n = r && r.cikan_fide != null ? Number(r.cikan_fide) : 0;
     return !isNaN(n) && n > 0;
@@ -1713,6 +1723,47 @@
   function extraUretimBaz(cikan, ekilen) {
     if (cikan != null && cikan > 0) return extraFromCikanViyol(cikan);
     return extraFromEkilenTahmini(ekilen);
+  }
+
+  function extraGoster(r) {
+    var extra = Number(r && r.extra_fide);
+    if (isNaN(extra)) extra = 0;
+    var ekilen = Number(r && r.ekilen_miktar) || 0;
+    var noHareket = !r || r.id == null || !hasStokHareket(r.id);
+    if (hasCikanFide(r)) {
+      if (noHareket) return extraFromCikanViyol(r.cikan_fide);
+      return extra;
+    }
+    if (noHareket) return extraFromEkilenTahmini(ekilen);
+    var old95 = extraFromEkilenEskiYuzde5(ekilen);
+    if (extra > old95) return extra;
+    return extra + extraYuzde5Farki(ekilen);
+  }
+
+  function syncExtraUretimKayitlari() {
+    if (!supabase) return;
+    stok.forEach(function (r) {
+      if (!r || r.id == null) return;
+      if (hasStokHareket(r.id)) return;
+      var want = hasCikanFide(r)
+        ? extraFromCikanViyol(r.cikan_fide)
+        : extraFromEkilenTahmini(r.ekilen_miktar);
+      var cur = Number(r.extra_fide);
+      if (isNaN(cur)) cur = 0;
+      if (cur === want) return;
+      r.extra_fide = want;
+      supabase.from('fide_stok').update({ extra_fide: want }).eq('id', r.id);
+    });
+  }
+
+  function extraToStored(shown, r) {
+    var n = Number(shown);
+    if (isNaN(n)) n = 0;
+    if (hasCikanFide(r)) return n;
+    var ekilen = Number(r && r.ekilen_miktar) || 0;
+    var old95 = extraFromEkilenEskiYuzde5(ekilen);
+    if (n > old95) return n;
+    return n - extraYuzde5Farki(ekilen);
   }
 
   if (btnKaydet) {
@@ -1770,7 +1821,7 @@
 
   function downloadStokJpg() {
     var list = getStokListForView().filter(function (r) {
-      var n = r.extra_fide != null ? Number(r.extra_fide) : 0;
+      var n = extraGoster(r);
       return !isNaN(n) && n > 3000;
     });
     if (list.length === 0) {
@@ -1900,7 +1951,7 @@
       ctx.fillText(cesit, pad + 12, y + 24);
       ctx.textAlign = 'center';
       ctx.fillText(formatDate(r.teslim_tarihi), pad + wCesit + wTeslim / 2, y + 24);
-      ctx.fillText(formatNum(r.extra_fide), pad + wCesit + wTeslim + wExtra / 2, y + 24);
+      ctx.fillText(formatNum(extraGoster(r)), pad + wCesit + wTeslim + wExtra / 2, y + 24);
       ctx.fillText("300'LÜK", pad + wCesit + wTeslim + wExtra + wViyol / 2, y + 24);
       ctx.textAlign = 'left';
       y += rowH;
@@ -2102,7 +2153,7 @@
     if (degistirTeslim) degistirTeslim.value = toIsoDate(r.teslim_tarihi);
     if (degistirEkilen) degistirEkilen.value = r.ekilen_miktar != null && r.ekilen_miktar !== '' ? String(r.ekilen_miktar) : '';
     if (degistirCikan) degistirCikan.value = r.cikan_fide != null && r.cikan_fide !== '' ? String(r.cikan_fide) : '';
-    if (degistirExtra) degistirExtra.value = r.extra_fide != null && r.extra_fide !== '' ? String(r.extra_fide) : '';
+    if (degistirExtra) degistirExtra.value = String(extraGoster(r));
     updateCesitDatalists();
     if (modalDegistir) {
       modalDegistir.classList.add('open');
@@ -2133,7 +2184,8 @@
     var origCikan = editingDegistirOrigCikan != null ? editingDegistirOrigCikan : 0;
     var origEkilen = editingDegistirOrigEkilen != null ? editingDegistirOrigEkilen : 0;
     var origExtra = editingDegistirOrigExtra != null ? editingDegistirOrigExtra : 0;
-    var next = origExtra + (extraFromCikanViyol(n) - extraUretimBaz(origCikan, origEkilen));
+    var shownOrig = extraGoster({ extra_fide: origExtra, ekilen_miktar: origEkilen, cikan_fide: origCikan });
+    var next = shownOrig + (extraFromCikanViyol(n) - extraUretimBaz(origCikan, origEkilen));
     if (next < 0) next = 0;
     degistirExtra.value = String(next);
   }
@@ -2331,10 +2383,13 @@
       var cikanChanged = cikan !== origCikan;
       if (ekimChanged || ekilenChanged) teslim = addDays(ekim, 25);
       if (cikan > 0 && (cikanChanged || ekimChanged || ekilenChanged)) {
-        extra = origExtra + (extraFromCikanViyol(cikan) - extraUretimBaz(origCikan, origEkilen));
+        var shownOrig = extraGoster({ extra_fide: origExtra, ekilen_miktar: origEkilen, cikan_fide: origCikan });
+        extra = shownOrig + (extraFromCikanViyol(cikan) - extraUretimBaz(origCikan, origEkilen));
         if (extra < 0) extra = 0;
       } else if (!(cikan > 0) && (ekimChanged || ekilenChanged)) {
         extra = extraFromEkilenTahmini(ekilen);
+      } else if (!(cikan > 0)) {
+        extra = extraToStored(extra, { ekilen_miktar: ekilen, cikan_fide: 0 });
       }
       var unlock = submitLock(btnDegistirOnay);
       var payload = {

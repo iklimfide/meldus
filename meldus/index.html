@@ -461,25 +461,31 @@
       white-space: normal;
     }
     #mainTable th.col-extra-fide,
-    #mainTable td.col-extra-fide {
+    #mainTable td.col-extra-fide,
+    #mainTable td.col-fide-qty.col-extra-fide {
       width: 11rem;
       min-width: 11rem;
       max-width: 11rem;
-    }
-    #mainTable td.col-extra-fide {
       white-space: normal;
       line-height: 1.15;
     }
-    .extra-kaynak {
+    .extra-fide-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.12rem;
+      line-height: 1.15;
+    }
+    #mainTable .extra-kaynak {
       display: block;
-      margin: 0.1rem 0 0;
       font-size: 0.65rem;
       font-weight: 800;
       line-height: 1;
       letter-spacing: 0.01em;
     }
-    .extra-kaynak.ekim { color: #dc2626; }
-    .extra-kaynak.cimlenme { color: #2563eb; }
+    #mainTable .extra-kaynak.ekim { color: #dc2626; }
+    #mainTable .extra-kaynak.cimlenme { color: #2563eb; }
     #mainTable th.col-cesit,
     #mainTable td.col-cesit {
       font-size: 1rem;
