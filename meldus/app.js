@@ -1515,7 +1515,9 @@
         '<td class="px-4 py-2 col-ekim-no">' + formatEkimNo(r.ekim_no) + '</td>' +
         '<td class="px-4 py-2">' + formatDate(r.teslim_tarihi) + '</td>' +
         '<td class="px-4 py-2 col-fide-qty">' + formatNum(r.ekilen_miktar) + '</td>' +
-        '<td class="px-4 py-2 col-fide-qty">' + formatNum(r.extra_fide) + '</td>' +
+        '<td class="px-4 py-2 col-fide-qty col-extra-fide">' + formatNum(r.extra_fide) +
+          '<span class="extra-kaynak ' + (hasCikanFide(r) ? 'cimlenme' : 'ekim') + '">' +
+          (hasCikanFide(r) ? 'Çimlenme' : 'Ekim') + '</span></td>' +
         '<td class="px-4 py-2"><button type="button" class="btn-sat row-act" data-id="' + id + '">Sat</button> <button type="button" class="btn-kime-satildi row-act" data-id="' + id + '">Kime satıldı</button> <button type="button" class="btn-aktar row-act" data-id="' + id + '">Sonrakine aktar</button> <button type="button" class="btn-onceki-aktar row-act" data-id="' + id + '">Öncekine aktar</button> <button type="button" class="btn-cope-at row-act" data-id="' + id + '">Çöpe at</button> <button type="button" class="btn-degistir row-act" data-id="' + id + '">Değiştir</button> <button type="button" class="btn-gizle row-act" data-id="' + id + '">' + (hidden ? 'Göster' : 'Gizle') + '</button> <button type="button" class="btn-sil" data-id="' + id + '">Sil</button> <button type="button" class="btn-hareketler row-act" data-id="' + id + '"' + (hasStokHareket(id) ? '' : ' disabled title="Henüz hareket yok"') + '>Hareketler</button></td>' +
         '<td class="td-sec"><input type="checkbox" class="row-select" data-id="' + id + '"' + (sel ? ' checked' : '') + ' aria-label="Seç" /></td></tr>';
     }).join('');
@@ -1691,6 +1693,28 @@
     return d.toISOString().slice(0, 10);
   }
 
+  function extraFromEkilenTahmini(ekilen) {
+    var n = Number(ekilen);
+    if (isNaN(n) || n < 1) return 0;
+    return n * 300;
+  }
+
+  function hasCikanFide(r) {
+    var n = r && r.cikan_fide != null ? Number(r.cikan_fide) : 0;
+    return !isNaN(n) && n > 0;
+  }
+
+  function extraFromCikanViyol(cikan) {
+    var n = Number(cikan);
+    if (isNaN(n) || n < 0) return 0;
+    return n * 300;
+  }
+
+  function extraUretimBaz(cikan, ekilen) {
+    if (cikan != null && cikan > 0) return extraFromCikanViyol(cikan);
+    return extraFromEkilenTahmini(ekilen);
+  }
+
   if (btnKaydet) {
     btnKaydet.addEventListener('click', function () {
       var cesit = (yeniCesit && yeniCesit.value || '').trim();
@@ -1713,7 +1737,7 @@
         return;
       }
       var teslim = addDays(ekim, 25);
-      var extraFide = Math.round(miktar * 0.95) * 300;
+      var extraFide = extraFromEkilenTahmini(miktar);
       if (!supabase) return;
       var unlock = submitLock(btnKaydet);
       var payload = {
@@ -2055,11 +2079,14 @@
   var degistirEkimNo = document.getElementById('degistir-ekim_no');
   var degistirTeslim = document.getElementById('degistir-teslim_tarihi');
   var degistirEkilen = document.getElementById('degistir-ekilen_miktar');
+  var degistirCikan = document.getElementById('degistir-cikan_fide');
   var degistirExtra = document.getElementById('degistir-extra_fide');
   var degistirCesitList = document.getElementById('degistir-cesit-list');
   var editingStokId = null;
   var editingDegistirOrigEkim = '';
   var editingDegistirOrigEkilen = null;
+  var editingDegistirOrigCikan = null;
+  var editingDegistirOrigExtra = null;
 
   function openModalDegistir(id) {
     var r = stok.find(function (x) { return String(x.id) === String(id); });
@@ -2067,11 +2094,14 @@
     editingStokId = id;
     editingDegistirOrigEkim = toIsoDate(r.ekim_tarihi);
     editingDegistirOrigEkilen = r.ekilen_miktar != null && r.ekilen_miktar !== '' && !isNaN(Number(r.ekilen_miktar)) ? Number(r.ekilen_miktar) : 0;
+    editingDegistirOrigCikan = r.cikan_fide != null && r.cikan_fide !== '' && !isNaN(Number(r.cikan_fide)) ? Number(r.cikan_fide) : 0;
+    editingDegistirOrigExtra = r.extra_fide != null && r.extra_fide !== '' && !isNaN(Number(r.extra_fide)) ? Number(r.extra_fide) : 0;
     if (degistirCesit) degistirCesit.value = r.cesit || '';
     if (degistirEkim) degistirEkim.value = toIsoDate(r.ekim_tarihi);
     if (degistirEkimNo) degistirEkimNo.value = parseEkimNo(r.ekim_no) || '';
     if (degistirTeslim) degistirTeslim.value = toIsoDate(r.teslim_tarihi);
     if (degistirEkilen) degistirEkilen.value = r.ekilen_miktar != null && r.ekilen_miktar !== '' ? String(r.ekilen_miktar) : '';
+    if (degistirCikan) degistirCikan.value = r.cikan_fide != null && r.cikan_fide !== '' ? String(r.cikan_fide) : '';
     if (degistirExtra) degistirExtra.value = r.extra_fide != null && r.extra_fide !== '' ? String(r.extra_fide) : '';
     updateCesitDatalists();
     if (modalDegistir) {
@@ -2085,6 +2115,8 @@
     editingStokId = null;
     editingDegistirOrigEkim = '';
     editingDegistirOrigEkilen = null;
+    editingDegistirOrigCikan = null;
+    editingDegistirOrigExtra = null;
     if (modalDegistir) {
       modalDegistir.classList.remove('open');
       modalDegistir.setAttribute('aria-hidden', 'true');
@@ -2094,6 +2126,20 @@
   document.querySelectorAll('[data-modal-close="degistir"]').forEach(function (btn) {
     btn.addEventListener('click', closeModalDegistir);
   });
+  function syncExtraFromCikanInput() {
+    if (!degistirCikan || !degistirExtra) return;
+    var n = parseMiktar(degistirCikan.value);
+    if (n == null || n <= 0) return;
+    var origCikan = editingDegistirOrigCikan != null ? editingDegistirOrigCikan : 0;
+    var origEkilen = editingDegistirOrigEkilen != null ? editingDegistirOrigEkilen : 0;
+    var origExtra = editingDegistirOrigExtra != null ? editingDegistirOrigExtra : 0;
+    var next = origExtra + (extraFromCikanViyol(n) - extraUretimBaz(origCikan, origEkilen));
+    if (next < 0) next = 0;
+    degistirExtra.value = String(next);
+  }
+  if (degistirCikan) {
+    degistirCikan.addEventListener('input', syncExtraFromCikanInput);
+  }
   var modalSat = document.getElementById('modal-sat');
   var satMusteri = document.getElementById('sat-musteri');
   var satTeslimTarihi = document.getElementById('sat-teslim-tarihi');
@@ -2242,6 +2288,7 @@
       var ekimNo = parseEkimNo(degistirEkimNo && degistirEkimNo.value);
       var teslim = (degistirTeslim && degistirTeslim.value || '').trim() || null;
       var ekilen = parseMiktar(degistirEkilen && degistirEkilen.value);
+      var cikan = parseMiktar(degistirCikan && degistirCikan.value);
       var extra = parseMiktar(degistirExtra && degistirExtra.value);
       if (!cesit) {
         openModalUyari('Çeşit giriniz.');
@@ -2258,18 +2305,36 @@
         if (degistirEkilen) degistirEkilen.focus();
         return;
       }
+      if (cikan === null) cikan = 0;
+      if (cikan < 0) {
+        openModalUyari('Çıkan fide negatif olamaz.');
+        if (degistirCikan) degistirCikan.focus();
+        return;
+      }
+      if (cikan > ekilen) {
+        openModalUyari('Çıkan fide, ekilen viyolden fazla olamaz.');
+        if (degistirCikan) degistirCikan.focus();
+        return;
+      }
       if (extra === null) extra = 0;
       if (extra < 0) {
         openModalUyari('Extra fide negatif olamaz.');
         if (degistirExtra) degistirExtra.focus();
         return;
       }
+      var origCikan = editingDegistirOrigCikan != null ? editingDegistirOrigCikan : 0;
+      var origEkilen = editingDegistirOrigEkilen != null ? editingDegistirOrigEkilen : 0;
+      var origExtra = editingDegistirOrigExtra != null ? editingDegistirOrigExtra : 0;
       var ekimNorm = ekim ? String(ekim).slice(0, 10) : '';
       var ekimChanged = ekimNorm !== (editingDegistirOrigEkim || '');
-      var ekilenChanged = ekilen !== (editingDegistirOrigEkilen != null ? editingDegistirOrigEkilen : 0);
-      if (ekimChanged || ekilenChanged) {
-        teslim = addDays(ekim, 25);
-        extra = Math.round(ekilen * 0.95) * 300;
+      var ekilenChanged = ekilen !== origEkilen;
+      var cikanChanged = cikan !== origCikan;
+      if (ekimChanged || ekilenChanged) teslim = addDays(ekim, 25);
+      if (cikan > 0 && (cikanChanged || ekimChanged || ekilenChanged)) {
+        extra = origExtra + (extraFromCikanViyol(cikan) - extraUretimBaz(origCikan, origEkilen));
+        if (extra < 0) extra = 0;
+      } else if (!(cikan > 0) && (ekimChanged || ekilenChanged)) {
+        extra = extraFromEkilenTahmini(ekilen);
       }
       var unlock = submitLock(btnDegistirOnay);
       var payload = {
@@ -2277,6 +2342,7 @@
         ekim_tarihi: ekim,
         teslim_tarihi: teslim,
         ekilen_miktar: ekilen,
+        cikan_fide: cikan,
         extra_fide: extra
       };
       var origRow = stok.find(function (x) { return String(x.id) === String(editingStokId); });
@@ -2292,6 +2358,7 @@
           'ekim ' + formatDate(ekim),
           ekimNo ? 'ekim no ' + ekimNo : '',
           formatNum(ekilen) + ' viyol',
+          'çıkan ' + formatNum(cikan),
           'extra ' + formatNum(extra),
           'teslim ' + formatDate(teslim)
         ]));

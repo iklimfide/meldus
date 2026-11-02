@@ -460,6 +460,26 @@
       line-height: 1.2;
       white-space: normal;
     }
+    #mainTable th.col-extra-fide,
+    #mainTable td.col-extra-fide {
+      width: 11rem;
+      min-width: 11rem;
+      max-width: 11rem;
+    }
+    #mainTable td.col-extra-fide {
+      white-space: normal;
+      line-height: 1.15;
+    }
+    .extra-kaynak {
+      display: block;
+      margin: 0.1rem 0 0;
+      font-size: 0.65rem;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: 0.01em;
+    }
+    .extra-kaynak.ekim { color: #dc2626; }
+    .extra-kaynak.cimlenme { color: #2563eb; }
     #mainTable th.col-cesit,
     #mainTable td.col-cesit {
       font-size: 1rem;
@@ -813,6 +833,12 @@
       font-size: 1.125rem;
       background: #f9fafb;
     }
+    .modal-field-pair {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+    .modal-field-pair > div { flex: 1; min-width: 0; }
     .modal-miktar-row {
       display: flex;
       gap: 0.5rem;
@@ -1284,7 +1310,7 @@
                 <th class="sortable col-ekim-no" data-sort="ekim_no">Ekim No ↕</th>
                 <th class="sortable" data-sort="teslim_tarihi">Teslim Tarihi ↕</th>
                 <th class="sortable col-fide-qty" data-sort="ekilen_miktar">Ekilen fide (viyol) ↕</th>
-                <th class="sortable col-fide-qty" data-sort="extra_fide">Extra Fide ↕</th>
+                <th class="sortable col-fide-qty col-extra-fide" data-sort="extra_fide">Extra Fide ↕</th>
                 <th>İşlemler</th>
                 <th class="th-sec"><input type="checkbox" id="stok-select-all" title="Tümünü seç" aria-label="Tümünü seç" /></th>
               </tr>
@@ -1303,7 +1329,7 @@
               <tr id="stok-extra-fide-toplam-row">
                 <td colspan="4" class="px-4 py-2" style="text-align:right;font-weight:700;">Toplam</td>
                 <td id="stok-ekilen-toplam" class="px-4 py-2 col-fide-qty" style="font-weight:700;">0</td>
-                <td id="stok-extra-fide-toplam" class="px-4 py-2 col-fide-qty" style="font-weight:700;">0</td>
+                <td id="stok-extra-fide-toplam" class="px-4 py-2 col-fide-qty col-extra-fide" style="font-weight:700;">0</td>
                 <td colspan="2"></td>
               </tr>
               <tr id="stok-secilen-info" class="stok-secilen-info" style="display: none;"><td colspan="8"><span id="stok-secilen-count">0</span> satır seçili</td></tr>
@@ -1546,8 +1572,16 @@
       <input type="date" id="degistir-ekim_tarihi" required />
       <label>Teslim tarihi</label>
       <input type="date" id="degistir-teslim_tarihi" />
-      <label>Ekilen fide (viyol) *</label>
-      <input type="text" id="degistir-ekilen_miktar" inputmode="numeric" maxlength="7" required />
+      <div class="modal-field-pair">
+        <div>
+          <label for="degistir-ekilen_miktar">Ekilen fide (viyol) *</label>
+          <input type="text" id="degistir-ekilen_miktar" inputmode="numeric" maxlength="7" required />
+        </div>
+        <div>
+          <label for="degistir-cikan_fide">Çıkan fide (viyol)</label>
+          <input type="text" id="degistir-cikan_fide" inputmode="numeric" maxlength="7" />
+        </div>
+      </div>
       <label>Extra Fide</label>
       <input type="text" id="degistir-extra_fide" inputmode="numeric" maxlength="7" />
       <label>Ekim no</label>
