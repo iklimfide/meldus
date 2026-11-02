@@ -798,8 +798,8 @@
 
   function renderStokHareketlerSkeleton() {
     var summary = '<p class="px-4 py-2 skeleton-section">' + skeletonBlock('skeleton-block-md') + '</p>';
-    var satisTable = '<table class="panel-table" style="margin-bottom:1rem;"><thead><tr><th>Tarih</th><th>Müşteri</th><th>Miktar</th><th>İşlem</th></tr></thead><tbody>' +
-      skeletonTableRows([{}, {}, { block: 'skeleton-block-num' }, {}], 3) + '</tbody></table>';
+    var satisTable = '<table class="panel-table" style="margin-bottom:1rem;"><thead><tr><th>Tarih</th><th>Müşteri</th><th>Miktar</th><th>Notlar</th><th>İşlem</th></tr></thead><tbody>' +
+      skeletonTableRows([{}, {}, { block: 'skeleton-block-num' }, {}, {}], 3) + '</tbody></table>';
     var copTable = '<table class="panel-table" style="margin-bottom:1rem;"><thead><tr><th>Tarih</th><th>Miktar</th><th>İşlem</th></tr></thead><tbody>' +
       skeletonTableRows([{}, { block: 'skeleton-block-num' }, {}], 2) + '</tbody></table>';
     var aktarTable = '<table class="panel-table" style="margin-bottom:1rem;"><thead><tr><th>Tarih</th><th>Hedef (ekim · çeşit)</th><th>Miktar</th><th>İşlem</th></tr></thead><tbody>' +
@@ -1127,7 +1127,7 @@
       return;
     }
     Promise.all([
-      supabase.from('satislar').select('id, miktar, musteri_adi, satis_tarihi, teslim_edildi_tarihi, teslim_edilen_miktar').eq('fide_id', fideId).order('satis_tarihi', { ascending: false }),
+      supabase.from('satislar').select('id, miktar, musteri_adi, satis_tarihi, teslim_edildi_tarihi, teslim_edilen_miktar, notlar').eq('fide_id', fideId).order('satis_tarihi', { ascending: false }),
       supabase.from('cop_kayitlari').select('id, miktar, created_at, tarih, fide_id').eq('fide_id', fideId).order('id', { ascending: false }),
       supabase.from('extra_aktar_hareketleri').select('id, miktar, tip, hedef_fide_id, created_at').eq('kaynak_fide_id', fideId).order('created_at', { ascending: false })
     ]).then(function (results) {
@@ -1173,10 +1173,11 @@
         var footCell = ' class="px-4 py-2" style="font-weight:700;"';
         parts.push('<p class="px-4 py-2" style="font-weight:700; margin-bottom:0.5rem;">Satılan</p>');
         if (satisList.length > 0) {
-          parts.push('<table class="panel-table" style="margin-bottom:1rem;"><thead><tr><th>Tarih</th><th>Müşteri</th><th>Miktar</th><th>İşlem</th></tr></thead><tbody>');
+          parts.push('<table class="panel-table" style="margin-bottom:1rem;"><thead><tr><th>Tarih</th><th>Müşteri</th><th>Miktar</th><th>Notlar</th><th>İşlem</th></tr></thead><tbody>');
           satisList.forEach(function (x) {
             var tarih = formatDate(x.satis_tarihi);
             var musteri = (x.musteri_adi || '—').replace(/</g, '&lt;');
+            var notStr = (x.notlar || '—').replace(/</g, '&lt;');
             var sid = String(x.id || '').replace(/"/g, '');
             var del = x.teslim_edilen_miktar != null ? Number(x.teslim_edilen_miktar) : 0;
             if (isNaN(del)) del = 0;
@@ -1184,9 +1185,9 @@
             var iptalBtn = delivered
               ? '<button type="button" class="btn-hareket-satis-iptal" disabled title="Önce teslimi geri alın">Satış iptal</button>'
               : '<button type="button" class="btn-hareket-satis-iptal" data-satis-id="' + sid + '">Satış iptal</button>';
-            parts.push('<tr><td class="px-4 py-2">' + tarih + '</td><td class="px-4 py-2">' + musteri + '</td><td class="px-4 py-2">' + formatNum(x.miktar) + '</td><td class="px-4 py-2">' + iptalBtn + '</td></tr>');
+            parts.push('<tr><td class="px-4 py-2">' + tarih + '</td><td class="px-4 py-2">' + musteri + '</td><td class="px-4 py-2">' + formatNum(x.miktar) + '</td><td class="px-4 py-2">' + notStr + '</td><td class="px-4 py-2">' + iptalBtn + '</td></tr>');
           });
-          parts.push('</tbody><tfoot><tr><td colspan="2"' + footCell + '>Toplam</td><td' + footCell + '>' + formatNum(toplamSatis) + '</td><td class="px-4 py-2"></td></tr></tfoot></table>');
+          parts.push('</tbody><tfoot><tr><td colspan="2"' + footCell + '>Toplam</td><td' + footCell + '>' + formatNum(toplamSatis) + '</td><td class="px-4 py-2"></td><td class="px-4 py-2"></td></tr></tfoot></table>');
         } else {
           parts.push('<p class="px-4 py-2" style="margin-bottom:1rem;color:#64748b;">Kayıt yok · Toplam ' + formatNum(0) + '</p>');
         }
