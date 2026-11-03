@@ -40,7 +40,7 @@
 
   if (denied) denied.hidden = true;
   if (app) app.hidden = false;
-  if (userLabel) userLabel.textContent = window.meldusAuth.getUser() || 'arif';
+  if (userLabel) userLabel.textContent = window.meldusAuth.getUser() || 'ARİF';
 
   if (btnLogout) {
     btnLogout.addEventListener('click', function () {
@@ -108,7 +108,7 @@
     var rows = [];
     rows.push(
       '<tr>' +
-        '<td><strong>arif</strong></td>' +
+        '<td><strong>ARİF</strong></td>' +
         '<td><span class="badge-master">Master</span></td>' +
         '<td>—</td>' +
       '</tr>'

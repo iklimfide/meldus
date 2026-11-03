@@ -6,6 +6,7 @@
     ? String(window.MELDUS_REGISTER_CODE)
     : 'iklim2026';
   var MASTER_USER = 'arif';
+  var MASTER_USER_LABEL = 'ARİF';
   var MASTER_PASS = '5391';
   var USERS_KEY = 'meldus-local-users';
   var SESSION_KEY = 'meldus-local-session';
@@ -16,7 +17,17 @@
   var supabaseClient = null;
 
   function normalizeUser(name) {
-    return String(name || '').trim().toLowerCase();
+    return String(name || '')
+      .trim()
+      .replace(/İ/g, 'i')
+      .replace(/I/g, 'i')
+      .replace(/ı/g, 'i')
+      .replace(/\u0307/g, '')
+      .toLocaleLowerCase('tr-TR');
+  }
+
+  function displayUser(username) {
+    return isMasterUser(username) ? MASTER_USER_LABEL : normalizeUser(username);
   }
 
   function getClient() {
@@ -284,7 +295,7 @@
       gate.hidden = true;
       gate.setAttribute('aria-hidden', 'true');
     }
-    if (userLabel) userLabel.textContent = username || '';
+    if (userLabel) userLabel.textContent = displayUser(username);
     if (btnLogout) btnLogout.hidden = false;
     updateMasterUi(username);
     if (started) return;
@@ -461,7 +472,8 @@
   }
 
   window.meldusAuth = {
-    getUser: getSession,
+    getUser: function () { return displayUser(getSession()); },
+    displayUser: displayUser,
     isMaster: isMaster,
     isMasterUser: isMasterUser,
     hasValidSession: hasValidSession,
