@@ -804,7 +804,9 @@
       skeletonTableRows([{}, { block: 'skeleton-block-num' }, {}], 2) + '</tbody></table>';
     var aktarTable = '<table class="panel-table" style="margin-bottom:1rem;"><thead><tr><th>Tarih</th><th>Hedef (ekim · çeşit)</th><th>Miktar</th><th>İşlem</th></tr></thead><tbody>' +
       skeletonTableRows([{}, {}, { block: 'skeleton-block-num' }, {}], 2) + '</tbody></table>';
-    return summary + satisTable + summary + copTable + summary + aktarTable;
+    var gelenTable = '<table class="panel-table" style="margin-bottom:1rem;"><thead><tr><th>Tarih</th><th>Kaynak (ekim · çeşit)</th><th>Miktar</th><th>İşlem</th></tr></thead><tbody>' +
+      skeletonTableRows([{}, {}, { block: 'skeleton-block-num' }, {}], 2) + '</tbody></table>';
+    return summary + satisTable + summary + copTable + summary + aktarTable + summary + aktarTable + summary + gelenTable + summary + gelenTable;
   }
 
   function renderKimeSatildiSkeleton() {
@@ -966,16 +968,22 @@
     Promise.all([
       supabase.from('satislar').select('fide_id').in('fide_id', ids),
       supabase.from('cop_kayitlari').select('fide_id').in('fide_id', ids),
-      supabase.from('extra_aktar_hareketleri').select('kaynak_fide_id').in('kaynak_fide_id', ids)
+      supabase.from('extra_aktar_hareketleri').select('kaynak_fide_id, hedef_fide_id').in('kaynak_fide_id', ids),
+      supabase.from('extra_aktar_hareketleri').select('kaynak_fide_id, hedef_fide_id').in('hedef_fide_id', ids)
     ]).then(function (results) {
       var map = {};
       function addId(v) {
         if (v == null || v === '') return;
         map[String(v)] = true;
       }
+      function addAktar(row) {
+        addId(row.kaynak_fide_id);
+        addId(row.hedef_fide_id);
+      }
       ((results[0] && results[0].data) || []).forEach(function (row) { addId(row.fide_id); });
       ((results[1] && results[1].data) || []).forEach(function (row) { addId(row.fide_id); });
-      ((results[2] && results[2].data) || []).forEach(function (row) { addId(row.kaynak_fide_id); });
+      ((results[2] && results[2].data) || []).forEach(addAktar);
+      ((results[3] && results[3].data) || []).forEach(addAktar);
       stokHareketIds = map;
       syncExtraUretimKayitlari();
       finish();
@@ -1129,14 +1137,17 @@
     Promise.all([
       supabase.from('satislar').select('id, miktar, musteri_adi, satis_tarihi, teslim_edildi_tarihi, teslim_edilen_miktar, notlar').eq('fide_id', fideId).order('satis_tarihi', { ascending: false }),
       supabase.from('cop_kayitlari').select('id, miktar, created_at, tarih, fide_id').eq('fide_id', fideId).order('id', { ascending: false }),
-      supabase.from('extra_aktar_hareketleri').select('id, miktar, tip, hedef_fide_id, created_at').eq('kaynak_fide_id', fideId).order('created_at', { ascending: false })
+      supabase.from('extra_aktar_hareketleri').select('id, miktar, tip, kaynak_fide_id, hedef_fide_id, created_at').eq('kaynak_fide_id', fideId).order('created_at', { ascending: false }),
+      supabase.from('extra_aktar_hareketleri').select('id, miktar, tip, kaynak_fide_id, hedef_fide_id, created_at').eq('hedef_fide_id', fideId).order('created_at', { ascending: false })
     ]).then(function (results) {
       var satisRes = results[0];
       var copRes = results[1];
-      var aktarRes = results[2];
+      var gidenRes = results[2];
+      var gelenRes = results[3];
       var satisList = (satisRes.data && satisRes.data.slice()) || [];
       var copList = (copRes.data && copRes.data.slice()) || [];
-      var aktarList = (!aktarRes.error && aktarRes.data && aktarRes.data.slice()) || [];
+      var gidenList = (!gidenRes.error && gidenRes.data && gidenRes.data.slice()) || [];
+      var gelenList = (!gelenRes.error && gelenRes.data && gelenRes.data.slice()) || [];
       var toplamSatis = satisList.reduce(function (s, x) {
         var n = x.miktar != null ? Number(x.miktar) : 0;
         return s + (isNaN(n) ? 0 : n);
@@ -1145,30 +1156,55 @@
         var n = x.miktar != null ? Number(x.miktar) : 0;
         return s + (isNaN(n) ? 0 : n);
       }, 0);
-      var sonrakineRows = aktarList.filter(function (x) { return x.tip === 'sonrakine'; });
-      var oncekineRows = aktarList.filter(function (x) { return x.tip === 'oncekine'; });
-      var toplamSonrakine = sonrakineRows.reduce(function (s, x) {
-        var n = x.miktar != null ? Number(x.miktar) : 0;
-        return s + (isNaN(n) ? 0 : n);
-      }, 0);
-      var toplamOncekine = oncekineRows.reduce(function (s, x) {
-        var n = x.miktar != null ? Number(x.miktar) : 0;
-        return s + (isNaN(n) ? 0 : n);
-      }, 0);
-      var hedefSeen = {};
-      aktarList.forEach(function (x) {
-        if (x.hedef_fide_id) hedefSeen[String(x.hedef_fide_id)] = true;
+      function toplamMiktar(list) {
+        return list.reduce(function (s, x) {
+          var n = x.miktar != null ? Number(x.miktar) : 0;
+          return s + (isNaN(n) ? 0 : n);
+        }, 0);
+      }
+      var sonrakineRows = gidenList.filter(function (x) { return x.tip === 'sonrakine'; });
+      var oncekineRows = gidenList.filter(function (x) { return x.tip === 'oncekine'; });
+      var gelenOncekidenRows = gelenList.filter(function (x) { return x.tip === 'sonrakine'; });
+      var gelenSonrakindenRows = gelenList.filter(function (x) { return x.tip === 'oncekine'; });
+      var ilgiliSeen = {};
+      gidenList.concat(gelenList).forEach(function (x) {
+        if (x.hedef_fide_id) ilgiliSeen[String(x.hedef_fide_id)] = true;
+        if (x.kaynak_fide_id) ilgiliSeen[String(x.kaynak_fide_id)] = true;
       });
-      var hedefIds = Object.keys(hedefSeen);
+      var ilgiliIds = Object.keys(ilgiliSeen);
 
-      function hedefEtiket(map, hid) {
+      function stokHareketEtiket(map, hid) {
         var row = map[hid];
         if (!row) return '—';
         var c = (row.cesit || '—').replace(/</g, '&lt;');
         return formatDate(row.ekim_tarihi) + ' · ' + c;
       }
 
-      function buildHtml(hedefMap) {
+      function aktarHareketTable(rows, toplam, map, otherIdKey, colTitle) {
+        var footCell = ' class="px-4 py-2" style="font-weight:700;"';
+        if (!rows.length) {
+          return '<p class="px-4 py-2" style="margin-bottom:1rem;color:#64748b;">Kayıt yok · Toplam ' + formatNum(0) + '</p>';
+        }
+        var html = '<table class="panel-table" style="margin-bottom:1rem;"><thead><tr><th>Tarih</th><th>' + colTitle + '</th><th>Miktar</th><th>İşlem</th></tr></thead><tbody>';
+        rows.forEach(function (x) {
+          var t = x.created_at ? formatDate(String(x.created_at)) : '—';
+          var otherId = String(x[otherIdKey] || '');
+          var hid = String(x.hedef_fide_id || '').replace(/"/g, '');
+          var kid = String(x.kaynak_fide_id || '').replace(/"/g, '');
+          var aid = String(x.id || '').replace(/"/g, '');
+          var tip = String(x.tip || '').replace(/"/g, '');
+          var mNum = x.miktar != null ? Number(x.miktar) : 0;
+          if (isNaN(mNum)) mNum = 0;
+          html += '<tr><td class="px-4 py-2">' + t + '</td><td class="px-4 py-2">' + stokHareketEtiket(map, otherId) +
+            '</td><td class="px-4 py-2">' + formatNum(x.miktar) +
+            '</td><td class="px-4 py-2"><button type="button" class="btn-aktar-geri-al" data-aktar-id="' + aid +
+            '" data-kaynak-id="' + kid + '" data-hedef-id="' + hid + '" data-miktar="' + mNum + '" data-tip="' + tip + '">Geri al</button></td></tr>';
+        });
+        html += '</tbody><tfoot><tr><td colspan="2"' + footCell + '>Toplam</td><td' + footCell + '>' + formatNum(toplam) + '</td><td class="px-4 py-2"></td></tr></tfoot></table>';
+        return html;
+      }
+
+      function buildHtml(stokMap) {
         var parts = [];
         var footCell = ' class="px-4 py-2" style="font-weight:700;"';
         parts.push('<p class="px-4 py-2" style="font-weight:700; margin-bottom:0.5rem;">Satılan</p>');
@@ -1212,60 +1248,28 @@
           parts.push('<p class="px-4 py-2" style="margin-bottom:1rem;color:#64748b;">Kayıt yok · Toplam ' + formatNum(0) + '</p>');
         }
         parts.push('<p class="px-4 py-2" style="font-weight:700; margin-bottom:0.5rem;">Sonrakine aktarılan</p>');
-        if (sonrakineRows.length > 0) {
-          parts.push('<table class="panel-table" style="margin-bottom:1rem;"><thead><tr><th>Tarih</th><th>Hedef (ekim · çeşit)</th><th>Miktar</th><th>İşlem</th></tr></thead><tbody>');
-          sonrakineRows.forEach(function (x) {
-            var t = x.created_at ? formatDate(String(x.created_at)) : '—';
-            var hid = String(x.hedef_fide_id || '').replace(/"/g, '');
-            var aid = String(x.id || '').replace(/"/g, '');
-            var mNum = x.miktar != null ? Number(x.miktar) : 0;
-            if (isNaN(mNum)) mNum = 0;
-            parts.push(
-              '<tr><td class="px-4 py-2">' + t + '</td><td class="px-4 py-2">' + hedefEtiket(hedefMap, String(x.hedef_fide_id)) +
-              '</td><td class="px-4 py-2">' + formatNum(x.miktar) +
-              '</td><td class="px-4 py-2"><button type="button" class="btn-aktar-geri-al" data-aktar-id="' + aid +
-              '" data-hedef-id="' + hid + '" data-miktar="' + mNum + '" data-tip="sonrakine">Geri al</button></td></tr>'
-            );
-          });
-          parts.push('</tbody><tfoot><tr><td colspan="2"' + footCell + '>Toplam</td><td' + footCell + '>' + formatNum(toplamSonrakine) + '</td><td class="px-4 py-2"></td></tr></tfoot></table>');
-        } else {
-          parts.push('<p class="px-4 py-2" style="margin-bottom:1rem;color:#64748b;">Kayıt yok · Toplam ' + formatNum(0) + '</p>');
-        }
+        parts.push(aktarHareketTable(sonrakineRows, toplamMiktar(sonrakineRows), stokMap, 'hedef_fide_id', 'Hedef (ekim · çeşit)'));
         parts.push('<p class="px-4 py-2" style="font-weight:700; margin-bottom:0.5rem;">Öncekine aktarılan</p>');
-        if (oncekineRows.length > 0) {
-          parts.push('<table class="panel-table" style="margin-bottom:1rem;"><thead><tr><th>Tarih</th><th>Hedef (ekim · çeşit)</th><th>Miktar</th><th>İşlem</th></tr></thead><tbody>');
-          oncekineRows.forEach(function (x) {
-            var t2 = x.created_at ? formatDate(String(x.created_at)) : '—';
-            var hid2 = String(x.hedef_fide_id || '').replace(/"/g, '');
-            var aid2 = String(x.id || '').replace(/"/g, '');
-            var mNum2 = x.miktar != null ? Number(x.miktar) : 0;
-            if (isNaN(mNum2)) mNum2 = 0;
-            parts.push(
-              '<tr><td class="px-4 py-2">' + t2 + '</td><td class="px-4 py-2">' + hedefEtiket(hedefMap, String(x.hedef_fide_id)) +
-              '</td><td class="px-4 py-2">' + formatNum(x.miktar) +
-              '</td><td class="px-4 py-2"><button type="button" class="btn-aktar-geri-al" data-aktar-id="' + aid2 +
-              '" data-hedef-id="' + hid2 + '" data-miktar="' + mNum2 + '" data-tip="oncekine">Geri al</button></td></tr>'
-            );
-          });
-          parts.push('</tbody><tfoot><tr><td colspan="2"' + footCell + '>Toplam</td><td' + footCell + '>' + formatNum(toplamOncekine) + '</td><td class="px-4 py-2"></td></tr></tfoot></table>');
-        } else {
-          parts.push('<p class="px-4 py-2" style="margin-bottom:1rem;color:#64748b;">Kayıt yok · Toplam ' + formatNum(0) + '</p>');
-        }
-        if (aktarRes.error) {
+        parts.push(aktarHareketTable(oncekineRows, toplamMiktar(oncekineRows), stokMap, 'hedef_fide_id', 'Hedef (ekim · çeşit)'));
+        parts.push('<p class="px-4 py-2" style="font-weight:700; margin-bottom:0.5rem;">Öncekiden gelen</p>');
+        parts.push(aktarHareketTable(gelenOncekidenRows, toplamMiktar(gelenOncekidenRows), stokMap, 'kaynak_fide_id', 'Kaynak (ekim · çeşit)'));
+        parts.push('<p class="px-4 py-2" style="font-weight:700; margin-bottom:0.5rem;">Sonrakinden gelen</p>');
+        parts.push(aktarHareketTable(gelenSonrakindenRows, toplamMiktar(gelenSonrakindenRows), stokMap, 'kaynak_fide_id', 'Kaynak (ekim · çeşit)'));
+        if (gidenRes.error || gelenRes.error) {
           parts.push('<p class="px-4 py-2" style="color:#b45309; font-size:0.9rem;">Aktarım kayıtları okunamadı. Supabase’de <code>extra_aktar_hareketleri</code> tablosunu oluşturduğunuzdan emin olun (SUPABASE_SETUP.md 1.4).</p>');
         }
         modalStokHareketlerBody.removeAttribute('aria-busy');
         modalStokHareketlerBody.innerHTML = parts.join('');
       }
 
-      if (hedefIds.length === 0) {
+      if (ilgiliIds.length === 0) {
         buildHtml({});
         return;
       }
-      supabase.from('fide_stok').select('id, cesit, ekim_tarihi').in('id', hedefIds).then(function (rH) {
-        var hedefMap = {};
-        (rH.data || []).forEach(function (row) { hedefMap[String(row.id)] = row; });
-        buildHtml(hedefMap);
+      supabase.from('fide_stok').select('id, cesit, ekim_tarihi').in('id', ilgiliIds).then(function (rH) {
+        var stokMap = {};
+        (rH.data || []).forEach(function (row) { stokMap[String(row.id)] = row; });
+        buildHtml(stokMap);
       }).catch(function () { buildHtml({}); });
     }).catch(function () {
       modalStokHareketlerBody.removeAttribute('aria-busy');
@@ -1362,8 +1366,8 @@
     }, { confirmText: 'Geri al', cancelText: 'Vazgeç' });
   }
 
-  function geriAlAktarHareket(aktarId, hedefId, miktar, tip) {
-    var kaynakId = stokHareketlerFideId;
+  function geriAlAktarHareket(aktarId, hedefId, miktar, tip, kaynakId) {
+    kaynakId = kaynakId || stokHareketlerFideId;
     if (!supabase || !aktarId || !hedefId || !kaynakId) return;
     var m = Number(miktar);
     if (isNaN(m) || m < 1) {
@@ -1432,7 +1436,8 @@
           btnAktar.getAttribute('data-aktar-id'),
           btnAktar.getAttribute('data-hedef-id'),
           btnAktar.getAttribute('data-miktar'),
-          btnAktar.getAttribute('data-tip')
+          btnAktar.getAttribute('data-tip'),
+          btnAktar.getAttribute('data-kaynak-id')
         );
         return;
       }
@@ -1731,14 +1736,24 @@
     if (isNaN(extra)) extra = 0;
     var ekilen = Number(r && r.ekilen_miktar) || 0;
     var noHareket = !r || r.id == null || !hasStokHareket(r.id);
-    if (hasCikanFide(r)) {
-      if (noHareket) return extraFromCikanViyol(r.cikan_fide);
-      return extra;
-    }
-    if (noHareket) return extraFromEkilenTahmini(ekilen);
+    var baz = extraUretimBaz(r && r.cikan_fide, ekilen);
+    if (noHareket) return extra > baz ? extra : baz;
+    if (hasCikanFide(r)) return extra;
     var old95 = extraFromEkilenEskiYuzde5(ekilen);
     if (extra > old95) return extra;
     return extra + extraYuzde5Farki(ekilen);
+  }
+
+  function extraAktarRow(dbRow) {
+    var mem = dbRow && dbRow.id != null
+      ? stok.find(function (x) { return String(x.id) === String(dbRow.id); })
+      : null;
+    return {
+      id: dbRow && dbRow.id,
+      extra_fide: dbRow && dbRow.extra_fide != null ? dbRow.extra_fide : (mem && mem.extra_fide),
+      ekilen_miktar: dbRow && dbRow.ekilen_miktar != null ? dbRow.ekilen_miktar : (mem && mem.ekilen_miktar),
+      cikan_fide: dbRow && dbRow.cikan_fide != null ? dbRow.cikan_fide : (mem && mem.cikan_fide)
+    };
   }
 
   function syncExtraUretimKayitlari() {
@@ -1746,12 +1761,10 @@
     stok.forEach(function (r) {
       if (!r || r.id == null) return;
       if (hasStokHareket(r.id)) return;
-      var want = hasCikanFide(r)
-        ? extraFromCikanViyol(r.cikan_fide)
-        : extraFromEkilenTahmini(r.ekilen_miktar);
+      var want = extraUretimBaz(r.cikan_fide, r.ekilen_miktar);
       var cur = Number(r.extra_fide);
       if (isNaN(cur)) cur = 0;
-      if (cur === want) return;
+      if (cur >= want) return;
       r.extra_fide = want;
       supabase.from('fide_stok').update({ extra_fide: want }).eq('id', r.id);
     });
@@ -3647,17 +3660,17 @@
       var id = sonrakineAktarPendingId;
       if (!id || !supabase) return;
       var unlock = submitLock(btnSonrakineAktarOnay);
-      supabase.from('fide_stok').select('id, cesit, ekim_tarihi, extra_fide').eq('id', id).maybeSingle().then(function (res) {
+      supabase.from('fide_stok').select('id, cesit, ekim_tarihi, extra_fide, ekilen_miktar, cikan_fide').eq('id', id).maybeSingle().then(function (res) {
         var curr = res.data;
-        if (!curr || curr.extra_fide == null || Number(curr.extra_fide) < 1) {
+        var miktar = extraGoster(extraAktarRow(curr));
+        if (!curr || miktar < 1) {
           closeModalSonrakineAktarOnay();
           openModalUyari('Bu satırda aktarılacak extra fide yok.');
           return;
         }
         var cesit = (curr.cesit || '').trim();
         var ekim = curr.ekim_tarihi || '';
-        var miktar = Number(curr.extra_fide);
-        return supabase.from('fide_stok').select('id, extra_fide, ekim_tarihi').eq('cesit', cesit).is('deleted_at', null).gt('ekim_tarihi', ekim).order('ekim_tarihi', { ascending: true }).limit(1).then(function (r2) {
+        return supabase.from('fide_stok').select('id, extra_fide, ekim_tarihi, ekilen_miktar, cikan_fide').eq('cesit', cesit).is('deleted_at', null).gt('ekim_tarihi', ekim).order('ekim_tarihi', { ascending: true }).limit(1).then(function (r2) {
           var nextRows = (r2.data && r2.data.length) ? r2.data : [];
           var nextStok = nextRows[0];
           if (!nextStok) {
@@ -3665,7 +3678,7 @@
             openModalUyari('Sonraki ekim tarihine ait stok kaydı bulunamadı.');
             return;
           }
-          var nextExtra = (nextStok.extra_fide != null ? Number(nextStok.extra_fide) : 0);
+          var nextExtra = extraGoster(extraAktarRow(nextStok));
           return supabase.from('fide_stok').update({ extra_fide: 0 }).eq('id', id).then(function (a) {
             if (a.error) {
               closeModalSonrakineAktarOnay();
@@ -3692,6 +3705,7 @@
                 formatDate(ekim) + ' tarihli ekimden ' + formatDate(hedefEkimSonraki) + ' tarihli ekime'
               ]));
               markStokHareket(id);
+              markStokHareket(nextStok.id);
               return supabase.from('extra_aktar_hareketleri').insert({
                 kaynak_fide_id: id,
                 hedef_fide_id: nextStok.id,
@@ -3725,17 +3739,17 @@
       var id = oncekineAktarPendingId;
       if (!id || !supabase) return;
       var unlock = submitLock(btnOncekineAktarOnay);
-      supabase.from('fide_stok').select('id, cesit, ekim_tarihi, extra_fide').eq('id', id).maybeSingle().then(function (res) {
+      supabase.from('fide_stok').select('id, cesit, ekim_tarihi, extra_fide, ekilen_miktar, cikan_fide').eq('id', id).maybeSingle().then(function (res) {
         var curr = res.data;
-        if (!curr || curr.extra_fide == null || Number(curr.extra_fide) < 1) {
+        var miktar = extraGoster(extraAktarRow(curr));
+        if (!curr || miktar < 1) {
           closeModalOncekineAktarOnay();
           openModalUyari('Bu satırda aktarılacak extra fide yok.');
           return;
         }
         var cesit = (curr.cesit || '').trim();
         var ekim = curr.ekim_tarihi || '';
-        var miktar = Number(curr.extra_fide);
-        return supabase.from('fide_stok').select('id, extra_fide, ekim_tarihi').eq('cesit', cesit).is('deleted_at', null).lt('ekim_tarihi', ekim).order('ekim_tarihi', { ascending: false }).limit(1).then(function (r2) {
+        return supabase.from('fide_stok').select('id, extra_fide, ekim_tarihi, ekilen_miktar, cikan_fide').eq('cesit', cesit).is('deleted_at', null).lt('ekim_tarihi', ekim).order('ekim_tarihi', { ascending: false }).limit(1).then(function (r2) {
           var prevRows = (r2.data && r2.data.length) ? r2.data : [];
           var prevStok = prevRows[0];
           if (!prevStok) {
@@ -3743,7 +3757,7 @@
             openModalUyari('Önceki ekim tarihine ait stok kaydı bulunamadı.');
             return;
           }
-          var prevExtra = (prevStok.extra_fide != null ? Number(prevStok.extra_fide) : 0);
+          var prevExtra = extraGoster(extraAktarRow(prevStok));
           return supabase.from('fide_stok').update({ extra_fide: 0 }).eq('id', id).then(function (a) {
             if (a.error) {
               closeModalOncekineAktarOnay();
@@ -3770,6 +3784,7 @@
                 formatDate(ekim) + ' tarihli ekimden ' + formatDate(hedefEkimOnceki) + ' tarihli ekime'
               ]));
               markStokHareket(id);
+              markStokHareket(prevStok.id);
               return supabase.from('extra_aktar_hareketleri').insert({
                 kaynak_fide_id: id,
                 hedef_fide_id: prevStok.id,

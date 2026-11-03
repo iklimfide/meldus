@@ -82,25 +82,28 @@
     var newPass = editPass ? editPass.value : '';
     var fields = { username: newName };
     if (String(newPass || '').trim() !== '') fields.password = newPass;
-    var result = window.meldusAuth.updateUser(oldName, fields);
-    if (!result || !result.ok) {
-      var map = {
-        master: 'Master hesabı düzenlenemez.',
-        missing: 'Kullanıcı bulunamadı.',
-        'user-short': 'Kullanıcı adı en az 2 karakter olmalı.',
-        'user-chars': 'Kullanıcı adında sadece harf, rakam, . _ - kullanın.',
-        reserved: 'Bu kullanıcı adı kullanılamaz.',
-        taken: 'Bu kullanıcı adı zaten kayıtlı.',
-        'pass-short': 'Şifre en az 4 karakter olmalı.'
-      };
-      showEditError((result && map[result.reason]) || 'Güncellenemedi.');
-      return;
-    }
-    closeEditModal();
-    renderUsers();
+    Promise.resolve(window.meldusAuth.updateUser(oldName, fields)).then(function (result) {
+      if (!result || !result.ok) {
+        var map = {
+          master: 'Master hesabı düzenlenemez.',
+          missing: 'Kullanıcı bulunamadı.',
+          'user-short': 'Kullanıcı adı en az 2 karakter olmalı.',
+          'user-chars': 'Kullanıcı adında sadece harf, rakam, . _ - kullanın.',
+          reserved: 'Bu kullanıcı adı kullanılamaz.',
+          taken: 'Bu kullanıcı adı zaten kayıtlı.',
+          'pass-short': 'Şifre en az 4 karakter olmalı.'
+        };
+        showEditError((result && map[result.reason]) || 'Güncellenemedi.');
+        return;
+      }
+      closeEditModal();
+      reloadUsers();
+    }).catch(function () {
+      showEditError('Güncellenemedi.');
+    });
   }
 
-  function renderUsers() {
+  function renderUsers(list) {
     if (!usersTbody) return;
     var rows = [];
     rows.push(
@@ -110,7 +113,7 @@
         '<td>—</td>' +
       '</tr>'
     );
-    var list = window.meldusAuth.loadUsers ? window.meldusAuth.loadUsers() : [];
+    if (!list) list = window.meldusAuth.loadUsers ? window.meldusAuth.loadUsers() : [];
     if (!list.length) {
       rows.push('<tr><td colspan="3" class="empty">Henüz kayıtlı başka kullanıcı yok.</td></tr>');
     } else {
@@ -131,6 +134,18 @@
     usersTbody.innerHTML = rows.join('');
   }
 
+  function reloadUsers() {
+    if (usersTbody) usersTbody.innerHTML = '<tr><td colspan="3" class="empty">Yükleniyor…</td></tr>';
+    var ready = window.meldusAuth.refreshUsers
+      ? window.meldusAuth.refreshUsers()
+      : Promise.resolve(window.meldusAuth.loadUsers ? window.meldusAuth.loadUsers() : []);
+    ready.then(renderUsers).catch(function () {
+      if (usersTbody) {
+        usersTbody.innerHTML = '<tr><td colspan="3" class="empty">Kullanıcılar yüklenemedi. Supabase’de <code>users</code> tablosunu oluşturun (meldus/sql/users.sql).</td></tr>';
+      }
+    });
+  }
+
   if (usersTbody) {
     usersTbody.addEventListener('click', function (e) {
       var edit = e.target.closest('[data-edit]');
@@ -143,8 +158,9 @@
         var uname = del.getAttribute('data-delete');
         if (!uname) return;
         if (!window.confirm('«' + uname + '» kullanıcısı silinsin mi?')) return;
-        window.meldusAuth.deleteUser(uname);
-        renderUsers();
+        Promise.resolve(window.meldusAuth.deleteUser(uname)).then(reloadUsers).catch(function () {
+          window.alert('Kullanıcı silinemedi.');
+        });
       }
     });
   }
@@ -164,7 +180,7 @@
     });
   });
 
-  renderUsers();
+  reloadUsers();
 
   function loadLogs() {
     if (!logsTbody) return;

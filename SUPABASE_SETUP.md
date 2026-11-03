@@ -143,6 +143,29 @@ create policy "meldus_islem_log_insert"
   on public.meldus_islem_log for insert with check (true);
 ```
 
+### 1.7 `users` (Meldus hesapları)
+
+Panel kayıt / giriş / Arif kullanıcı listesi bu tablodan okunur. **Mevcut projede yoksa** SQL Editor’da bir kez: `meldus/sql/users.sql`.
+
+```sql
+create table if not exists public.users (
+  id uuid primary key default gen_random_uuid(),
+  username text not null,
+  password text not null,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now(),
+  constraint users_username_key unique (username),
+  constraint users_username_len check (char_length(username) >= 2)
+);
+
+alter table public.users enable row level security;
+
+create policy "users_select" on public.users for select using (true);
+create policy "users_insert" on public.users for insert with check (true);
+create policy "users_update" on public.users for update using (true) with check (true);
+create policy "users_delete" on public.users for delete using (true);
+```
+
 ---
 
 ## 2. RLS (Row Level Security) – Zorunlu
