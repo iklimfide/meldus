@@ -543,10 +543,7 @@
     .panel-table tbody tr.row-hidden { display: none; }
     #view-stok.show-hidden-rows .panel-table tbody tr.row-hidden { display: table-row !important; background: #fef9c3; }
     #view-stok.show-hidden-rows .panel-table tbody tr.row-hidden:hover { background: #fef08a; }
-    .panel-table tbody tr.row-low-extra { display: none; }
-    #view-stok.show-low-extra .panel-table tbody tr.row-low-extra { display: table-row !important; }
-    #view-stok.show-low-extra .panel-table tbody tr.row-low-extra.row-hidden { display: none; }
-    #view-stok.show-hidden-rows.show-low-extra .panel-table tbody tr.row-low-extra.row-hidden { display: table-row !important; background: #fef9c3; }
+    #view-stok.hide-low-extra .panel-table tbody tr.row-low-extra { display: none; }
     .gizlileri-goster-wrap { display: flex; align-items: center; gap: 0.35rem; cursor: pointer; font-size: 1rem; font-weight: 600; color: #6b7280; white-space: nowrap; }
     .gizlileri-goster-wrap input { width: 1.1rem; height: 1.1rem; cursor: pointer; }
     .panel-table td {
@@ -1300,8 +1297,8 @@
               <span>Gizli satırları göster</span>
             </label>
             <label class="gizlileri-goster-wrap">
-              <input type="checkbox" id="show-low-extra" />
-              <span>10.000'den az extra'ları göster</span>
+              <input type="checkbox" id="hide-low-extra" />
+              <span>10.000 gizle</span>
             </label>
             <div class="search-wrap">
               <span class="search-icon" aria-hidden="true">🔍</span>

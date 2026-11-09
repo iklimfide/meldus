@@ -1496,11 +1496,11 @@
       tbody.innerHTML = '<tr><td colspan="8" class="empty-state px-4 py-8">' + emptyMsg + '</td></tr>';
       return;
     }
-    var showLowExtra = !!(document.getElementById('show-low-extra') && document.getElementById('show-low-extra').checked);
+    var hideLowExtra = !!(document.getElementById('hide-low-extra') && document.getElementById('hide-low-extra').checked);
     var toplamExtra = list.reduce(function (sum, r) {
       var n = extraGoster(r);
       if (isNaN(n)) return sum;
-      if (!showLowExtra && n > 0 && n < 10000) return sum;
+      if (hideLowExtra && n > 0 && n <= 10000) return sum;
       return sum + n;
     }, 0);
     var toplamEkilen = list.reduce(function (sum, r) {
@@ -1513,7 +1513,7 @@
       var id = r.id || '';
       var extraFide = extraGoster(r);
       var hidden = hiddenRowIds[id] || (isNaN(extraFide) ? false : extraFide === 0);
-      var lowExtra = !isNaN(extraFide) && extraFide > 0 && extraFide < 10000;
+      var lowExtra = !isNaN(extraFide) && extraFide > 0 && extraFide <= 10000;
       var sel = selectedStokIds[id];
       var cesitCls = stokRowCesitClass(r.cesit);
       var trClasses = [];
@@ -2009,7 +2009,7 @@
   if (btnStokJpg) btnStokJpg.addEventListener('click', downloadStokJpg);
 
   var showHiddenEl = document.getElementById('show-hidden-rows');
-  var showLowExtraEl = document.getElementById('show-low-extra');
+  var hideLowExtraEl = document.getElementById('hide-low-extra');
   var showEkimBeforeCutoffEl = document.getElementById('show-ekim-before-cutoff');
   var viewStok = document.getElementById('view-stok');
   if (showHiddenEl && viewStok) {
@@ -2017,9 +2017,10 @@
       viewStok.classList.toggle('show-hidden-rows', showHiddenEl.checked);
     });
   }
-  if (showLowExtraEl && viewStok) {
-    showLowExtraEl.addEventListener('change', function () {
-      viewStok.classList.toggle('show-low-extra', showLowExtraEl.checked);
+  if (hideLowExtraEl && viewStok) {
+    viewStok.classList.toggle('hide-low-extra', hideLowExtraEl.checked);
+    hideLowExtraEl.addEventListener('change', function () {
+      viewStok.classList.toggle('hide-low-extra', hideLowExtraEl.checked);
       renderStok();
     });
   }
