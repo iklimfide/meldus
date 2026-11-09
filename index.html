@@ -5,6 +5,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <script src="/scripts/dev-mobile-preview-embed.js"></script>
   <script src="/scripts/lang.js"></script>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-NB20JNMXH7"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-NB20JNMXH7');
+  </script>
   <title>İklim Fide | Marul Fidesi Üretimi</title>
   <meta name="description" content="Antalya Aksu'da marul fidesi üretimi. Kıvırcık, Yedikule, İceberg marul fidesi. Yıl boyu tedarik, gününde teslim. 28 yıllık tecrübe. WhatsApp sipariş." />
   <meta name="keywords" content="marul fidesi, marul fidesi Antalya, kıvırcık marul fidesi, yedikule marul fidesi, iceberg marul fidesi, fide üretimi Aksu" />
@@ -142,6 +151,7 @@
       const el = document.getElementById('mobileMenu');
       el.classList.toggle('hidden');
     }
+    if (location.hash === '#urunler') location.hash = '#marul-fidesi-cesitleri';
   </script>
 
   <!-- JSON-LD LocalBusiness -->
@@ -201,7 +211,7 @@
 
         <nav class="hidden md:flex items-center gap-7 text-sm font-semibold">
           <a class="hover:text-[color:var(--marul)]" href="#hakkimizda">Hakkımızda</a>
-          <a class="hover:text-[color:var(--marul)]" href="#urunler">Marul Fidesi</a>
+          <a class="hover:text-[color:var(--marul)]" href="#marul-fidesi-cesitleri">Marul Fidesi</a>
           <a class="hover:text-[color:var(--marul)]" href="#galeri">Galeri</a>
           <a class="hover:text-[color:var(--marul)]" href="blog/">Blog</a>
           <a class="hover:text-[color:var(--marul)]" href="#sss">SSS</a>
@@ -222,7 +232,7 @@
       <div id="mobileMenu" class="hidden md:hidden pt-3">
         <div class="grid gap-2 rounded-2xl border border-black/10 bg-white p-3">
           <a class="rounded-xl px-3 py-2 hover:bg-zinc-50" href="#hakkimizda" onclick="toggleMenu()">Hakkımızda</a>
-          <a class="rounded-xl px-3 py-2 hover:bg-zinc-50" href="#urunler" onclick="toggleMenu()">Marul Fidesi</a>
+          <a class="rounded-xl px-3 py-2 hover:bg-zinc-50" href="#marul-fidesi-cesitleri" onclick="toggleMenu()">Marul Fidesi</a>
           <a class="rounded-xl px-3 py-2 hover:bg-zinc-50" href="#galeri" onclick="toggleMenu()">Galeri</a>
           <a class="rounded-xl px-3 py-2 hover:bg-zinc-50" href="blog/" onclick="toggleMenu()">Blog</a>
           <a class="rounded-xl px-3 py-2 hover:bg-zinc-50" href="#sss" onclick="toggleMenu()">SSS</a>
@@ -267,7 +277,7 @@
                class="inline-flex items-center justify-center gap-2 rounded-2xl bg-emerald-400 px-6 py-4 text-sm font-black text-black hover:bg-emerald-300">
               <span class="text-lg"><svg class="ico" aria-hidden="true"><use href="#i-wa"/></svg></span> Hemen Sipariş Ver
             </a>
-            <a href="#urunler"
+            <a href="#marul-fidesi-cesitleri"
                class="inline-flex items-center justify-center gap-2 rounded-2xl bg-white/10 px-6 py-4 text-sm font-bold text-white hover:bg-white/15">
               Ürünleri İncele <svg class="ico" aria-hidden="true"><use href="#i-arr"/></svg>
             </a>
@@ -453,7 +463,7 @@
   </section>
 
   <!-- PRODUCTS -->
-  <section id="urunler" class="py-16 bg-white">
+  <section id="marul-fidesi-cesitleri" class="py-16 bg-white">
     <div class="mx-auto max-w-6xl px-4">
       <div class="flex items-end justify-between gap-6">
         <div>
@@ -480,7 +490,7 @@
             <div class="text-xs font-bold uppercase tracking-widest text-zinc-500">Marul Fidesi</div>
             <h3 class="mt-2 text-lg font-black text-[color:var(--marul)]">Kanaryole Kıvırcık Marul Fidesi</h3>
             <p class="mt-2 text-sm text-zinc-600">
-              Yoğun yaprak dokusu ve hızlı adaptasyon odağıyla tedarik.
+              Yoğun yaprak dokusu, hızlı adaptasyon.
             </p>
             <div class="mt-5 flex flex-wrap gap-3">
               <a class="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[color:var(--marul)] px-4 py-3 text-sm font-black text-white hover:bg-[color:var(--marul-2)]"
@@ -502,13 +512,14 @@
         <article class="card overflow-hidden rounded-3xl border border-black/10 bg-white">
           <button class="w-full text-left" onclick="openModal(document.getElementById('p2'))" aria-label="Presidential ve Cospirina Yedikule Düz Marul görselini büyüt">
             <img id="p2" src="resimler/yedikule-400.webp" srcset="resimler/yedikule-400.webp 400w, resimler/yedikule-800.webp 800w" sizes="(min-width:768px) 33vw, 100vw" data-full="resimler/yedikule.webp" onerror="setFallback(this)" loading="lazy"
-                 class="h-64 w-full object-cover" alt="Presidential ve Cospirina Yedikule Düz Marul Fidesi" width="400" height="256" />
+                 class="h-64 w-full object-cover" alt="Presidential Yedikule(Düz) Marul Fidesi ve Cospirina Yedikule(Düz) Marul Fidesi" width="400" height="256" />
           </button>
           <div class="p-6">
             <div class="text-xs font-bold uppercase tracking-widest text-zinc-500">Marul Fidesi</div>
-            <h3 class="mt-2 text-lg font-black text-[color:var(--marul)]">Yedikule Düz Marul Fidesi</h3>
+            <h3 class="mt-2 text-lg font-black text-[color:var(--marul)]">Presidential Yedikule(Düz) Marul Fidesi</h3>
+            <h3 class="mt-1 text-lg font-black text-[color:var(--marul)]">Cospirina Yedikule(Düz) Marul Fidesi</h3>
             <p class="mt-2 text-sm text-zinc-600">
-              Düz yaprak formu ve saha performansı için dengeli üretim.
+              Düz yaprak, dengeli saha performansı.
             </p>
             <div class="mt-5 flex flex-wrap gap-3">
               <a class="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[color:var(--marul)] px-4 py-3 text-sm font-black text-white hover:bg-[color:var(--marul-2)]"
@@ -536,7 +547,7 @@
             <div class="text-xs font-bold uppercase tracking-widest text-zinc-500">Marul Fidesi</div>
             <h3 class="mt-2 text-lg font-black text-[color:var(--marul)]">Vernelia İceberg Marul Fidesi</h3>
             <p class="mt-2 text-sm text-zinc-600">
-              Sıkı baş formu için uygun fideler; sevkiyat planına göre hazırlanır.
+              Sıkı baş formu, sevkiyat planına göre.
             </p>
             <div class="mt-5 flex gap-3">
               <a class="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[color:var(--marul)] px-4 py-3 text-sm font-black text-white hover:bg-[color:var(--marul-2)]"
