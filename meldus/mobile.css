@@ -283,6 +283,15 @@
     padding: 1.25rem 1rem;
     border-radius: 1rem 1rem 0.25rem 0.25rem;
   }
+  .modal-close-x {
+    position: sticky;
+    top: 0.35rem;
+    z-index: 70;
+    width: 2.5rem;
+    min-width: 2.5rem;
+    height: 2.5rem;
+    flex: none;
+  }
 
   .modal-box h3 {
     font-size: 1.35rem;
@@ -299,6 +308,28 @@
 
   .modal-list-body {
     max-height: 55vh;
+  }
+
+  #modal-teslim .modal-box {
+    max-height: min(90vh, 90dvh);
+    overflow: hidden;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+  }
+  #modal-teslim .modal-list-body {
+    max-height: none;
+  }
+  #modal-teslim .modal-box .actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  #modal-teslim .modal-box .actions button {
+    width: auto;
+    flex: 1 1 30%;
+    min-width: 5.5rem;
+    min-height: 2.5rem;
+    font-size: 0.95rem;
+    padding: 0.45rem 0.5rem;
   }
 
   /* Toast – dev önizleme butonuyla çakışmasın */
