@@ -291,6 +291,7 @@
 
   function unlockApp(username) {
     document.body.classList.remove('meldus-locked');
+    try { document.documentElement.classList.add('meldus-has-session'); } catch (e) {}
     if (gate) {
       gate.hidden = true;
       gate.setAttribute('aria-hidden', 'true');
@@ -308,6 +309,7 @@
 
   function lockApp() {
     document.body.classList.add('meldus-locked');
+    try { document.documentElement.classList.remove('meldus-has-session'); } catch (e) {}
     if (gate) {
       gate.hidden = false;
       gate.setAttribute('aria-hidden', 'false');
@@ -405,18 +407,25 @@
     : Promise.reject(new Error('Veritabanı bağlantısı yok.'));
 
   function bootGate() {
+    var existing = getSession();
+    if (existing) unlockApp(existing);
     usersReady.then(function () {
-      if (hasValidSession()) unlockApp(getSession());
-      else {
-        setSession('');
-        lockApp();
+      if (hasValidSession()) {
+        unlockApp(getSession());
+        return;
       }
-    }).catch(function (err) {
-      if (isMasterUser(getSession())) {
+      if (getSession() && isMasterUser(getSession())) {
         unlockApp(getSession());
         return;
       }
       setSession('');
+      try { document.documentElement.classList.remove('meldus-has-session'); } catch (e) {}
+      lockApp();
+    }).catch(function (err) {
+      if (getSession()) {
+        unlockApp(getSession());
+        return;
+      }
       lockApp();
       if (loginErr) showError(loginErr, dbErrorMessage(err));
     });

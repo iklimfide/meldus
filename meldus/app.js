@@ -513,8 +513,8 @@
   var CESIT_EXPORT_ROW_BG = {
     kanaryole: '#ffffff',
     presidential: '#fef9c3',
-    cospirina: '#ffedd5',
-    vernelia: '#dbeafe'
+    cospirina: '#dbeafe',
+    vernelia: '#ffedd5'
   };
 
   var CESIT_STORAGE_KEY = 'meldus-cesit-tanimlari';
@@ -2012,10 +2012,10 @@
       openModalUyari('İndirilecek kayıt yok.');
       return;
     }
-    var logoImg = new Image();
-    logoImg.onload = function () { renderStokJpgDownload(list, logoImg); };
-    logoImg.onerror = function () { renderStokJpgDownload(list, null); };
-    logoImg.src = '/meldus/logo.png';
+    var headerImg = new Image();
+    headerImg.onload = function () { renderStokJpgDownload(list, headerImg); };
+    headerImg.onerror = function () { renderStokJpgDownload(list, null); };
+    headerImg.src = '/meldus/jpg-baslik.jpg';
   }
 
   var modalJpgOnay = document.getElementById('modal-jpg-onay');
@@ -2130,17 +2130,32 @@
     }
   }
 
-  function renderStokJpgDownload(list, logoImg) {
+  function renderStokJpgDownload(list, headerImg) {
     var pad = 20;
     var rowH = 36;
-    var wCesit = 260;
-    var wTeslim = 140;
-    var wExtra = 120;
-    var wViyol = 88;
-    var W = pad * 2 + wCesit + wTeslim + wExtra + wViyol;
+    var wCesit = 200;
+    var wTeslim = 160;
+    var wExtra = 140;
+    var wViyol = 108;
+    var innerW = wCesit + wTeslim + wExtra + wViyol;
+    var W = pad * 2 + innerW;
     var titleH = 52;
+    var tableLeft = pad;
+    var tableW = innerW;
+    var cornerR = 14;
+    if (headerImg && headerImg.naturalWidth > 0 && headerImg.naturalHeight > 0) {
+      W = headerImg.naturalWidth;
+      titleH = Math.round(W * headerImg.naturalHeight / headerImg.naturalWidth);
+      tableLeft = 0;
+      tableW = W;
+      wCesit = 220;
+      var rest = tableW - wCesit;
+      wTeslim = Math.round(rest * 0.38);
+      wExtra = Math.round(rest * 0.34);
+      wViyol = rest - wTeslim - wExtra;
+    }
     var footerH = 48;
-    var H = pad + titleH + rowH + list.length * rowH + footerH + pad;
+    var H = (headerImg ? titleH + 8 : pad + titleH) + rowH + list.length * rowH + footerH + pad;
     var exportScale = 4;
     var canvas = document.createElement('canvas');
     canvas.width = Math.round(W * exportScale);
@@ -2187,77 +2202,88 @@
       ctx.stroke();
     }
 
+    function pathRoundRect(x, y, w, h, r) {
+      r = Math.min(r, w / 2, h / 2);
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.arcTo(x + w, y, x + w, y + h, r);
+      ctx.arcTo(x + w, y + h, x, y + h, r);
+      ctx.arcTo(x, y + h, x, y, r);
+      ctx.arcTo(x, y, x + w, y, r);
+      ctx.closePath();
+    }
+
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, W, H);
-    var title = 'İKLİM FİDE EKSTRA LİSTESİ';
-    ctx.font = 'bold 18px Arial, Helvetica, sans-serif';
-    var titleW = ctx.measureText(title).width;
-    var titleY = pad + 32;
-    var logoSize = 36;
-    var logoGap = 10;
-    var headerBlockW = logoImg ? logoSize + logoGap + titleW : titleW;
-    var headerLeft = W / 2 - headerBlockW / 2;
-    ctx.fillStyle = accentBar;
-    ctx.fillRect(Math.floor(W / 2) - 36, pad + 4, 72, 3);
-    ctx.fillStyle = navyBold;
-    if (logoImg) {
+    ctx.save();
+    pathRoundRect(0, 0, W, H, cornerR);
+    ctx.clip();
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+    if (headerImg && headerImg.naturalWidth > 0) {
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(logoImg, headerLeft, pad + 8, logoSize, logoSize);
+      ctx.drawImage(headerImg, tableLeft, 0, tableW, titleH);
       ctx.imageSmoothingEnabled = false;
-      ctx.textAlign = 'left';
-      ctx.fillText(title, headerLeft + logoSize + logoGap, titleY);
     } else {
+      var title = 'İKLİM FİDE EKSTRA LİSTESİ';
+      ctx.font = 'bold 24px Arial, Helvetica, sans-serif';
+      var titleY = pad + 32;
+      ctx.fillStyle = accentBar;
+      ctx.fillRect(Math.floor(W / 2) - 36, pad + 4, 72, 3);
+      ctx.fillStyle = navyBold;
       ctx.textAlign = 'center';
       ctx.fillText(title, W / 2, titleY);
+      strokeSharpHLine(tableLeft, tableLeft + tableW, pad + titleH - 6, 1.5);
     }
-    strokeSharpHLine(pad, W - pad, pad + titleH - 6, 1.5);
-    var y = pad + titleH;
-    var tableW = W - pad * 2;
+    var y = headerImg && headerImg.naturalWidth > 0 ? titleH : pad + titleH;
     ctx.fillStyle = theadBg;
-    ctx.fillRect(pad, y, tableW, rowH);
-    strokeSharpRect(pad, y, tableW, rowH, 2);
+    ctx.fillRect(tableLeft, y, tableW, rowH);
+    strokeSharpRect(tableLeft, y, tableW, rowH, 2);
     ctx.fillStyle = theadText;
-    ctx.font = 'bold 14px Arial, Helvetica, sans-serif';
+    ctx.font = 'bold 20px Arial, Helvetica, sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText('Çeşit', pad + 12, y + 24);
+    ctx.fillText('Çeşit', tableLeft + 12, y + 24);
     ctx.textAlign = 'center';
-    ctx.fillText('Teslim Tarihi', pad + wCesit + wTeslim / 2, y + 24);
-    ctx.fillText('Miktar', pad + wCesit + wTeslim + wExtra / 2, y + 24);
-    ctx.fillText('Viyol Tipi', pad + wCesit + wTeslim + wExtra + wViyol / 2, y + 24);
+    ctx.fillText('Teslim Tarihi', tableLeft + wCesit + wTeslim / 2, y + 24);
+    ctx.fillText('Miktar', tableLeft + wCesit + wTeslim + wExtra / 2, y + 24);
+    ctx.fillText('Viyol Tipi', tableLeft + wCesit + wTeslim + wExtra + wViyol / 2, y + 24);
     ctx.textAlign = 'left';
-    strokeSharpVLine(pad + wCesit, y, y + rowH);
-    strokeSharpVLine(pad + wCesit + wTeslim, y, y + rowH);
-    strokeSharpVLine(pad + wCesit + wTeslim + wExtra, y, y + rowH);
+    strokeSharpVLine(tableLeft + wCesit, y, y + rowH);
+    strokeSharpVLine(tableLeft + wCesit + wTeslim, y, y + rowH);
+    strokeSharpVLine(tableLeft + wCesit + wTeslim + wExtra, y, y + rowH);
     y += rowH;
-    ctx.font = '15px Arial, Helvetica, sans-serif';
+    ctx.font = '21px Arial, Helvetica, sans-serif';
     list.forEach(function (r, i) {
       var ck = stokCesitKey(r.cesit);
       var rowBg = ck && CESIT_EXPORT_ROW_BG[ck] ? CESIT_EXPORT_ROW_BG[ck] : (i % 2 === 0 ? rowA : rowB);
       ctx.fillStyle = rowBg;
-      ctx.fillRect(pad, y, tableW, rowH);
-      strokeSharpRect(pad, y, tableW, rowH, 1.5);
-      strokeSharpVLine(pad + wCesit, y, y + rowH);
-      strokeSharpVLine(pad + wCesit + wTeslim, y, y + rowH);
-      strokeSharpVLine(pad + wCesit + wTeslim + wExtra, y, y + rowH);
+      ctx.fillRect(tableLeft, y, tableW, rowH);
+      strokeSharpRect(tableLeft, y, tableW, rowH, 1.5);
+      strokeSharpVLine(tableLeft + wCesit, y, y + rowH);
+      strokeSharpVLine(tableLeft + wCesit + wTeslim, y, y + rowH);
+      strokeSharpVLine(tableLeft + wCesit + wTeslim + wExtra, y, y + rowH);
       ctx.fillStyle = cellText;
       var cesit = String(r.cesit || '—');
       if (cesit.length > 28) cesit = cesit.slice(0, 27) + '…';
       ctx.textAlign = 'left';
-      ctx.fillText(cesit, pad + 12, y + 24);
+      ctx.fillText(cesit, tableLeft + 12, y + 24);
       ctx.textAlign = 'center';
-      ctx.fillText(formatDate(teslimForJpg(r)), pad + wCesit + wTeslim / 2, y + 24);
-      ctx.fillText(formatNum(extraForJpg(r)), pad + wCesit + wTeslim + wExtra / 2, y + 24);
-      ctx.fillText("300'LÜK", pad + wCesit + wTeslim + wExtra + wViyol / 2, y + 24);
+      ctx.fillText(formatDate(teslimForJpg(r)), tableLeft + wCesit + wTeslim / 2, y + 24);
+      ctx.fillText(formatNum(extraForJpg(r)), tableLeft + wCesit + wTeslim + wExtra / 2, y + 24);
+      ctx.fillText("300'LÜK", tableLeft + wCesit + wTeslim + wExtra + wViyol / 2, y + 24);
       ctx.textAlign = 'left';
       y += rowH;
     });
     ctx.textAlign = 'center';
-    ctx.font = 'bold 15px Arial, Helvetica, sans-serif';
+    ctx.font = 'bold 21px Arial, Helvetica, sans-serif';
     ctx.fillStyle = navyBold;
-    ctx.fillText('İletişim: 0533 735 99 68', W / 2, y + 30);
+    ctx.fillText('İletişim: 0533 735 99 68', tableLeft + tableW / 2, y + 30);
     ctx.textAlign = 'left';
-    var tarihStr = new Date().toISOString().slice(0, 10);
+    ctx.restore();
+    var dName = new Date();
+    var pad2 = function (n) { return (n < 10 ? '0' : '') + n; };
+    var tarihStr = pad2(dName.getDate()) + '-' + pad2(dName.getMonth() + 1) + '-' + dName.getFullYear() + '-' + pad2(dName.getHours()) + '-' + pad2(dName.getMinutes());
     var fname = 'İKLİM FİDE EXTRA LİSTESİ ' + tarihStr + '.JPG';
     if (canvas.toBlob) {
       canvas.toBlob(function (blob) {
