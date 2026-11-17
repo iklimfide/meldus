@@ -469,6 +469,14 @@
       white-space: normal;
       line-height: 1.15;
     }
+    #mainTable th.col-adres,
+    #mainTable td.col-adres {
+      width: 4.5rem;
+      min-width: 4.5rem;
+      max-width: 5rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
     .extra-fide-cell {
       display: flex;
       flex-direction: column;
@@ -893,7 +901,8 @@
       vertical-align: middle;
       white-space: nowrap;
     }
-    .modal-box input {
+    .modal-box input,
+    .modal-box textarea {
       width: 100%;
       padding: 0.5rem 0.75rem;
       border: 1px solid #e5e7eb;
@@ -901,7 +910,10 @@
       margin-bottom: 1rem;
       font-size: 1.125rem;
       background: #f9fafb;
+      box-sizing: border-box;
+      font-family: inherit;
     }
+    .modal-box textarea { min-height: 4rem; resize: vertical; }
     .modal-field-pair {
       display: flex;
       gap: 0.75rem;
@@ -1023,7 +1035,8 @@
     #modal-teslim .btn-satis-degistir:hover { background: #c2410c; }
     #modal-teslim .btn-hareket-satis-iptal { padding: 0.35rem 0.6rem; font-size: 0.9rem; margin-right: 0.25rem; }
     #modal-teslim .btn-siparis-kapandi,
-    .modal-kime-satildi-box .btn-siparis-kapandi {
+    .modal-kime-satildi-box .btn-siparis-kapandi,
+    #modal-stok-hareketler .btn-siparis-kapandi {
       padding: 0.35rem 0.6rem;
       font-size: 0.9rem;
       font-weight: 700;
@@ -1034,7 +1047,8 @@
       cursor: pointer;
     }
     #modal-teslim .btn-siparis-kapandi:hover,
-    .modal-kime-satildi-box .btn-siparis-kapandi:hover { background: #334155; }
+    .modal-kime-satildi-box .btn-siparis-kapandi:hover,
+    #modal-stok-hareketler .btn-siparis-kapandi:hover { background: #334155; }
     #modal-teslim .panel-table th:nth-child(5),
     #modal-teslim .panel-table td:nth-child(5) { max-width: 12rem; overflow: hidden; text-overflow: ellipsis; }
     #modal-teslim .panel-table th:nth-child(6),
@@ -1419,28 +1433,30 @@
                 <th class="sortable" data-sort="teslim_tarihi">Teslim Tarihi ↕</th>
                 <th class="sortable col-fide-qty" data-sort="ekilen_miktar">Ekilen fide (viyol) ↕</th>
                 <th class="sortable col-fide-qty col-extra-fide" data-sort="extra_fide">Extra Fide ↕</th>
+                <th class="sortable col-adres" data-sort="adres">Adres ↕</th>
                 <th>İşlemler</th>
                 <th class="th-sec"><input type="checkbox" id="stok-select-all" title="Tümünü seç" aria-label="Tümünü seç" /></th>
               </tr>
             </thead>
             <tbody id="stok-tbody" aria-busy="true">
-              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
-              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
-              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
-              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
-              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
-              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
-              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
-              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-adres"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-adres"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-adres"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-adres"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-adres"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-adres"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-adres"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
+              <tr class="skeleton-row" aria-hidden="true"><td class="col-cesit"><span class="skeleton-block skeleton-block-sm"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-ekim-no"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-sm"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-fide-qty"><span class="skeleton-block skeleton-block-num"></span></td><td class="col-adres"><span class="skeleton-block skeleton-block-num"></span></td><td><span class="skeleton-block skeleton-block-actions"></span></td><td class="td-sec"><span class="skeleton-block skeleton-block-check"></span></td></tr>
             </tbody>
             <tfoot>
               <tr id="stok-extra-fide-toplam-row">
                 <td colspan="4" class="px-4 py-2" style="text-align:right;font-weight:700;">Toplam</td>
                 <td id="stok-ekilen-toplam" class="px-4 py-2 col-fide-qty" style="font-weight:700;">0</td>
                 <td id="stok-extra-fide-toplam" class="px-4 py-2 col-fide-qty col-extra-fide" style="font-weight:700;">0</td>
+                <td class="col-adres"></td>
                 <td colspan="2"></td>
               </tr>
-              <tr id="stok-secilen-info" class="stok-secilen-info" style="display: none;"><td colspan="8"><span id="stok-secilen-count">0</span> satır seçili</td></tr>
+              <tr id="stok-secilen-info" class="stok-secilen-info" style="display: none;"><td colspan="9"><span id="stok-secilen-count">0</span> satır seçili</td></tr>
             </tfoot>
           </table>
         </div>
@@ -1694,6 +1710,8 @@
       <input type="text" id="degistir-extra_fide" inputmode="numeric" maxlength="7" />
       <label>Ekim no</label>
       <input type="text" id="degistir-ekim_no" inputmode="numeric" maxlength="20" placeholder="İsteğe bağlı" />
+      <label>Adres</label>
+      <input type="text" id="degistir-adres" maxlength="3" placeholder="örn. 2A" autocomplete="off" />
       <div class="actions">
         <button type="button" data-modal-close="degistir" style="background: #15803d; color: #fff;">İptal</button>
         <button type="button" id="btn-degistir-onay" style="background: #7c3aed; color: #fff;">Kaydet</button>

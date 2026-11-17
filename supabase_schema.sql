@@ -146,6 +146,7 @@ alter table public.satislar add column if not exists teslim_edilen_miktar int;
 
 -- 12. fide_stok soft delete (silinenler geri alınabilir)
 alter table public.fide_stok add column if not exists deleted_at timestamptz;
+alter table public.fide_stok add column if not exists adres text;
 create index if not exists idx_fide_stok_deleted_at
   on public.fide_stok (deleted_at)
   where deleted_at is not null;
