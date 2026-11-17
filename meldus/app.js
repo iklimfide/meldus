@@ -25,6 +25,14 @@
     return msg || fallback || 'İşlem başarısız.';
   }
 
+  function foldSearchText(s) {
+    return String(s == null ? '' : s)
+      .replace(/İ/g, 'i')
+      .replace(/I/g, 'i')
+      .replace(/ı/g, 'i')
+      .toLocaleLowerCase('tr-TR');
+  }
+
   function currentMeldusUser() {
     if (window.meldusAuth && typeof window.meldusAuth.getUser === 'function') {
       return window.meldusAuth.getUser() || 'bilinmiyor';
@@ -288,16 +296,17 @@
       list = list.filter(function (r) { return dateFilterMatches(teslimTarihiIso(r), quickFilterTeslim); });
     }
     if (tableSearchQuery) {
-      var q = tableSearchQuery.toLowerCase();
+      var q = foldSearchText(tableSearchQuery);
       list = list.filter(function (r) {
-        var cesitStr = (r.cesit || '').toLowerCase();
-        var ekimStr = formatDate(r.ekim_tarihi).toLowerCase();
-        var teslimStr = formatDate(r.teslim_tarihi).toLowerCase();
-        var miktarStr = formatNum(r.ekilen_miktar).toLowerCase();
-        var extraStr = formatNum(extraGoster(r)).toLowerCase();
-        var ekimNoStr = String(r.ekim_no == null ? '' : r.ekim_no).toLowerCase();
-        var adresStr = String(r.adres == null ? '' : r.adres).toLowerCase();
-        return cesitStr.indexOf(q) !== -1 || ekimStr.indexOf(q) !== -1 || teslimStr.indexOf(q) !== -1 || miktarStr.indexOf(q) !== -1 || extraStr.indexOf(q) !== -1 || ekimNoStr.indexOf(q) !== -1 || adresStr.indexOf(q) !== -1;
+        var cesitStr = foldSearchText(r.cesit);
+        var ekimStr = foldSearchText(formatDate(r.ekim_tarihi));
+        var teslimStr = foldSearchText(formatDate(r.teslim_tarihi));
+        var miktarStr = foldSearchText(formatNum(r.ekilen_miktar));
+        var extraStr = foldSearchText(formatNum(extraGoster(r)));
+        var ekimNoStr = foldSearchText(r.ekim_no);
+        var adresStr = foldSearchText(r.adres);
+        var musteriStr = stokMusteriIndex[String(r.id)] || '';
+        return cesitStr.indexOf(q) !== -1 || ekimStr.indexOf(q) !== -1 || teslimStr.indexOf(q) !== -1 || miktarStr.indexOf(q) !== -1 || extraStr.indexOf(q) !== -1 || ekimNoStr.indexOf(q) !== -1 || adresStr.indexOf(q) !== -1 || musteriStr.indexOf(q) !== -1;
       });
     }
     return list;
@@ -1019,6 +1028,7 @@
   }
 
   var stokHareketIds = {};
+  var stokMusteriIndex = {};
 
   function markStokHareket(fideId) {
     if (fideId == null || fideId === '') return;
@@ -1033,6 +1043,7 @@
     var finish = typeof done === 'function' ? done : function () {};
     if (!supabase) {
       stokHareketIds = {};
+      stokMusteriIndex = {};
       finish();
       return;
     }
@@ -1047,11 +1058,12 @@
     });
     if (ids.length === 0) {
       stokHareketIds = {};
+      stokMusteriIndex = {};
       finish();
       return;
     }
     Promise.all([
-      supabase.from('satislar').select('fide_id').in('fide_id', ids),
+      supabase.from('satislar').select('fide_id, musteri_adi, notlar').range(0, 4999),
       supabase.from('cop_kayitlari').select('fide_id').in('fide_id', ids),
       supabase.from('extra_aktar_hareketleri').select('kaynak_fide_id, hedef_fide_id').in('kaynak_fide_id', ids),
       supabase.from('extra_aktar_hareketleri').select('kaynak_fide_id, hedef_fide_id').in('hedef_fide_id', ids)
@@ -1065,13 +1077,32 @@
         addId(row.kaynak_fide_id);
         addId(row.hedef_fide_id);
       }
-      ((results[0] && results[0].data) || []).forEach(function (row) { addId(row.fide_id); });
-      ((results[1] && results[1].data) || []).forEach(function (row) { addId(row.fide_id); });
-      ((results[2] && results[2].data) || []).forEach(addAktar);
-      ((results[3] && results[3].data) || []).forEach(addAktar);
-      stokHareketIds = map;
-      syncExtraUretimKayitlari();
-      finish();
+      function applySatisRows(satisRows) {
+        var musteriMap = {};
+        (satisRows || []).forEach(function (row) {
+          addId(row.fide_id);
+          var fid = String(row.fide_id || '');
+          var extra = [foldSearchText(row.musteri_adi), foldSearchText(row.notlar)].filter(Boolean).join(' ');
+          if (!fid || !extra) return;
+          musteriMap[fid] = musteriMap[fid] ? (musteriMap[fid] + ' ' + extra) : extra;
+        });
+        ((results[1] && results[1].data) || []).forEach(function (row) { addId(row.fide_id); });
+        ((results[2] && results[2].data) || []).forEach(addAktar);
+        ((results[3] && results[3].data) || []).forEach(addAktar);
+        stokHareketIds = map;
+        stokMusteriIndex = musteriMap;
+        syncExtraUretimKayitlari();
+        finish();
+      }
+      if (results[0] && results[0].error) {
+        supabase.from('satislar').select('fide_id, musteri_adi').range(0, 4999).then(function (retry) {
+          applySatisRows((retry && retry.data) || []);
+        }).catch(function () {
+          applySatisRows([]);
+        });
+        return;
+      }
+      applySatisRows((results[0] && results[0].data) || []);
     }).catch(function () {
       finish();
     });
@@ -1685,7 +1716,7 @@
     tbody.innerHTML = list.map(function (r) {
       var id = r.id || '';
       var extraFide = extraGoster(r);
-      var hidden = hiddenRowIds[id] || (isNaN(extraFide) ? false : extraFide === 0);
+      var hidden = !tableSearchQuery && (hiddenRowIds[id] || (isNaN(extraFide) ? false : extraFide === 0));
       var lowExtra = !isNaN(extraFide) && extraFide > 0 && extraFide <= 10000;
       var sel = selectedStokIds[id];
       var cesitCls = stokRowCesitClass(r.cesit);
