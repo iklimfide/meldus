@@ -155,6 +155,23 @@
     return list.filter(function (r) { return !isEkimBeforeCutoff(r); });
   }
 
+  function isShowingHiddenStokRows() {
+    var el = document.getElementById('show-hidden-rows');
+    return !!(el && el.checked);
+  }
+
+  function isStokRowHiddenInTable(r) {
+    if (!r || r.id == null) return false;
+    if (hiddenRowIds[r.id] || hiddenRowIds[String(r.id)]) return true;
+    var extraFide = extraGoster(r);
+    return !isNaN(extraFide) && extraFide === 0;
+  }
+
+  function filterStokVisibleInTable(list) {
+    if (isShowingHiddenStokRows()) return list;
+    return list.filter(function (r) { return !isStokRowHiddenInTable(r); });
+  }
+
   function filterRowsByRelatedEkimCutoff(rows, stokMap) {
     if (showEkimBeforeCutoff) return rows;
     return rows.filter(function (r) {
@@ -385,7 +402,7 @@
   }
 
   function fillStokDateFilterSelects() {
-    var list = getStokListForDateOptions();
+    var list = filterStokVisibleInTable(getStokListForDateOptions());
     quickFilterEkim = fillStokDateFilter(document.getElementById('stok-filter-ekim-wrap'), uniqueIsoDates(list, ekimTarihiIso), quickFilterEkim);
     quickFilterTeslim = fillStokDateFilter(document.getElementById('stok-filter-teslim-wrap'), uniqueIsoDates(list, teslimTarihiIso), quickFilterTeslim);
     updateStokFiltersClearBtn();
@@ -627,7 +644,11 @@
     var panel = host.querySelector('.date-multi-panel');
     var btn = host.querySelector('.date-multi-btn');
     if (!panel || !btn) return;
-    var names = getVisibleCesitTanimlari().map(function (c) { return c.name; });
+    var names = getVisibleCesitTanimlari().map(function (c) { return c.name; }).filter(function (name) {
+      return filterStokVisibleInTable(filterStokByEkimCutoff(stok)).some(function (r) {
+        return cesitAdEsit(r.cesit, name);
+      });
+    });
     var valid = {};
     names.forEach(function (n) { valid[n] = true; });
     quickFilterCesit = (quickFilterCesit || []).filter(function (n) { return valid[n]; });
@@ -1626,10 +1647,10 @@
     var tbody = document.getElementById('stok-tbody');
     if (!tbody) return;
     if (!stokLoadedOnce) return;
+    try { hiddenRowIds = JSON.parse(localStorage.getItem('meldus_hidden_row_ids') || '{}'); } catch (e) {}
     renderCesitFilters();
     fillStokDateFilterSelects();
     tbody.removeAttribute('aria-busy');
-    try { hiddenRowIds = JSON.parse(localStorage.getItem('meldus_hidden_row_ids') || '{}'); } catch (e) {}
     var list = getStokListForView();
     var topEl = document.getElementById('stok-extra-fide-toplam');
     var topEkilenEl = document.getElementById('stok-ekilen-toplam');
@@ -1698,6 +1719,8 @@
           if (tr) tr.classList.add('row-hidden');
         }
         try { localStorage.setItem('meldus_hidden_row_ids', JSON.stringify(hiddenRowIds)); } catch (e) {}
+        renderCesitFilters();
+        fillStokDateFilterSelects();
       });
     });
     tbody.querySelectorAll('.row-select').forEach(function (cb) {
@@ -2329,6 +2352,8 @@
   if (showHiddenEl && viewStok) {
     showHiddenEl.addEventListener('change', function () {
       viewStok.classList.toggle('show-hidden-rows', showHiddenEl.checked);
+      renderCesitFilters();
+      fillStokDateFilterSelects();
     });
   }
   if (hideLowExtraEl && viewStok) {
