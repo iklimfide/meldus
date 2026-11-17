@@ -920,6 +920,66 @@
       align-items: flex-start;
     }
     .modal-field-pair > div { flex: 1; min-width: 0; }
+    #modal-degistir .modal-box {
+      max-width: 26rem;
+      padding: 1.25rem 1.1rem 1.35rem;
+    }
+    #modal-degistir .degistir-fields {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.7rem;
+      justify-content: center;
+      align-items: flex-end;
+    }
+    #modal-degistir .degistir-field {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 0 0 auto;
+    }
+    #modal-degistir .degistir-field-cesit {
+      flex: 1 1 100%;
+    }
+    #modal-degistir .degistir-field input {
+      margin-bottom: 0.25rem;
+      padding: 0.4rem 0.5rem;
+      font-size: 1rem;
+      text-align: center;
+    }
+    #modal-degistir .degistir-field label {
+      font-size: 12px;
+      margin-bottom: 0.2rem;
+      white-space: nowrap;
+      font-weight: 800;
+    }
+    #modal-degistir .degistir-field input {
+      border-width: 1.5px;
+      font-weight: 700;
+    }
+    #modal-degistir .tint-cesit label { color: #15803d; }
+    #modal-degistir .tint-cesit input { background: #ecfdf5; border-color: #4ade80; color: #14532d; }
+    #modal-degistir .tint-ekim label { color: #b45309; }
+    #modal-degistir .tint-ekim input { background: #fffbeb; border-color: #fbbf24; color: #92400e; }
+    #modal-degistir .tint-teslim label { color: #0f766e; }
+    #modal-degistir .tint-teslim input { background: #f0fdfa; border-color: #2dd4bf; color: #115e59; }
+    #modal-degistir .tint-ekilen label { color: #047857; }
+    #modal-degistir .tint-ekilen input { background: #d1fae5; border-color: #34d399; color: #065f46; }
+    #modal-degistir .tint-cikan label { color: #c2410c; }
+    #modal-degistir .tint-cikan input { background: #fff7ed; border-color: #fb923c; color: #9a3412; }
+    #modal-degistir .tint-extra label { color: #1d4ed8; }
+    #modal-degistir .tint-extra input { background: #dbeafe; border-color: #3b82f6; color: #1e3a8a; }
+    #modal-degistir .tint-ekimno label { color: #7c3aed; }
+    #modal-degistir .tint-ekimno input { background: #f5f3ff; border-color: #a78bfa; color: #5b21b6; }
+    #modal-degistir .tint-adres label { color: #be185d; }
+    #modal-degistir .tint-adres input { background: #fdf2f8; border-color: #f472b6; color: #9d174d; }
+    #modal-degistir #degistir-cesit { width: 16rem; max-width: 100%; }
+    #modal-degistir #degistir-ekim_tarihi,
+    #modal-degistir #degistir-teslim_tarihi { width: 10.25rem; }
+    #modal-degistir #degistir-ekilen_miktar,
+    #modal-degistir #degistir-cikan_fide,
+    #modal-degistir #degistir-extra_fide { width: 6.75rem; }
+    #modal-degistir #degistir-ekim_no { width: 6.5rem; }
+    #modal-degistir #degistir-adres { width: 3.75rem; text-align: center; }
     .modal-miktar-row {
       display: flex;
       gap: 0.5rem;
@@ -1678,7 +1738,7 @@
       <label>Ekilen fide (viyol) *</label>
       <input type="text" id="yeni-ekilen_miktar" inputmode="numeric" maxlength="7" required />
       <label>Ekim no</label>
-      <input type="text" id="yeni-ekim_no" inputmode="numeric" maxlength="20" placeholder="İsteğe bağlı" />
+      <input type="text" id="yeni-ekim_no" inputmode="numeric" maxlength="20" />
       <div class="actions">
         <button type="button" data-modal-close="yeni-kayit" style="background: #15803d; color: #fff;">İptal</button>
         <button type="button" id="btn-yeni-kayit-onay" style="background: #15803d; color: #fff;">Kaydet</button>
@@ -1689,29 +1749,41 @@
   <div id="modal-degistir" class="modal-backdrop" aria-hidden="true">
     <div class="modal-box modal-yeni-box">
       <h3 style="color: #7c3aed;">Kayıt değiştir</h3>
-      <label>Çeşit *</label>
-      <input type="text" id="degistir-cesit" list="degistir-cesit-list" autocomplete="off" required />
-      <datalist id="degistir-cesit-list"></datalist>
-      <label>Ekim tarihi *</label>
-      <input type="date" id="degistir-ekim_tarihi" required />
-      <label>Teslim tarihi</label>
-      <input type="date" id="degistir-teslim_tarihi" />
-      <div class="modal-field-pair">
-        <div>
-          <label for="degistir-ekilen_miktar">Ekilen fide (viyol) *</label>
+      <div class="degistir-fields">
+        <div class="degistir-field degistir-field-cesit tint-cesit">
+          <label for="degistir-cesit">Çeşit *</label>
+          <input type="text" id="degistir-cesit" list="degistir-cesit-list" autocomplete="off" required />
+          <datalist id="degistir-cesit-list"></datalist>
+        </div>
+        <div class="degistir-field tint-ekim">
+          <label for="degistir-ekim_tarihi">Ekim tarihi *</label>
+          <input type="date" id="degistir-ekim_tarihi" required />
+        </div>
+        <div class="degistir-field tint-teslim">
+          <label for="degistir-teslim_tarihi">Teslim tarihi</label>
+          <input type="date" id="degistir-teslim_tarihi" />
+        </div>
+        <div class="degistir-field tint-ekilen">
+          <label for="degistir-ekilen_miktar">Ekilen (viyol) *</label>
           <input type="text" id="degistir-ekilen_miktar" inputmode="numeric" maxlength="7" required />
         </div>
-        <div>
-          <label for="degistir-cikan_fide">Çıkan fide (viyol)</label>
+        <div class="degistir-field tint-cikan">
+          <label for="degistir-cikan_fide">Çıkan (viyol)</label>
           <input type="text" id="degistir-cikan_fide" inputmode="numeric" maxlength="7" />
         </div>
+        <div class="degistir-field tint-extra">
+          <label for="degistir-extra_fide">Extra Fide</label>
+          <input type="text" id="degistir-extra_fide" inputmode="numeric" maxlength="7" />
+        </div>
+        <div class="degistir-field tint-ekimno">
+          <label for="degistir-ekim_no">Ekim no</label>
+          <input type="text" id="degistir-ekim_no" inputmode="numeric" maxlength="20" />
+        </div>
+        <div class="degistir-field tint-adres">
+          <label for="degistir-adres">Adres</label>
+          <input type="text" id="degistir-adres" maxlength="3" autocomplete="off" />
+        </div>
       </div>
-      <label>Extra Fide</label>
-      <input type="text" id="degistir-extra_fide" inputmode="numeric" maxlength="7" />
-      <label>Ekim no</label>
-      <input type="text" id="degistir-ekim_no" inputmode="numeric" maxlength="20" placeholder="İsteğe bağlı" />
-      <label>Adres</label>
-      <input type="text" id="degistir-adres" maxlength="3" placeholder="örn. 2A" autocomplete="off" />
       <div class="actions">
         <button type="button" data-modal-close="degistir" style="background: #15803d; color: #fff;">İptal</button>
         <button type="button" id="btn-degistir-onay" style="background: #7c3aed; color: #fff;">Kaydet</button>
