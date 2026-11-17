@@ -1118,6 +1118,7 @@
         var inner = visibleRows.map(function (r) {
           var info = stokMap[r.fide_id];
           var cesit = (info && info.cesit ? info.cesit : '—').replace(/</g, '&lt;');
+          if (info && info.deleted_at) cesit += ' <span class="kargo-badge">silindi</span>';
           var ekimStr = info && info.ekim_tarihi ? formatDate(String(info.ekim_tarihi)) : '—';
           var t = r.created_at || r.tarih || r.inserted_at;
           var tarihStr = t ? formatDate(String(t)) : '—';
@@ -1125,7 +1126,8 @@
           var fid = String(r.fide_id || '').replace(/"/g, '');
           var mNum = r.miktar != null ? Number(r.miktar) : 0;
           if (isNaN(mNum)) mNum = 0;
-          var act = '<button type="button" class="btn-degistir row-act btn-cop-kaydi-degistir" data-cop-id="' + copId + '" data-fide-id="' + fid + '" data-miktar="' + mNum + '">Değiştir</button>';
+          var act = '<button type="button" class="btn-degistir row-act btn-cop-kaydi-degistir" data-cop-id="' + copId + '" data-fide-id="' + fid + '" data-miktar="' + mNum + '">Değiştir</button>' +
+            ' <button type="button" class="btn-hareket-cop-geri-al row-act" data-cop-id="' + copId + '" data-fide-id="' + fid + '" data-miktar="' + mNum + '">Geri al</button>';
           return '<tr><td class="px-4 py-2">' + tarihStr + '</td><td class="px-4 py-2">' + cesit + '</td><td class="px-4 py-2">' + ekimStr + '</td><td class="px-4 py-2">' + formatNum(r.miktar) + '</td><td class="px-4 py-2">' + act + '</td></tr>';
         }).join('');
         var footRow = '<tr><td colspan="3" class="px-4 py-2" style="text-align:right;font-weight:700;">Toplam</td><td class="px-4 py-2" style="font-weight:700;">' + formatNum(toplam) + '</td><td class="px-4 py-2"></td></tr>';
@@ -1140,10 +1142,10 @@
         fillCopRows({});
         return;
       }
-      supabase.from('fide_stok').select('id, cesit, ekim_tarihi').in('id', fideIds).then(function (r2) {
+      supabase.from('fide_stok').select('id, cesit, ekim_tarihi, deleted_at').in('id', fideIds).then(function (r2) {
         var stokMap = {};
         (r2.data || []).forEach(function (f) {
-          stokMap[f.id] = { cesit: f.cesit || '—', ekim_tarihi: f.ekim_tarihi };
+          stokMap[f.id] = { cesit: f.cesit || '—', ekim_tarihi: f.ekim_tarihi, deleted_at: f.deleted_at || null };
         });
         fillCopRows(stokMap);
       });
@@ -1900,6 +1902,8 @@
   function extraGoster(r) {
     var extra = Number(r && r.extra_fide);
     if (isNaN(extra)) extra = 0;
+    if (extra < 0) extra = 0;
+    if (r && r.id != null && hasStokHareket(r.id)) return extra;
     if (extra > 0) return extra;
     var ekilen = Number(r && r.ekilen_miktar) || 0;
     return extraUretimBaz(r && r.cikan_fide, ekilen);
@@ -2523,6 +2527,15 @@
     var origEkilen = editingDegistirOrigEkilen != null ? editingDegistirOrigEkilen : 0;
     var ekilenNow = parseMiktar(degistirEkilen && degistirEkilen.value);
     if (ekilenNow == null) ekilenNow = origEkilen;
+    if (editingStokId && hasStokHareket(editingStokId)) {
+      var origCikan = editingDegistirOrigCikan != null ? editingDegistirOrigCikan : 0;
+      var origBaz = extraUretimBaz(origCikan, origEkilen);
+      var newBaz = extraUretimBaz(n, ekilenNow);
+      var cur = editingDegistirOrigExtra != null ? editingDegistirOrigExtra : 0;
+      var v = cur + (newBaz - origBaz);
+      degistirExtra.value = String(v < 0 ? 0 : v);
+      return;
+    }
     degistirExtra.value = String(extraUretimEksiSatilan(n, ekilenNow, editingDegistirSatilan));
   }
   if (degistirCikan) {
@@ -2729,7 +2742,14 @@
       var ekimChanged = ekimNorm !== (editingDegistirOrigEkim || '');
       var ekilenChanged = ekilen !== origEkilen;
       if (ekimChanged || ekilenChanged) teslim = addDays(ekim, 25);
-      extra = extraUretimEksiSatilan(cikan, ekilen, editingDegistirSatilan);
+      if (hasStokHareket(editingStokId)) {
+        var origCikanSave = editingDegistirOrigCikan != null ? editingDegistirOrigCikan : 0;
+        var origExtraSave = editingDegistirOrigExtra != null ? editingDegistirOrigExtra : 0;
+        extra = origExtraSave + (extraUretimBaz(cikan, ekilen) - extraUretimBaz(origCikanSave, origEkilen));
+        if (extra < 0) extra = 0;
+      } else {
+        extra = extraUretimEksiSatilan(cikan, ekilen, editingDegistirSatilan);
+      }
       var unlock = submitLock(btnDegistirOnay);
       var payload = {
         cesit: cesit,
@@ -4176,8 +4196,8 @@
     copFideId = fideId;
     copFideMaxExtra = 0;
     var row = stok.find(function (r) { return String(r.id) === String(fideId); });
-    if (row && row.extra_fide != null && !isNaN(Number(row.extra_fide))) {
-      copFideMaxExtra = Math.max(0, Math.floor(Number(row.extra_fide)));
+    if (row) {
+      copFideMaxExtra = Math.max(0, Math.floor(Number(extraGoster(row)) || 0));
     }
     if (copMiktarEl) copMiktarEl.value = '';
     if (modalCop) {
@@ -4431,6 +4451,14 @@
       var mm = Number(bDeg.getAttribute('data-miktar'));
       if (cid && fid) openModalCopKaydiDegistir(cid, fid, isNaN(mm) ? 0 : mm);
       return;
+    }
+    var bGeri = e.target.closest('#modal-cop-kaydi .btn-hareket-cop-geri-al, #cop-tbody .btn-hareket-cop-geri-al');
+    if (bGeri) {
+      geriAlCopKaydi(
+        bGeri.getAttribute('data-cop-id'),
+        bGeri.getAttribute('data-fide-id'),
+        bGeri.getAttribute('data-miktar')
+      );
     }
   });
 
