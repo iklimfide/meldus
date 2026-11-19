@@ -1382,7 +1382,8 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-    #btn-meldus-logout {
+    #btn-meldus-logout,
+    .btn-alacak-link {
       padding: 0.4rem 0.75rem;
       border-radius: 9999px;
       border: 1px solid rgba(255, 255, 255, 0.35);
@@ -1391,8 +1392,12 @@
       font-size: 0.8rem;
       font-weight: 700;
       cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
     }
-    #btn-meldus-logout:hover { background: rgba(255, 255, 255, 0.22); }
+    #btn-meldus-logout:hover,
+    .btn-alacak-link:hover { background: rgba(255, 255, 255, 0.22); }
 
     @media (max-width: 1024px) {
       .panel-card { margin: 0.5rem; }
@@ -1459,6 +1464,7 @@
       <div class="panel-topbar-actions btn-teslim-wrap">
         <div class="meldus-auth-userbar">
           <span id="meldus-auth-user"></span>
+          <a href="/alacak/" class="btn-alacak-link" title="Alacak PDF">Alacak</a>
           <button type="button" id="btn-meldus-logout" hidden>Çıkış</button>
         </div>
         <button type="button" id="btn-teslim-fixed" class="btn-teslim-fixed" aria-label="Teslim edilecekler">

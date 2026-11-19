@@ -9,6 +9,7 @@ export default function middleware(request) {
   if (path.startsWith('/urunler/kivircik-marul-fidesi')) return;
   if (path.startsWith('/urunler/yedikule-marul-fidesi')) return;
   if (path === '/meldus' || path.startsWith('/meldus/')) return;
+  if (path === '/alacak' || path.startsWith('/alacak/')) return;
   if (path === '/arif' || path.startsWith('/arif/')) return;
   if (path === '/en' || path === '/en/' || path.startsWith('/en/')) return;
 
@@ -17,7 +18,7 @@ export default function middleware(request) {
   if (path === '/output.css') return;
   if (path === '/sitemap.xml') return;
   if (path === '/robots.txt') return;
-  if (/\.(css|js|png|jpg|jpeg|webp|ico|xml|txt|svg|woff2?)$/i.test(path)) return;
+  if (/\.(css|js|png|jpg|jpeg|webp|ico|xml|txt|svg|woff2?|pdf)$/i.test(path)) return;
 
   // Diğer tüm linkler ana sayfaya yönlensin
   return Response.redirect(new URL('/', request.url), 301);

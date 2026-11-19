@@ -21,6 +21,11 @@
       "source": "/panel/",
       "destination": "/meldus/",
       "permanent": true
+    },
+    {
+      "source": "/alacak",
+      "destination": "/alacak/",
+      "permanent": true
     }
   ]
 }

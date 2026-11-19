@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Alacak – İklim Fide</title>
+  <script>
+    try {
+      if (localStorage.getItem('meldus-local-session')) {
+        document.documentElement.classList.add('meldus-has-session');
+      }
+    } catch (e) {}
+  </script>
+  <link rel="icon" href="/meldus/logo.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      color: #111827;
+      background: #f3f4f6;
+      min-height: 100vh;
+    }
+    .panel-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 600;
+      background: linear-gradient(180deg, #166534 0%, #15803d 100%);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    }
+    .panel-topbar-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0.85rem 1.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+    .panel-topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      min-width: 0;
+    }
+    .panel-topbar-logo {
+      width: 2.5rem;
+      height: 2.5rem;
+      object-fit: contain;
+      border-radius: 0.375rem;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 0.15rem;
+    }
+    .panel-brand-name { font-weight: 700; font-size: 1.15rem; }
+    .panel-topbar-sub { margin: 0; font-size: 0.75rem; opacity: 0.9; letter-spacing: 0.04em; }
+    .panel-topbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .meldus-auth-userbar {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .meldus-auth-userbar #meldus-auth-user {
+      font-size: 0.85rem;
+      font-weight: 700;
+      max-width: 8rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #btn-meldus-logout {
+      padding: 0.4rem 0.75rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    #btn-meldus-logout:hover { background: rgba(255, 255, 255, 0.22); }
+    .top-link {
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 700;
+      padding: 0.4rem 0.75rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+    .top-link:hover { background: rgba(255, 255, 255, 0.18); }
+    .alacak-main {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem 2rem;
+    }
+    .alacak-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      background: #fff;
+      border-radius: 0.75rem;
+      padding: 0.85rem 1rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .alacak-toolbar .meta { color: #6b7280; font-size: 0.9rem; flex: 1; min-width: 12rem; }
+    .alacak-toolbar button,
+    .alacak-toolbar label.file-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.55rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      background: #15803d;
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    .alacak-toolbar button:hover,
+    .alacak-toolbar label.file-btn:hover { background: #166534; }
+    .alacak-toolbar button:disabled,
+    .alacak-toolbar label.file-btn[aria-disabled="true"] { opacity: 0.55; cursor: not-allowed; }
+    .alacak-toolbar input[type="file"] { display: none; }
+    .alacak-error {
+      margin: 0 0 1rem;
+      padding: 0.7rem 0.9rem;
+      border-radius: 0.5rem;
+      background: #fef2f2;
+      color: #b91c1c;
+    }
+    .alacak-frame-wrap {
+      background: #fff;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      min-height: 75vh;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    #alacak-pdf {
+      width: 100%;
+      height: 80vh;
+      border: 0;
+      display: block;
+      background: #e5e7eb;
+    }
+    .alacak-empty {
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: #6b7280;
+    }
+    body.meldus-locked .panel-topbar,
+    body.meldus-locked .alacak-main { display: none !important; }
+    html.meldus-has-session #meldus-auth-gate { display: none !important; }
+    html.meldus-has-session body.meldus-locked .panel-topbar,
+    html.meldus-has-session body.meldus-locked .alacak-main { display: revert !important; }
+    #meldus-auth-gate {
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      background: linear-gradient(160deg, rgba(21, 128, 61, 0.92) 0%, rgba(15, 23, 42, 0.94) 100%), #0f172a;
+    }
+    #meldus-auth-gate[hidden] { display: none !important; }
+    .meldus-auth-card {
+      width: 100%;
+      max-width: 24rem;
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1.75rem 1.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+    }
+    .meldus-auth-card h2 { margin: 0 0 0.35rem; font-size: 1.5rem; color: #15803d; }
+    .meldus-auth-card .auth-sub { margin: 0 0 1.25rem; font-size: 0.9rem; color: #6b7280; }
+    .meldus-auth-card label { display: block; margin: 0.75rem 0 0.35rem; font-size: 0.9rem; font-weight: 600; }
+    .meldus-auth-card input {
+      width: 100%;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+    .meldus-auth-actions { display: flex; flex-direction: column; gap: 0.65rem; margin-top: 1.25rem; }
+    .meldus-auth-actions button[type="button"].auth-primary {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: none;
+      border-radius: 0.5rem;
+      background: #15803d;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .meldus-auth-switch { text-align: center; font-size: 0.9rem; color: #6b7280; }
+    .meldus-auth-switch button { border: none; background: none; color: #15803d; font-weight: 700; cursor: pointer; padding: 0; font-size: inherit; }
+    .meldus-auth-error { margin: 0.75rem 0 0; padding: 0.55rem 0.7rem; border-radius: 0.4rem; background: #fef2f2; color: #b91c1c; font-size: 0.9rem; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+    @media (max-width: 640px) {
+      .alacak-main { padding: 0.75rem; }
+      #alacak-pdf { height: 70vh; }
+    }
+  </style>
+</head>
+<body class="meldus-locked">
+  <div id="meldus-auth-gate" aria-hidden="false" role="dialog" aria-modal="true" aria-labelledby="meldus-auth-title">
+    <div class="meldus-auth-card">
+      <div id="meldus-auth-login">
+        <h2 id="meldus-auth-title">Alacak</h2>
+        <p class="auth-sub">Bu sayfa yalnızca kayıtlı kullanıcılar içindir.</p>
+        <label for="meldus-login-user">Kullanıcı adı</label>
+        <input type="text" id="meldus-login-user" autocomplete="username" />
+        <label for="meldus-login-pass">Şifre</label>
+        <input type="password" id="meldus-login-pass" autocomplete="current-password" />
+        <p id="meldus-login-error" class="meldus-auth-error" hidden></p>
+        <div class="meldus-auth-actions">
+          <button type="button" class="auth-primary" id="btn-meldus-login">Giriş yap</button>
+          <p class="meldus-auth-switch">Hesabın yok mu? <button type="button" data-auth-show="register">Kayıt ol</button></p>
+        </div>
+      </div>
+      <div id="meldus-auth-register" hidden>
+        <h2>Kayıt ol</h2>
+        <p class="auth-sub">Kayıt kodunu ekibinizden alın.</p>
+        <label for="meldus-reg-user">Kullanıcı adı</label>
+        <input type="text" id="meldus-reg-user" autocomplete="username" />
+        <label for="meldus-reg-pass">Şifre</label>
+        <input type="password" id="meldus-reg-pass" autocomplete="new-password" />
+        <label for="meldus-reg-pass2">Şifre (tekrar)</label>
+        <input type="password" id="meldus-reg-pass2" autocomplete="new-password" />
+        <label for="meldus-reg-code">Kayıt kodu</label>
+        <input type="password" id="meldus-reg-code" autocomplete="off" />
+        <p id="meldus-reg-error" class="meldus-auth-error" hidden></p>
+        <div class="meldus-auth-actions">
+          <button type="button" class="auth-primary" id="btn-meldus-register">Hesap oluştur</button>
+          <p class="meldus-auth-switch">Zaten hesabın var mı? <button type="button" data-auth-show="login">Giriş yap</button></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <header class="panel-topbar">
+    <div class="panel-topbar-inner">
+      <div class="panel-topbar-brand">
+        <img src="/meldus/logo.png" alt="İklim Fide" class="panel-topbar-logo" width="40" height="40" />
+        <div>
+          <span class="panel-brand-name">Alacak</span>
+          <p class="panel-topbar-sub">Güncel PDF</p>
+        </div>
+      </div>
+      <div class="panel-topbar-actions">
+        <a class="top-link" href="/meldus/">Meldus</a>
+        <div class="meldus-auth-userbar">
+          <span id="meldus-auth-user"></span>
+          <button type="button" id="btn-meldus-logout" hidden>Çıkış</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="alacak-main">
+    <div class="alacak-toolbar">
+      <span class="meta" id="alacak-meta">PDF yükleniyor…</span>
+      <label class="file-btn" for="alacak-file" id="alacak-file-label">PDF yükle</label>
+      <input type="file" id="alacak-file" accept="application/pdf,.pdf" />
+    </div>
+    <p id="alacak-error" class="alacak-error" hidden></p>
+    <div class="alacak-frame-wrap">
+      <iframe id="alacak-pdf" title="Alacak PDF" hidden></iframe>
+      <p id="alacak-empty" class="alacak-empty">Henüz PDF yok. Yukarıdan yükleyin.</p>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/meldus/config.js"></script>
+  <script src="/meldus/auth.js"></script>
+  <script src="/alacak/app.js"></script>
+</body>
+</html>
