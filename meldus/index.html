@@ -478,11 +478,12 @@
     }
     #mainTable th.col-adres,
     #mainTable td.col-adres {
-      width: 4.5rem;
-      min-width: 4.5rem;
-      max-width: 5rem;
-      font-weight: 800;
-      letter-spacing: 0.04em;
+      width: 7.5rem;
+      min-width: 6rem;
+      max-width: 10rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      white-space: normal;
     }
     .extra-fide-cell {
       display: flex;
@@ -829,17 +830,55 @@
     }
     .modal-silinenler-box .modal-list-body { max-height: 72vh; overflow: auto; }
     .modal-silinenler-box .modal-list-body .panel-table { width: 100%; min-width: 640px; }
-    .btn-silinen-geri-al {
+    .btn-silinen-geri-al,
+    .btn-silinen-detay {
       padding: 0.35rem 0.75rem;
       border-radius: 0.375rem;
       font-size: 0.95rem;
       font-weight: 600;
-      background: #0d9488;
       color: #fff;
       border: none;
       cursor: pointer;
     }
+    .btn-silinen-geri-al { background: #0d9488; }
     .btn-silinen-geri-al:hover { background: #0f766e; }
+    .btn-silinen-detay { background: #475569; }
+    .btn-silinen-detay:hover { background: #334155; }
+    .silinen-detay-cell { background: #f8fafc; padding: 0.85rem 1rem; }
+    .silinen-detay-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.85rem;
+    }
+    .silinen-snap h4,
+    .silinen-degisim-title {
+      margin: 0 0 0.45rem;
+      font-size: 0.9rem;
+      color: #334155;
+    }
+    .silinen-degisim-title { margin-top: 1rem; }
+    .silinen-snap-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .silinen-snap-table th {
+      text-align: left;
+      color: #64748b;
+      font-weight: 600;
+      width: 8.5rem;
+      padding: 0.2rem 0.5rem 0.2rem 0;
+      vertical-align: top;
+    }
+    .silinen-snap-table td { padding: 0.2rem 0; }
+    .silinen-degisim-item {
+      border: 1px solid #e2e8f0;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      margin-bottom: 0.65rem;
+      background: #fff;
+    }
+    .silinen-degisim-meta { font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem; }
+    .silinen-detay-empty { margin: 0; color: #64748b; font-size: 0.9rem; }
+    @media (max-width: 800px) {
+      .silinen-detay-grid { grid-template-columns: 1fr; }
+    }
     .modal-box.modal-kime-satildi-box { max-width: 95vw; width: 95%; min-width: 320px; }
     #modal-stok-hareketler .modal-box {
       max-width: 96vw;
@@ -1021,7 +1060,7 @@
     #modal-degistir #degistir-cikan_fide,
     #modal-degistir #degistir-extra_fide { width: 6.75rem; }
     #modal-degistir #degistir-ekim_no { width: 6.5rem; }
-    #modal-degistir #degistir-adres { width: 3.75rem; text-align: center; }
+    #modal-degistir #degistir-adres { width: 9.5rem; text-align: left; }
     .modal-miktar-row {
       display: flex;
       gap: 0.5rem;
@@ -1832,7 +1871,7 @@
         </div>
         <div class="degistir-field tint-adres">
           <label for="degistir-adres">Adres</label>
-          <input type="text" id="degistir-adres" maxlength="3" autocomplete="off" />
+          <input type="text" id="degistir-adres" autocomplete="off" />
         </div>
       </div>
       <div class="actions">
