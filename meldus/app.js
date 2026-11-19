@@ -2067,6 +2067,21 @@
     return extraFromEkilenTahmini(ekilen) - extraFromEkilenEskiYuzde5(ekilen);
   }
 
+  function cimlenmeOrani(r) {
+    if (!hasCikanFide(r)) return null;
+    var ekilen = r && r.ekilen_miktar != null ? Number(r.ekilen_miktar) : NaN;
+    var cikan = Number(r.cikan_fide);
+    if (isNaN(ekilen) || ekilen <= 0) return null;
+    return (cikan / ekilen) * 100;
+  }
+
+  function formatCimlenmeYuzde(n) {
+    if (n == null || isNaN(n)) return '—';
+    var r = Math.round(n * 10) / 10;
+    var s = (r % 1 === 0) ? String(r) : String(r).replace('.', ',');
+    return s + ' %';
+  }
+
   function hasCikanFide(r) {
     var n = r && r.cikan_fide != null ? Number(r.cikan_fide) : 0;
     return !isNaN(n) && n > 0;
@@ -4464,6 +4479,294 @@
   document.querySelectorAll('[data-modal-close="silinenler"]').forEach(function (btn) {
     btn.addEventListener('click', closeModalSilinenler);
   });
+  var cimlenmeSortKey = 'oran';
+  var cimlenmeSortDir = 'desc';
+  var cimlenmeFilterCesit = [];
+  var cimlenmeFilterEkim = [];
+  var cimlenmeFilterDurum = '';
+
+  function getCimlenmeBaseList() {
+    return filterStokByEkimCutoff(stok.slice());
+  }
+
+  function getCimlenmeFilteredList() {
+    var list = getCimlenmeBaseList();
+    if (cimlenmeFilterCesit.length) {
+      list = list.filter(function (r) {
+        return cimlenmeFilterCesit.some(function (name) { return cesitAdEsit(r.cesit, name); });
+      });
+    }
+    if (cimlenmeFilterEkim.length) {
+      list = list.filter(function (r) { return dateFilterMatches(ekimTarihiIso(r), cimlenmeFilterEkim); });
+    }
+    if (cimlenmeFilterDurum === 'girilmis') {
+      list = list.filter(function (r) { return hasCikanFide(r); });
+    } else if (cimlenmeFilterDurum === 'girilmemis') {
+      list = list.filter(function (r) { return !hasCikanFide(r); });
+    }
+    return list;
+  }
+
+  function fillCimlenmeCesitFilter() {
+    var host = document.getElementById('cimlenme-filter-cesit-wrap');
+    if (!host) return;
+    var panel = host.querySelector('.date-multi-panel');
+    var btn = host.querySelector('.date-multi-btn');
+    if (!panel || !btn) return;
+    var names = [];
+    var seen = {};
+    getCimlenmeBaseList().forEach(function (r) {
+      var n = (r.cesit || '').trim();
+      if (!n || seen[n]) return;
+      seen[n] = true;
+      names.push(n);
+    });
+    names.sort(function (a, b) { return a.localeCompare(b, 'tr'); });
+    var valid = {};
+    names.forEach(function (n) { valid[n] = true; });
+    cimlenmeFilterCesit = (cimlenmeFilterCesit || []).filter(function (n) { return valid[n]; });
+    var keySig = names.join('|');
+    if (host.getAttribute('data-keys') !== keySig) {
+      host.setAttribute('data-keys', keySig);
+      var html = dateMultiAllHtml(cimlenmeFilterCesit.length === 0);
+      names.forEach(function (name) {
+        html += '<label class="date-multi-option"><input type="checkbox" value="' + name.replace(/"/g, '&quot;') + '"' +
+          (cimlenmeFilterCesit.indexOf(name) !== -1 ? ' checked' : '') + '> ' + name.replace(/</g, '&lt;') + '</label>';
+      });
+      if (!names.length) html += '<p class="date-multi-empty">Çeşit yok</p>';
+      panel.innerHTML = html;
+    } else {
+      syncDateMultiChecks(panel, cimlenmeFilterCesit);
+    }
+    btn.textContent = cesitFilterLabel(cimlenmeFilterCesit);
+    btn.classList.toggle('filter-active', cimlenmeFilterCesit.length > 0);
+    btn.setAttribute('aria-label', 'Çeşit filtresi, ' + cesitFilterLabel(cimlenmeFilterCesit));
+  }
+
+  function fillCimlenmeFilters() {
+    fillCimlenmeCesitFilter();
+    var forDates = getCimlenmeBaseList();
+    if (cimlenmeFilterCesit.length) {
+      forDates = forDates.filter(function (r) {
+        return cimlenmeFilterCesit.some(function (name) { return cesitAdEsit(r.cesit, name); });
+      });
+    }
+    cimlenmeFilterEkim = fillStokDateFilter(
+      document.getElementById('cimlenme-filter-ekim-wrap'),
+      uniqueIsoDates(forDates, ekimTarihiIso),
+      cimlenmeFilterEkim
+    );
+    var ekimBtn = document.getElementById('cimlenme-filter-ekim');
+    if (ekimBtn) ekimBtn.setAttribute('aria-label', 'Ekim tarihi filtresi, ' + dateFilterLabel(cimlenmeFilterEkim));
+    fillCimlenmeDurumFilter();
+    var clearBtn = document.getElementById('cimlenme-filters-clear');
+    if (clearBtn) clearBtn.hidden = !(cimlenmeFilterCesit.length || cimlenmeFilterEkim.length || cimlenmeFilterDurum);
+  }
+
+  function fillCimlenmeDurumFilter() {
+    var host = document.getElementById('cimlenme-filter-durum-wrap');
+    if (!host) return;
+    var panel = host.querySelector('.date-multi-panel');
+    var btn = host.querySelector('.date-multi-btn');
+    if (!panel || !btn) return;
+    var selected = cimlenmeFilterDurum ? [cimlenmeFilterDurum] : [];
+    if (host.getAttribute('data-keys') !== 'durum') {
+      host.setAttribute('data-keys', 'durum');
+      panel.innerHTML = dateMultiAllHtml(!cimlenmeFilterDurum) +
+        '<label class="date-multi-option"><input type="checkbox" value="girilmis"' + (cimlenmeFilterDurum === 'girilmis' ? ' checked' : '') + '> Girilmiş</label>' +
+        '<label class="date-multi-option"><input type="checkbox" value="girilmemis"' + (cimlenmeFilterDurum === 'girilmemis' ? ' checked' : '') + '> Girilmemiş</label>';
+    } else {
+      syncDateMultiChecks(panel, selected);
+    }
+    var label = !cimlenmeFilterDurum ? 'Tümü' : (cimlenmeFilterDurum === 'girilmis' ? 'Girilmiş' : 'Girilmemiş');
+    btn.textContent = label;
+    btn.classList.toggle('filter-active', !!cimlenmeFilterDurum);
+    btn.setAttribute('aria-label', 'Çimlenme filtresi, ' + label);
+  }
+
+  function sortCimlenmeList(list) {
+    var dir = cimlenmeSortDir === 'asc' ? 1 : -1;
+    list.sort(function (a, b) {
+      var cmp = 0;
+      var key = cimlenmeSortKey;
+      if (key === 'oran') {
+        var oa = cimlenmeOrani(a);
+        var ob = cimlenmeOrani(b);
+        if (oa == null && ob == null) cmp = 0;
+        else if (oa == null) return 1;
+        else if (ob == null) return -1;
+        else cmp = oa - ob;
+      } else if (key === 'cesit') {
+        cmp = String(a.cesit || '').localeCompare(String(b.cesit || ''), 'tr');
+      } else if (key === 'ekim_tarihi') {
+        cmp = ekimTarihiIso(a).localeCompare(ekimTarihiIso(b));
+      } else if (key === 'ekim_no') {
+        var sa = String(a.ekim_no == null ? '' : a.ekim_no).trim();
+        var sb = String(b.ekim_no == null ? '' : b.ekim_no).trim();
+        var na = Number(sa);
+        var nb = Number(sb);
+        if (sa !== '' && sb !== '' && !isNaN(na) && !isNaN(nb)) cmp = na - nb;
+        else cmp = sa.localeCompare(sb, 'tr');
+      } else if (key === 'ekilen_miktar' || key === 'cikan_fide') {
+        var aMissing = key === 'cikan_fide' && !hasCikanFide(a);
+        var bMissing = key === 'cikan_fide' && !hasCikanFide(b);
+        if (aMissing && bMissing) cmp = 0;
+        else if (aMissing) return 1;
+        else if (bMissing) return -1;
+        else {
+          var va = Number(a[key]);
+          var vb = Number(b[key]);
+          if (isNaN(va)) va = 0;
+          if (isNaN(vb)) vb = 0;
+          cmp = va - vb;
+        }
+      }
+      if (cmp === 0) {
+        cmp = ekimTarihiIso(b).localeCompare(ekimTarihiIso(a));
+        if (cmp === 0) cmp = String(a.cesit || '').localeCompare(String(b.cesit || ''), 'tr');
+      }
+      return cmp * dir;
+    });
+    return list;
+  }
+
+  function cimlenmeSortTh(key, label) {
+    var arrow = cimlenmeSortKey === key ? (cimlenmeSortDir === 'asc' ? ' ▲' : ' ▼') : '';
+    return '<th class="sortable" data-sort="' + key + '" style="cursor:pointer;user-select:none">' +
+      escHtml(label) + arrow + '</th>';
+  }
+
+  function loadCimlenmeInto(hostEl) {
+    if (!hostEl) return;
+    fillCimlenmeFilters();
+    var list = getCimlenmeFilteredList();
+    if (!list.length) {
+      hostEl.innerHTML = '<p class="px-4 py-2">Kayıt yok.</p>';
+      return;
+    }
+    sortCimlenmeList(list);
+    var toplamEkilen = 0;
+    var toplamCikan = 0;
+    var inner = list.map(function (r) {
+      var ekilenN = r.ekilen_miktar != null ? Number(r.ekilen_miktar) : 0;
+      var cikanN = r.cikan_fide != null ? Number(r.cikan_fide) : NaN;
+      if (isNaN(ekilenN)) ekilenN = 0;
+      var cikanVar = hasCikanFide(r);
+      if (cikanVar && ekilenN > 0) {
+        toplamEkilen += ekilenN;
+        toplamCikan += cikanN;
+      }
+      var oran = cimlenmeOrani(r);
+      return '<tr>' +
+        '<td class="px-4 py-2">' + escHtml(r.cesit || '—') + '</td>' +
+        '<td class="px-4 py-2">' + formatDate(r.ekim_tarihi) + '</td>' +
+        '<td class="px-4 py-2">' + formatEkimNo(r.ekim_no) + '</td>' +
+        '<td class="px-4 py-2">' + formatNum(ekilenN) + '</td>' +
+        '<td class="px-4 py-2">' + (cikanVar ? formatNum(cikanN) : '—') + '</td>' +
+        '<td class="px-4 py-2">' + formatCimlenmeYuzde(oran) + '</td>' +
+        '</tr>';
+    }).join('');
+    var ort = toplamEkilen > 0 ? (toplamCikan / toplamEkilen) * 100 : null;
+    hostEl.innerHTML = '<table class="panel-table"><thead><tr>' +
+      cimlenmeSortTh('cesit', 'Çeşit') +
+      cimlenmeSortTh('ekim_tarihi', 'Ekim tarihi') +
+      cimlenmeSortTh('ekim_no', 'Ekim no') +
+      cimlenmeSortTh('ekilen_miktar', 'Ekilen') +
+      cimlenmeSortTh('cikan_fide', 'Çıkan') +
+      cimlenmeSortTh('oran', 'Çimlenme') +
+      '</tr></thead><tbody>' + inner + '</tbody>' +
+      '<tfoot><tr><td class="px-4 py-2" colspan="3">Ağırlıklı ortalama</td>' +
+      '<td class="px-4 py-2">' + formatNum(toplamEkilen) + '</td>' +
+      '<td class="px-4 py-2">' + formatNum(toplamCikan) + '</td>' +
+      '<td class="px-4 py-2">' + formatCimlenmeYuzde(ort) + '</td></tr></tfoot></table>';
+  }
+
+  function openModalCimlenme() {
+    var modal = document.getElementById('modal-cimlenme');
+    var body = document.getElementById('modal-cimlenme-body');
+    if (!modal || !body) return;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    loadCimlenmeInto(body);
+  }
+
+  function closeModalCimlenme() {
+    var modal = document.getElementById('modal-cimlenme');
+    if (!modal) return;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  var btnToolbarCimlenme = document.getElementById('btn-toolbar-cimlenme');
+  if (btnToolbarCimlenme) {
+    btnToolbarCimlenme.addEventListener('click', openModalCimlenme);
+  }
+  var cimlenmeFiltersEl = document.getElementById('cimlenme-filters');
+  if (cimlenmeFiltersEl) {
+    cimlenmeFiltersEl.addEventListener('click', function (ev) {
+      var btn = ev.target.closest('.date-multi-btn');
+      if (!btn) return;
+      ev.preventDefault();
+      toggleDateMulti(btn.closest('.date-multi'));
+    });
+    cimlenmeFiltersEl.addEventListener('change', function (ev) {
+      var input = ev.target;
+      if (!input || !input.matches || !input.matches('.date-multi-option input')) return;
+      var wrap = input.closest('.date-multi');
+      if (!wrap) return;
+      var field = wrap.getAttribute('data-filter-field');
+      if (field === 'durum') {
+        if (input.value === FILTER_ALL || !input.checked) {
+          cimlenmeFilterDurum = '';
+          wrap.querySelectorAll('.date-multi-option input').forEach(function (cb) {
+            cb.checked = cb.value === FILTER_ALL;
+          });
+        } else {
+          cimlenmeFilterDurum = input.value;
+          wrap.querySelectorAll('.date-multi-option input').forEach(function (cb) {
+            cb.checked = cb.value === input.value;
+          });
+        }
+      } else {
+        var vals = applyDateMultiChange(wrap, input);
+        if (field === 'cesit') cimlenmeFilterCesit = vals;
+        else if (field === 'ekim') cimlenmeFilterEkim = vals;
+      }
+      var body = document.getElementById('modal-cimlenme-body');
+      if (body) loadCimlenmeInto(body);
+    });
+  }
+  var cimlenmeFiltersClear = document.getElementById('cimlenme-filters-clear');
+  if (cimlenmeFiltersClear) {
+    cimlenmeFiltersClear.addEventListener('click', function () {
+      cimlenmeFilterCesit = [];
+      cimlenmeFilterEkim = [];
+      cimlenmeFilterDurum = '';
+      closeAllDateMultis();
+      var body = document.getElementById('modal-cimlenme-body');
+      if (body) loadCimlenmeInto(body);
+    });
+  }
+  var cimlenmeBodyEl = document.getElementById('modal-cimlenme-body');
+  if (cimlenmeBodyEl) {
+    cimlenmeBodyEl.addEventListener('click', function (e) {
+      var th = e.target.closest('th.sortable');
+      if (!th) return;
+      var key = th.getAttribute('data-sort');
+      if (!key) return;
+      if (cimlenmeSortKey === key) {
+        cimlenmeSortDir = cimlenmeSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        cimlenmeSortKey = key;
+        cimlenmeSortDir = key === 'oran' || key === 'ekim_tarihi' ? 'desc' : 'asc';
+      }
+      loadCimlenmeInto(cimlenmeBodyEl);
+    });
+  }
+  document.querySelectorAll('[data-modal-close="cimlenme"]').forEach(function (btn) {
+    btn.addEventListener('click', closeModalCimlenme);
+  });
+
   var btnToolbarSilinenler = document.getElementById('btn-toolbar-silinenler');
   if (btnToolbarSilinenler) {
     btnToolbarSilinenler.addEventListener('click', function () { openModalSilinenler(); });

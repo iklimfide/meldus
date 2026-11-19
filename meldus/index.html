@@ -391,6 +391,18 @@
       white-space: nowrap;
     }
     .btn-toolbar-silinenler:hover { background: #475569; }
+    .btn-toolbar-cimlenme {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 1.125rem;
+      font-weight: 700;
+      background: #0f766e;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-toolbar-cimlenme:hover { background: #115e59; }
     .btn-son-islemler {
       padding: 0.5rem 1rem;
       border-radius: 0.5rem;
@@ -830,6 +842,36 @@
     }
     .modal-silinenler-box .modal-list-body { max-height: 72vh; overflow: auto; }
     .modal-silinenler-box .modal-list-body .panel-table { width: 100%; min-width: 640px; }
+    #modal-cimlenme .modal-box {
+      max-width: min(96vw, 1320px);
+      width: 96%;
+    }
+    #modal-cimlenme .modal-list-body { max-height: 72vh; overflow: auto; }
+    #modal-cimlenme .panel-table thead th {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      background: #e0f2fe;
+      box-shadow: inset 0 -2px 0 var(--panel-grid);
+    }
+    #modal-cimlenme .panel-table th:hover { background: #bae6fd; }
+    #modal-cimlenme .panel-table th:last-of-type { min-width: 7rem; }
+    .cimlenme-filters {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: center;
+      gap: 0.65rem 1rem;
+      margin: 0 0 0.75rem;
+      position: relative;
+      z-index: 8;
+    }
+    #modal-cimlenme .date-multi-btn {
+      min-width: 9.5rem;
+      max-width: 16rem;
+    }
+    @media (max-width: 720px) {
+      .cimlenme-filters { flex-wrap: wrap; }
+    }
     .btn-silinen-geri-al,
     .btn-silinen-detay {
       padding: 0.35rem 0.75rem;
@@ -945,6 +987,40 @@
     .modal-kime-satildi-box .btn-hareket-satis-iptal { padding: 0.35rem 0.6rem; font-size: 0.9rem; }
     .modal-box h3 { margin: 0 0 0.5rem; font-size: 1.75rem; font-weight: 900; font-style: italic; text-align: center; }
     .modal-box label { display: block; font-size: 14px; font-weight: 700; color: #9ca3af; text-transform: uppercase; margin-bottom: 0.25rem; text-align: center; }
+    .modal-box .date-multi-option {
+      display: flex !important;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.5rem;
+      margin: 0;
+      margin-bottom: 0;
+      padding: 0.4rem 0.5rem;
+      font-size: 0.95rem !important;
+      font-weight: 600 !important;
+      color: #111827 !important;
+      text-transform: none !important;
+      text-align: left !important;
+      cursor: pointer;
+      border-radius: 0.375rem;
+    }
+    .modal-box .date-multi-option:hover { background: #f0fdf4; }
+    .modal-box .date-multi-all {
+      border-bottom: 1px solid #e5e7eb;
+      margin-bottom: 0.2rem;
+      padding-bottom: 0.55rem;
+      font-weight: 800 !important;
+      color: #166534 !important;
+    }
+    .modal-box .date-multi-option input[type="checkbox"] {
+      width: 1.1rem !important;
+      height: 1.1rem !important;
+      margin: 0;
+      flex-shrink: 0;
+      accent-color: #15803d;
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
     .modal-check-wrap {
       display: flex !important;
       align-items: center;
@@ -1567,6 +1643,7 @@
             </div>
             <button type="button" id="btn-yeni-kayit" class="btn-yeni">+ Yeni kayıt ekle</button>
             <button type="button" id="btn-toplu-sil" class="btn-toplu-sil" title="Seçili satırları sil">Seçilenleri sil</button>
+            <button type="button" id="btn-toolbar-cimlenme" class="btn-toolbar-cimlenme" title="Çimlenme oranları">Çimlenme</button>
             <button type="button" id="btn-toolbar-silinenler" class="btn-toolbar-silinenler" title="Silinen stok kayıtlarını geri al">Silinenler</button>
             <button type="button" id="btn-toolbar-cop" class="btn-toolbar-cop" title="Çöp kayıtları">Çöp Kaydı</button>
             <button type="button" id="btn-son-islemler" class="btn-son-islemler" title="Master: Son işlemler" hidden>Son işlemler</button>
@@ -2000,6 +2077,40 @@
       <div class="actions">
         <button type="button" data-modal-close="sil-onay" style="background: #15803d; color: #fff;">İptal</button>
         <button type="button" id="btn-sil-onay" style="background: #dc2626; color: #fff;">Sil</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modal-cimlenme" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-box modal-list-box modal-silinenler-box">
+      <h3 style="color: #0f766e;">Çimlenme</h3>
+      <div class="cimlenme-filters" id="cimlenme-filters">
+        <div class="panel-date-filter">
+          <span>Çeşit</span>
+          <div class="date-multi" data-filter-field="cesit" id="cimlenme-filter-cesit-wrap">
+            <button type="button" class="date-multi-btn" id="cimlenme-filter-cesit" aria-haspopup="listbox" aria-expanded="false" aria-controls="cimlenme-filter-cesit-panel" aria-label="Çeşit filtresi">Tümü</button>
+            <div class="date-multi-panel" id="cimlenme-filter-cesit-panel" hidden role="listbox" aria-multiselectable="true"></div>
+          </div>
+        </div>
+        <div class="panel-date-filter">
+          <span>Ekim tarihi</span>
+          <div class="date-multi" data-filter-field="ekim" id="cimlenme-filter-ekim-wrap">
+            <button type="button" class="date-multi-btn" id="cimlenme-filter-ekim" aria-haspopup="listbox" aria-expanded="false" aria-controls="cimlenme-filter-ekim-panel" aria-label="Ekim tarihi filtresi">Tümü</button>
+            <div class="date-multi-panel" id="cimlenme-filter-ekim-panel" hidden role="listbox" aria-multiselectable="true"></div>
+          </div>
+        </div>
+        <div class="panel-date-filter">
+          <span>Çimlenme</span>
+          <div class="date-multi" data-filter-field="durum" id="cimlenme-filter-durum-wrap">
+            <button type="button" class="date-multi-btn" id="cimlenme-filter-durum" aria-haspopup="listbox" aria-expanded="false" aria-controls="cimlenme-filter-durum-panel" aria-label="Çimlenme filtresi">Tümü</button>
+            <div class="date-multi-panel" id="cimlenme-filter-durum-panel" hidden role="listbox"></div>
+          </div>
+        </div>
+        <button type="button" id="cimlenme-filters-clear" class="btn-date-filter-clear" hidden>Filtreleri temizle</button>
+      </div>
+      <div id="modal-cimlenme-body" class="modal-list-body"></div>
+      <div class="actions">
+        <button type="button" data-modal-close="cimlenme" style="background: #15803d; color: #fff;">Kapat</button>
       </div>
     </div>
   </div>

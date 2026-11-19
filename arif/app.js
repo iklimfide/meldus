@@ -23,6 +23,109 @@
       .replace(/"/g, '&quot;');
   }
 
+  function parseOzetSatir(part) {
+    var m = {};
+    String(part || '').split(';').forEach(function (bit) {
+      var i = bit.indexOf('=');
+      if (i < 1) return;
+      m[bit.slice(0, i).trim()] = bit.slice(i + 1).trim();
+    });
+    return m;
+  }
+
+  function satirKimligi(onceMap, sonraMap, prefix) {
+    var m = (sonraMap && Object.keys(sonraMap).length) ? sonraMap : (onceMap || {});
+    var bits = [];
+    if (m['Çeşit'] && m['Çeşit'] !== '—') bits.push(m['Çeşit']);
+    if (m['Ekim tarihi'] && m['Ekim tarihi'] !== '—') bits.push('ekim ' + m['Ekim tarihi']);
+    if (m['Ekim no'] && m['Ekim no'] !== '—') bits.push('ekim no ' + m['Ekim no']);
+    if (m['Adres'] && m['Adres'] !== '—') bits.push('adres ' + m['Adres']);
+    if (bits.length) return bits.join(' · ');
+    var p = String(prefix || '').replace(/^id\s+[0-9a-f-]{8,}[·\s]*/i, '').trim();
+    return p || '—';
+  }
+
+  function okHtml(eski, yeni) {
+    return '<span class="log-eski">' + esc(eski) + '</span> → <span class="log-yeni">' + esc(yeni) + '</span>';
+  }
+
+  function okParcaHtml(p) {
+    var m = String(p || '').match(/^(.*?)\s→\s(.*)$/);
+    if (!m) return esc(p);
+    return okHtml(m[1], m[2]);
+  }
+
+  function alanFarklari(onceMap, sonraMap) {
+    var keys = ['Çeşit', 'Ekim tarihi', 'Ekim no', 'Teslim tarihi', 'Ekilen', 'Çıkan', 'Extra', 'Adres'];
+    var lines = [];
+    keys.forEach(function (k) {
+      var a = (onceMap && onceMap[k]) || '—';
+      var b = (sonraMap && sonraMap[k]) || '—';
+      if (a !== b) lines.push(esc(k) + ': ' + okHtml(a, b));
+    });
+    return lines.length ? lines.join('\n') : esc('alan değişmedi');
+  }
+
+  var ISLEM_MODAL = {
+    'Yeni kayıt': 'Yeni kayıt',
+    'Kayıt değiştir': 'Kayıt değiştir',
+    'Satış': 'SATIŞ YAP',
+    'Satış iptal': 'Kime satıldı',
+    'Satış değiştir': 'Satış değiştir',
+    'Satış aktar': 'Satışı aktar',
+    'Sipariş kapandı': 'Kime satıldı',
+    'Teslim': 'Teslim Edilecekler',
+    'Teslim geri al': 'Teslim Edilenler',
+    'Stok silme': 'Kayıt sil',
+    'Toplu silme': 'Kayıt sil',
+    'Stok geri al': 'Silinenler',
+    'Çöpe at': 'FİRE KAYDI',
+    'Çöp değiştir': 'Çöp kaydını düzenle',
+    'Çöp geri al': 'Çöp kaydı',
+    'Sonrakine aktar': 'Sonrakine aktar',
+    'Öncekine aktar': 'Öncekine aktar',
+    'Aktarım geri al': 'Hareketler'
+  };
+
+  function modalAdi(islem) {
+    var key = String(islem || '').trim();
+    return ISLEM_MODAL[key] || key || '—';
+  }
+
+  function splitLogDetay(detay) {
+    var s = String(detay == null ? '' : detay).trim();
+    if (!s) return { satir: '—', degisim: '—' };
+    var idxOnce = s.search(/önce:\s*/i);
+    var idxSonra = s.search(/·\s*sonra:\s*/i);
+    if (idxOnce >= 0 && idxSonra > idxOnce) {
+      var prefix = s.slice(0, idxOnce).replace(/[·\s]+$/, '').trim();
+      var rest = s.slice(idxOnce).replace(/^önce:\s*/i, '');
+      var m = rest.match(/^(.*?)\s*·\s*sonra:\s*(.*)$/i);
+      if (m) {
+        var onceMap = parseOzetSatir(m[1]);
+        var sonraMap = parseOzetSatir(m[2]);
+        return {
+          satir: satirKimligi(onceMap, sonraMap, prefix),
+          degisim: alanFarklari(onceMap, sonraMap)
+        };
+      }
+    }
+    var parts = s.split(/\s*·\s*/);
+    var satir = [];
+    var degisim = [];
+    parts.forEach(function (p) {
+      if (/\s→\s/.test(p)) degisim.push(p);
+      else satir.push(p);
+    });
+    if (degisim.length) {
+      return {
+        satir: satir.filter(Boolean).join(' · ') || '—',
+        degisim: degisim.map(okParcaHtml).join('\n')
+      };
+    }
+    return { satir: s, degisim: '—' };
+  }
+
   function formatDateTime(iso) {
     if (!iso) return '—';
     var d = new Date(iso);
@@ -189,25 +292,27 @@
       supabase = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
     }
     if (!supabase) {
-      logsTbody.innerHTML = '<tr><td colspan="4" class="empty">Veritabanı bağlantısı yok.</td></tr>';
+      logsTbody.innerHTML = '<tr><td colspan="5" class="empty">Veritabanı bağlantısı yok.</td></tr>';
       return;
     }
     supabase.from('meldus_islem_log').select('kullanici, islem, detay, created_at').order('created_at', { ascending: false }).limit(300).then(function (res) {
       if (res.error) {
-        logsTbody.innerHTML = '<tr><td colspan="4" class="empty">Log yüklenemedi. <code>meldus_islem_log</code> tablosunu oluşturduğunuzdan emin olun.</td></tr>';
+        logsTbody.innerHTML = '<tr><td colspan="5" class="empty">Log yüklenemedi. <code>meldus_islem_log</code> tablosunu oluşturduğunuzdan emin olun.</td></tr>';
         return;
       }
       var rows = res.data || [];
       if (!rows.length) {
-        logsTbody.innerHTML = '<tr><td colspan="4" class="empty">Henüz işlem kaydı yok.</td></tr>';
+        logsTbody.innerHTML = '<tr><td colspan="5" class="empty">Henüz işlem kaydı yok.</td></tr>';
         return;
       }
       logsTbody.innerHTML = rows.map(function (r) {
+        var split = splitLogDetay(r.detay);
         return '<tr>' +
           '<td>' + esc(formatDateTime(r.created_at)) + '</td>' +
           '<td>' + esc(r.kullanici || '—') + '</td>' +
-          '<td>' + esc(r.islem || '—') + '</td>' +
-          '<td>' + esc(r.detay || '—') + '</td>' +
+          '<td>' + esc(modalAdi(r.islem)) + '</td>' +
+          '<td>' + esc(split.satir) + '</td>' +
+          '<td>' + (split.degisim || '—') + '</td>' +
           '</tr>';
       }).join('');
     });

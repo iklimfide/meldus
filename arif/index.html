@@ -61,7 +61,7 @@
     }
     .topbar a:hover, .topbar button:hover { background: rgba(255,255,255,0.22); }
     .wrap {
-      max-width: 1200px;
+      max-width: 1500px;
       margin: 0 auto;
       padding: 1rem;
     }
@@ -113,9 +113,21 @@
       white-space: nowrap;
       min-width: 8rem;
     }
-    .logs-table td:nth-child(4) {
+    .logs-table td:nth-child(4),
+    .logs-table td:nth-child(5) {
       word-break: break-word;
+      white-space: pre-wrap;
     }
+    .logs-table th:nth-child(4),
+    .logs-table td:nth-child(4) {
+      min-width: 14rem;
+    }
+    .logs-table th:nth-child(5),
+    .logs-table td:nth-child(5) {
+      min-width: 16rem;
+    }
+    .log-eski { color: #dc2626; font-weight: 700; }
+    .log-yeni { color: #2563eb; font-weight: 700; }
     .btn-danger {
       padding: 0.3rem 0.6rem;
       border: none;
@@ -277,19 +289,20 @@
 
       <section class="card">
         <h2>Son işlemler</h2>
-        <p class="sub">Tüm log kayıtları (en yeni üstte, son 300).</p>
+        <p class="sub">Tüm log kayıtları (en yeni üstte, son 300). Modal hangi pencerede yapıldığını gösterir. Detay 1 işlem satırı, Detay 2 önceki → sonraki değer.</p>
         <div class="table-wrap">
           <table class="logs-table">
             <thead>
               <tr>
                 <th>Zaman</th>
                 <th>Kullanıcı</th>
-                <th>İşlem</th>
-                <th>Detay</th>
+                <th>Modal</th>
+                <th>Detay 1</th>
+                <th>Detay 2</th>
               </tr>
             </thead>
             <tbody id="arif-logs-tbody">
-              <tr><td colspan="4" class="empty">Yükleniyor…</td></tr>
+              <tr><td colspan="5" class="empty">Yükleniyor…</td></tr>
             </tbody>
           </table>
         </div>
