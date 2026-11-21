@@ -55,15 +55,21 @@
     return okHtml(m[1], m[2]);
   }
 
+  function alanBos(k, v) {
+    var sayi = k === 'Ekilen' || k === 'Çıkan' || k === 'Extra';
+    if (v == null || v === '' || v === '—') return sayi ? '0' : '—';
+    return v;
+  }
+
   function alanFarklari(onceMap, sonraMap) {
     var keys = ['Çeşit', 'Ekim tarihi', 'Ekim no', 'Teslim tarihi', 'Ekilen', 'Çıkan', 'Extra', 'Adres'];
     var lines = [];
     keys.forEach(function (k) {
-      var a = (onceMap && onceMap[k]) || '—';
-      var b = (sonraMap && sonraMap[k]) || '—';
-      if (a !== b) lines.push(esc(k) + ': ' + okHtml(a, b));
+      var a = alanBos(k, onceMap && onceMap[k]);
+      var b = alanBos(k, sonraMap && sonraMap[k]);
+      if (a !== b || k === 'Extra') lines.push(esc(k) + ': ' + okHtml(a, b));
     });
-    return lines.length ? lines.join('\n') : esc('alan değişmedi');
+    return lines.length ? lines.join('\n') : okHtml('0', '0');
   }
 
   var ISLEM_MODAL = {

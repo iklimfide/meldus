@@ -45,7 +45,7 @@
     var payload = {
       kullanici: currentMeldusUser(),
       islem: String(islem || '').slice(0, 80),
-      detay: String(detay || '').slice(0, 800)
+      detay: String(detay || '').slice(0, 1200)
     };
     supabase.from('meldus_islem_log').insert(payload).then(function () {}).catch(function () {});
   }
@@ -54,6 +54,21 @@
     return (parts || []).filter(function (p) {
       return p != null && String(p).trim() !== '';
     }).join(' · ');
+  }
+
+  function logSayi(n) {
+    if (n == null || n === '' || isNaN(Number(n))) return '0';
+    return formatNum(n);
+  }
+
+  function logOk(eski, yeni) {
+    return logSayi(eski) + ' → ' + logSayi(yeni);
+  }
+
+  function logOkMetin(eski, yeni) {
+    var a = (eski == null || String(eski).trim() === '' || String(eski).trim() === '—') ? '—' : String(eski).trim();
+    var b = (yeni == null || String(yeni).trim() === '' || String(yeni).trim() === '—') ? '—' : String(yeni).trim();
+    return a + ' → ' + b;
   }
 
   function escHtml(s) {
@@ -79,9 +94,9 @@
       ['Ekim tarihi', formatDate(r.ekim_tarihi)],
       ['Ekim no', parseEkimNo(r.ekim_no) || '—'],
       ['Teslim tarihi', formatDate(r.teslim_tarihi)],
-      ['Ekilen', formatNum(r.ekilen_miktar)],
-      ['Çıkan', formatNum(r.cikan_fide)],
-      ['Extra', formatNum(r.extra_fide)],
+      ['Ekilen', (r.ekilen_miktar == null || r.ekilen_miktar === '') ? '0' : formatNum(r.ekilen_miktar)],
+      ['Çıkan', (r.cikan_fide == null || r.cikan_fide === '') ? '0' : formatNum(r.cikan_fide)],
+      ['Extra', (r.extra_fide == null || r.extra_fide === '') ? '0' : formatNum(r.extra_fide)],
       ['Adres', (r.adres && String(r.adres).trim()) || '—']
     ];
   }
@@ -1570,15 +1585,12 @@
             openModalUyari('Satış kaydı silinemedi: ' + (delRes.error.message || 'Yetki hatası olabilir.'));
             return;
           }
-          logIslem('Satış iptal', joinLogDetay([
-            musteri,
-            formatNum(miktar) + ' adet',
-            'teslim ' + formatDate(s.teslim_tarihi),
-            stokLogLabel(fideId),
-            s.kargo ? 'kargo' : '',
-            s.notlar ? 'not: ' + s.notlar : ''
-          ]));
-          function afterExtra() {
+          function afterExtra(extraOnce, extraSonra) {
+            logIslem('Satış iptal', joinLogDetay([
+              stokLogLabel(fideId),
+              musteri,
+              logOk(extraOnce, extraSonra)
+            ]));
             loadStok();
             refreshKimeSatildiList();
             refreshStokHareketlerIfOpen();
@@ -1589,10 +1601,12 @@
             supabase.from('fide_stok').select('extra_fide').eq('id', fideId).maybeSingle().then(function (r2) {
               var extra = (r2.data && r2.data.extra_fide != null ? Number(r2.data.extra_fide) : 0);
               if (isNaN(extra)) extra = 0;
-              supabase.from('fide_stok').update({ extra_fide: extra + miktar }).eq('id', fideId).then(function () { afterExtra(); });
+              supabase.from('fide_stok').update({ extra_fide: extra + miktar }).eq('id', fideId).then(function () {
+                afterExtra(extra, extra + miktar);
+              });
             });
           } else {
-            afterExtra();
+            afterExtra(0, 0);
           }
         });
       });
@@ -1640,13 +1654,12 @@
               openModalUyari('Sipariş kapatılamadı: ' + (up.error.message || ''));
               return;
             }
-            function afterExtra() {
+            function afterExtra(extraOnce, extraSonra) {
               logIslem('Sipariş kapandı', joinLogDetay([
+                stokLogLabel(s.fide_id),
                 s.musteri_adi || '—',
-                'teslim ' + formatNum(del),
-                'dönen extra ' + formatNum(kalan),
-                'planlanan teslim ' + formatDate(s.teslim_tarihi),
-                stokLogLabel(s.fide_id)
+                logOk(extraOnce, extraSonra),
+                logOk(total, del)
               ]));
               loadStok();
               refreshKimeSatildiList();
@@ -1658,10 +1671,12 @@
               supabase.from('fide_stok').select('extra_fide').eq('id', s.fide_id).maybeSingle().then(function (r2) {
                 var extra = (r2.data && r2.data.extra_fide != null ? Number(r2.data.extra_fide) : 0);
                 if (isNaN(extra)) extra = 0;
-                supabase.from('fide_stok').update({ extra_fide: extra + kalan }).eq('id', s.fide_id).then(function () { afterExtra(); });
+                supabase.from('fide_stok').update({ extra_fide: extra + kalan }).eq('id', s.fide_id).then(function () {
+                  afterExtra(extra, extra + kalan);
+                });
               });
             } else {
-              afterExtra();
+              afterExtra(0, 0);
             }
           });
         },
@@ -1687,7 +1702,7 @@
             if (u.error) openModalUyari('Stok güncellenemedi.');
             logIslem('Çöp geri al', joinLogDetay([
               stokLogLabel(fideId),
-              formatNum(m) + ' adet extra’ya geri eklendi'
+              logOk(extra, extra + m)
             ]));
             loadStok();
             loadCop();
@@ -1745,10 +1760,10 @@
                 openModalUyari('Stoklar düzeltildi ama aktarım kaydı silinemedi. Supabase’de delete politikasını ekleyin (meldus/sql/extra_aktar_delete_policy.sql).');
               } else {
                 logIslem('Aktarım geri al', joinLogDetay([
-                  tipLabel,
-                  formatNum(m) + ' extra fide',
                   stokLogLabel(kaynak),
-                  formatDate(hedef.ekim_tarihi) + ' tarihli ekimden ' + formatDate(kaynak.ekim_tarihi) + ' tarihli ekime geri'
+                  tipLabel,
+                  logOk(kaynakExtra, kaynakExtra + m),
+                  logOk(hedefExtra, hedefExtra - m)
                 ]));
               }
               loadStok();
@@ -1941,11 +1956,16 @@
         try {
           if (!res.error) {
             ids.forEach(function (id) { delete selectedStokIds[id]; });
+            var extraToplam = 0;
+            ids.forEach(function (id) {
+              var row = stok.find(function (x) { return String(x.id) === String(id); });
+              if (row && row.extra_fide != null && !isNaN(Number(row.extra_fide))) extraToplam += Number(row.extra_fide);
+            });
             var ozet = ids.slice(0, 8).map(function (id) {
               return stokLogLabel(id) || ('id ' + id);
             }).join('; ');
             if (ids.length > 8) ozet += ' …';
-            logIslem('Toplu silme', joinLogDetay([ids.length + ' kayıt silindi', ozet]));
+            logIslem('Toplu silme', joinLogDetay([ozet, logOk(extraToplam, 0)]));
             refreshSilinenlerModalIfOpen();
             loadStok();
           } else {
@@ -2196,9 +2216,8 @@
           cesit,
           'ekim ' + formatDate(ekim),
           ekimNo ? 'ekim no ' + ekimNo : '',
-          formatNum(miktar) + ' viyol',
-          'extra ' + formatNum(extraFide),
-          'teslim ' + formatDate(teslim)
+          logOk(0, miktar),
+          logOk(0, extraFide)
         ]));
         closeModalYeniKayit();
         loadStok();
@@ -2862,6 +2881,8 @@
       function kaydetSatis() {
         var unlock = submitLock(btnSatOnay);
         var satOk = false;
+        var extraOnce = null;
+        var extraSonra = null;
         supabase.from('satislar').insert({
           fide_id: stokId,
           musteri_adi: musteri,
@@ -2887,19 +2908,18 @@
           }
           var extra = (r.data.extra_fide != null ? Number(r.data.extra_fide) : 0);
           if (isNaN(extra)) extra = 0;
-          return supabase.from('fide_stok').update({ extra_fide: extra - miktar }).eq('id', stokId);
+          extraOnce = extra;
+          extraSonra = extra - miktar;
+          return supabase.from('fide_stok').update({ extra_fide: extraSonra }).eq('id', stokId);
         }).then(function (upd) {
           if (!upd) return;
           if (upd.error) {
             openModalUyari('Satış kaydedildi ama stok düşülemedi: ' + supabaseErrorMsg(upd.error));
           }
           logIslem('Satış', joinLogDetay([
-            musteri,
-            formatNum(miktar) + ' adet',
-            'teslim ' + formatDate(teslimTarihi),
             stokLogLabel(stokId),
-            kargo ? 'kargo' : '',
-            notlar ? 'not: ' + notlar : ''
+            musteri,
+            logOk(extraOnce, extraSonra)
           ]));
           markStokHareket(stokId);
           closeModalSat();
@@ -3919,10 +3939,9 @@
         return supabase.from('satislar').update(payload).eq('id', satisId).then(function (r) {
           if (r.error) { openModalUyari('Güncellenemedi: ' + (r.error.message || '')); return; }
           logIslem('Teslim', joinLogDetay([
+            stokLogLabel(s.fide_id),
             s.musteri_adi || '—',
-            formatNum(teslimThis) + ' adet' + (teslimAdetKismen ? ' (kısmi)' : ''),
-            'planlanan teslim ' + formatDate(s.teslim_tarihi),
-            stokLogLabel(s.fide_id)
+            logOk(already, newDelivered)
           ]));
           loadStok();
           refreshTeslimModalIfOpen();
@@ -3972,10 +3991,9 @@
             return;
           }
           logIslem('Teslim geri al', joinLogDetay([
+            stokLogLabel(s.fide_id),
             s.musteri_adi || '—',
-            formatNum(s.teslim_edilen_miktar != null ? s.teslim_edilen_miktar : s.miktar) + ' adet',
-            'teslim ' + formatDate(s.teslim_tarihi),
-            stokLogLabel(s.fide_id)
+            logOk(s.teslim_edilen_miktar != null ? s.teslim_edilen_miktar : s.miktar, 0)
           ]));
           openModalTeslimEdilenler();
         });
@@ -4180,10 +4198,12 @@
                   });
                 }
                 logIslem('Satış aktar', joinLogDetay([
-                  aktarMusteri || '—',
                   aktarCesit,
-                  formatNum(miktar) + ' adet',
-                  'ekim ' + formatDate(aktarKaynakEkim) + ' → ' + formatDate(hedefEkim)
+                  'ekim ' + formatDate(aktarKaynakEkim),
+                  aktarMusteri || '—',
+                  logOkMetin(formatDate(aktarKaynakEkim), formatDate(hedefEkim)),
+                  logOk(oldExtra, oldExtra + miktar),
+                  logOk(newExtra, newExtra - miktar)
                 ]));
                 closeModalSatisAktar();
                 refreshKimeSatildiList();
@@ -4203,13 +4223,16 @@
   var satisDegistirNotlar = document.getElementById('satis-degistir-notlar');
   var satisDegistirKargo = document.getElementById('satis-degistir-kargo');
   var editingSatisId = null;
+  var editingSatisSnap = null;
 
   function openModalSatisDegistir(satisId) {
     if (!supabase || !satisId) return;
     editingSatisId = satisId;
+    editingSatisSnap = null;
     supabase.from('satislar').select('*').eq('id', satisId).single().then(function (res) {
       var s = res.data;
       if (!s) return;
+      editingSatisSnap = s;
       if (satisDegistirMusteri) satisDegistirMusteri.value = s.musteri_adi || '';
       if (satisDegistirTeslim) satisDegistirTeslim.value = toIsoDate(s.teslim_tarihi);
       if (satisDegistirMiktar) satisDegistirMiktar.value = s.miktar != null ? String(s.miktar) : '';
@@ -4225,6 +4248,7 @@
 
   function closeModalSatisDegistir() {
     editingSatisId = null;
+    editingSatisSnap = null;
     if (satisDegistirModal) {
       satisDegistirModal.classList.remove('open');
       satisDegistirModal.setAttribute('aria-hidden', 'true');
@@ -4270,12 +4294,13 @@
           openModalUyari('Satış güncellenemedi: ' + supabaseErrorMsg(res.error));
           return;
         }
+        var oldS = editingSatisSnap || {};
         logIslem('Satış değiştir', joinLogDetay([
+          stokLogLabel(oldS.fide_id),
           musteri,
-          formatNum(miktar) + ' adet',
-          'teslim ' + formatDate(teslim),
-          kargo ? 'kargo' : '',
-          notlar ? 'not: ' + notlar : ''
+          logOk(oldS.miktar, miktar),
+          logOkMetin(formatDate(oldS.teslim_tarihi), formatDate(teslim)),
+          logOkMetin(oldS.musteri_adi, musteri)
         ]));
         closeModalSatisDegistir();
         refreshKimeSatildiList();
@@ -4346,8 +4371,9 @@
               }
               logIslem('Sonrakine aktar', joinLogDetay([
                 cesit,
-                formatNum(miktar) + ' extra fide',
-                formatDate(ekim) + ' tarihli ekimden ' + formatDate(hedefEkimSonraki) + ' tarihli ekime'
+                'ekim ' + formatDate(ekim),
+                logOk(miktar, 0),
+                logOk(nextExtra, nextExtra + miktar)
               ]));
               markStokHareket(id);
               markStokHareket(nextStok.id);
@@ -4425,8 +4451,9 @@
               }
               logIslem('Öncekine aktar', joinLogDetay([
                 cesit,
-                formatNum(miktar) + ' extra fide',
-                formatDate(ekim) + ' tarihli ekimden ' + formatDate(hedefEkimOnceki) + ' tarihli ekime'
+                'ekim ' + formatDate(ekim),
+                logOk(miktar, 0),
+                logOk(prevExtra, prevExtra + miktar)
               ]));
               markStokHareket(id);
               markStokHareket(prevStok.id);
@@ -4814,8 +4841,7 @@
               if (!res.error) {
                 logIslem('Stok geri al', joinLogDetay([
                   stokLogLabel(row) || ('id ' + id),
-                  formatNum(row.ekilen_miktar) + ' viyol',
-                  'extra ' + formatNum(row.extra_fide)
+                  logOk(0, row.extra_fide)
                 ]));
                 refreshSilinenlerModalIfOpen();
                 loadStok();
@@ -4861,10 +4887,9 @@
       var silDetay = silRow
         ? joinLogDetay([
           stokLogLabel(silRow),
-          formatNum(silRow.ekilen_miktar) + ' viyol',
-          'extra ' + formatNum(silRow.extra_fide)
+          logOk(silRow.extra_fide, 0)
         ])
-        : ('id ' + id);
+        : joinLogDetay(['id ' + id, logOk(0, 0)]);
       softDeleteStokByIds([id], function (res) {
         try {
           if (!res.error) {
@@ -5044,7 +5069,8 @@
             }
             logIslem('Çöp değiştir', joinLogDetay([
               stokLogLabel(copKaydiDegistirFideId),
-              formatNum(oldM) + ' → ' + formatNum(newM) + ' adet'
+              logOk(oldM, newM),
+              logOk(extra, newExtra)
             ]));
             closeModalCopKaydiDegistir();
             loadStok();
@@ -5097,7 +5123,7 @@
             }
             logIslem('Çöpe at', joinLogDetay([
               stokLogLabel(copFideId),
-              formatNum(miktar) + ' adet fire'
+              logOk(extra, extra - miktar)
             ]));
             markStokHareket(copFideId);
             loadStok();
