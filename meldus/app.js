@@ -2517,6 +2517,12 @@
 
   var btnStokJpg = document.getElementById('btn-stok-jpg-indir');
   if (btnStokJpg) btnStokJpg.addEventListener('click', openModalJpgOnay);
+  var btnStokYazdir = document.getElementById('btn-stok-yazdir');
+  if (btnStokYazdir) {
+    btnStokYazdir.addEventListener('click', function () {
+      window.print();
+    });
+  }
   document.querySelectorAll('[data-modal-close="jpg-onay"]').forEach(function (btn) {
     btn.addEventListener('click', closeModalJpgOnay);
   });
@@ -3932,6 +3938,21 @@
   });
   var btnTeslimExcel = document.getElementById('btn-teslim-excel');
   if (btnTeslimExcel) btnTeslimExcel.addEventListener('click', downloadTeslimExcel);
+  var btnTeslimYazdir = document.getElementById('btn-teslim-yazdir');
+  if (btnTeslimYazdir) {
+    btnTeslimYazdir.addEventListener('click', function () {
+      document.body.classList.add('print-teslim');
+      window.print();
+    });
+  }
+  window.addEventListener('afterprint', function () {
+    document.body.classList.remove('print-teslim');
+  });
+  if (window.matchMedia) {
+    window.matchMedia('print').addEventListener('change', function (mq) {
+      if (!mq.matches) document.body.classList.remove('print-teslim');
+    });
+  }
   var btnTeslimJpg = document.getElementById('btn-teslim-jpg');
   if (btnTeslimJpg) btnTeslimJpg.addEventListener('click', downloadTeslimJpg);
   if (modalTeslimEdilenlerTbody) {

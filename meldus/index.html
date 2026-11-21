@@ -427,6 +427,18 @@
       white-space: nowrap;
     }
     #btn-stok-jpg-indir:hover { background: #0f766e; }
+    #btn-stok-yazdir {
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      background: #334155;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #btn-stok-yazdir:hover { background: #1e293b; }
     .th-sec {
       width: 2.5rem;
       min-width: 2.5rem;
@@ -579,6 +591,12 @@
       text-align: center;
       border-right: 2px solid var(--panel-grid);
       border-bottom: 2px solid var(--panel-grid);
+    }
+    .panel-table tbody td,
+    .panel-table tfoot td,
+    .modal-list-body tbody td,
+    .modal-list-body tfoot td {
+      text-transform: uppercase;
     }
     .panel-table tfoot td {
       border-right: 2px solid var(--panel-grid);
@@ -1216,6 +1234,35 @@
       flex-direction: column;
       overflow: hidden;
     }
+    #modal-teslim .modal-teslim-head {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 1rem;
+      flex-shrink: 0;
+      padding-right: 3.5rem;
+    }
+    #modal-teslim .modal-teslim-head h3 {
+      margin: 0;
+      padding-right: 0;
+      flex: 0 1 auto;
+      text-align: left;
+    }
+    #btn-teslim-yazdir {
+      flex-shrink: 0;
+      margin-left: auto;
+      margin-right: 0.35rem;
+      padding: 0.4rem 0.9rem;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 700;
+      background: #334155;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #btn-teslim-yazdir:hover { background: #1e293b; }
     #modal-teslim .modal-box h3 { flex-shrink: 0; margin-top: 0; }
     #modal-teslim .modal-box .actions {
       flex-shrink: 0;
@@ -1529,6 +1576,178 @@
       .panel-table { min-width: 600px; }
       .panel-table .row-actions button { font-size: 13px; padding: 0.25rem 0.35rem; }
     }
+    @media print {
+      @page { size: A4 portrait; margin: 8mm; }
+      html, body {
+        background: #fff !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+      body.meldus-locked { overflow: visible !important; }
+      #meldus-auth-gate,
+      .panel-topbar,
+      html.meldus-has-session body.meldus-locked .panel-topbar,
+      .panel-toolbar,
+      .modal-backdrop,
+      button,
+      .row-actions,
+      .td-sec,
+      .th-sec,
+      .stok-secilen-info {
+        display: none !important;
+      }
+      #mainTable th:nth-last-child(2),
+      #mainTable td:nth-last-child(2),
+      #mainTable th:last-child,
+      #mainTable td:last-child {
+        display: none !important;
+      }
+      .panel-card {
+        box-shadow: none !important;
+        margin: 0 !important;
+        max-width: none !important;
+      }
+      .panel-table-wrap {
+        overflow: visible !important;
+        margin: 0 !important;
+      }
+      .panel-table,
+      #mainTable {
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        table-layout: fixed !important;
+        font-size: 12px !important;
+        border-collapse: collapse !important;
+        border: none !important;
+      }
+      .panel-table thead { display: table-header-group; background: #fff !important; }
+      .panel-table tfoot { display: table-footer-group; }
+      .panel-table tr { break-inside: avoid; }
+      .panel-table th,
+      .panel-table td,
+      #mainTable th,
+      #mainTable td {
+        padding: 2pt 2.5pt !important;
+        font-size: 12px !important;
+        line-height: 1.15 !important;
+        letter-spacing: 0 !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        background: #fff !important;
+        background-color: #fff !important;
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+        transform: none !important;
+        outline: none !important;
+      }
+      #mainTable th {
+        font-size: 12px !important;
+        font-weight: 800 !important;
+        background: #fff !important;
+      }
+      #mainTable .col-cesit { width: 16% !important; }
+      #mainTable .col-ekim-no { width: 8% !important; }
+      #mainTable .col-fide-qty { width: 12% !important; }
+      #mainTable .col-extra-fide { width: 13% !important; }
+      #mainTable .col-adres { width: 12% !important; }
+      #mainTable tbody td.col-fide-qty,
+      #mainTable tfoot td.col-fide-qty {
+        font-size: 12px !important;
+      }
+      #mainTable th.col-cesit,
+      #mainTable td.col-cesit {
+        font-size: 12px !important;
+      }
+      .extra-fide-cell { gap: 1pt !important; }
+      #mainTable .extra-kaynak { font-size: 12px !important; }
+      .panel-table tbody tr,
+      .panel-table tbody tr:nth-child(odd),
+      .panel-table tbody tr:nth-child(even),
+      .panel-table tbody tr:hover,
+      #view-stok #stok-tbody tr,
+      #view-stok #stok-tbody tr[class*="stok-row-cesit"],
+      #view-stok #stok-tbody tr:nth-child(odd),
+      #view-stok #stok-tbody tr:nth-child(even),
+      #view-stok #stok-tbody tr:hover,
+      #view-stok.show-hidden-rows .panel-table tbody tr.row-hidden {
+        background: #fff !important;
+        background-color: #fff !important;
+        box-shadow: none !important;
+        transform: none !important;
+      }
+      #view-stok #stok-tbody tr td,
+      #view-stok #stok-tbody tr:hover td {
+        transform: none !important;
+        background: #fff !important;
+        background-color: #fff !important;
+        border: 1px solid #000 !important;
+      }
+      html.meldus-has-session body.print-teslim.meldus-locked .panel-card,
+      body.print-teslim .panel-card,
+      body.print-teslim .panel-table-wrap,
+      body.print-teslim #mainTable {
+        display: none !important;
+      }
+      body.print-teslim #modal-teslim.modal-backdrop,
+      body.print-teslim #modal-teslim.modal-backdrop.open {
+        display: block !important;
+        position: static !important;
+        inset: auto !important;
+        background: none !important;
+        backdrop-filter: none !important;
+        padding: 0 !important;
+        overflow: visible !important;
+        height: auto !important;
+        width: auto !important;
+        z-index: auto !important;
+      }
+      body.print-teslim #modal-teslim .modal-box {
+        box-shadow: none !important;
+        max-width: none !important;
+        width: 100% !important;
+        max-height: none !important;
+        min-width: 0 !important;
+        overflow: visible !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+      }
+      body.print-teslim #modal-teslim .modal-teslim-head,
+      body.print-teslim #modal-teslim .actions,
+      body.print-teslim #modal-teslim .filter-row,
+      body.print-teslim #modal-teslim .panel-table th:nth-child(6),
+      body.print-teslim #modal-teslim .panel-table td:nth-child(6) {
+        display: none !important;
+      }
+      body.print-teslim #modal-teslim .modal-list-body {
+        overflow: visible !important;
+        max-height: none !important;
+        margin: 0 !important;
+      }
+      body.print-teslim #modal-teslim .panel-table {
+        min-width: 0 !important;
+        width: 100% !important;
+        table-layout: fixed !important;
+        font-size: 12px !important;
+      }
+      body.print-teslim #modal-teslim .panel-table th,
+      body.print-teslim #modal-teslim .panel-table td {
+        font-size: 12px !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        white-space: normal !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        background: #fff !important;
+        border: 1px solid #000 !important;
+      }
+    }
   </style>
   <link rel="stylesheet" href="/meldus/mobile.css" />
 </head>
@@ -1648,6 +1867,7 @@
             <button type="button" id="btn-toolbar-cop" class="btn-toolbar-cop" title="Çöp kayıtları">Çöp Kaydı</button>
             <button type="button" id="btn-son-islemler" class="btn-son-islemler" title="Master: Son işlemler" hidden>Son işlemler</button>
             <button type="button" id="btn-stok-jpg-indir" title="Çeşit, teslim, extra fide JPG">JPG indir</button>
+            <button type="button" id="btn-stok-yazdir" title="Stok tablosunu yazdır">Yazdır</button>
           </div>
         </div>
         <div class="panel-table-wrap">
@@ -1783,7 +2003,10 @@
 
   <div id="modal-teslim" class="modal-backdrop" aria-hidden="true">
     <div class="modal-box modal-list-box">
-      <h3 style="color: #ca8a04;">Teslim Edilecekler</h3>
+      <div class="modal-teslim-head">
+        <h3 style="color: #ca8a04;">Teslim Edilecekler</h3>
+        <button type="button" id="btn-teslim-yazdir" title="Teslim edilecekleri yazdır">Yazdır</button>
+      </div>
       <div class="modal-list-body">
         <table class="panel-table" style="font-size: 1rem;">
           <thead>

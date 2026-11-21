@@ -171,10 +171,6 @@
     display: none !important;
   }
 
-  .panel-toolbar-right #btn-stok-jpg-indir {
-    grid-column: 1 / -1;
-  }
-
   .gizlileri-goster-wrap {
     display: flex;
     align-items: center;
@@ -215,10 +211,12 @@
   }
 
   .panel-toolbar-right .btn-toplu-sil,
+  .panel-toolbar-right .btn-toolbar-cimlenme,
   .panel-toolbar-right .btn-toolbar-silinenler,
   .panel-toolbar-right .btn-toolbar-cop,
   .panel-toolbar-right .btn-son-islemler,
-  .panel-toolbar-right #btn-stok-jpg-indir {
+  .panel-toolbar-right #btn-stok-jpg-indir,
+  .panel-toolbar-right #btn-stok-yazdir {
     grid-column: span 3;
     width: 100%;
     font-size: 0.9rem;
@@ -229,7 +227,11 @@
   }
 
   .panel-toolbar-right #btn-stok-jpg-indir {
-    grid-column: 1 / -1;
+    grid-column: span 3;
+  }
+
+  .panel-toolbar-right #btn-stok-yazdir {
+    grid-column: span 3;
   }
 
   /* Tablo – yatay kaydırma, dokunmatik uyumlu */
